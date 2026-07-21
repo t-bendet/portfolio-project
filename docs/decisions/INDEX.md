@@ -3,7 +3,11 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 16 · superseded: 8
+Summary: active: 21 · superseded: 8
+
+**"narrowed by NNNN"** means this ADR is still `active` and still binding,
+but a later ADR corrects one of its clauses. Acting on this ADR alone will
+produce the wrong result. Read both. (ADR 0027)
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
@@ -25,9 +29,14 @@ Summary: active: 16 · superseded: 8
 | [0016](./0016-prototype-typography-hebrew-companions.md) | Typography is prototype-exact (Syne+DM Mono / Fraunces+IBM Plex Mono) with verified Hebrew companions | `active` |  |
 | [0017](./0017-hero-bare-protocol-resolution.md) | Hero is the bare protocol resolution — typing animation kept, terminal window dropped | `active` |  |
 | [0018](./0018-portrait-about-favicon-confirmed.md) | Portrait confirmed at About + favicon, unframed and never mythologized; ink treatment deferred to digitization | `active` |  |
-| [0019](./0019-framework-astro7-static-core-plus-api.md) | Framework is Astro 7.x — static core plus hand-built API and containerized Postgres | `active` |  |
-| [0020](./0020-dynamic-layer-scope-analytics-reactions-admin.md) | Dynamic layer scope — first-party analytics, reactions, private admin dashboard; comments deferred but designed for | `active` |  |
+| [0019](./0019-framework-astro7-static-core-plus-api.md) | Framework is Astro 7.x — static core plus hand-built API and containerized Postgres | `active` | **narrowed by 0023** — read together |
+| [0020](./0020-dynamic-layer-scope-analytics-reactions-admin.md) | Dynamic layer scope — first-party analytics, reactions, private admin dashboard; comments deferred but designed for | `active` | **narrowed by 0024** — read together |
 | [0021](./0021-cloud-deploy-ec2-compose-ecr-pipeline.md) | Cloud and deploy — EC2 t4g.micro with Docker Compose, ECR via OIDC, Route 53, Caddy TLS, hand-written GitHub Actions pipeline | `active` |  |
 | [0022](./0022-site-structure-routes-global-theme.md) | Site structure — twelve public routes, archetype differentiation, one global theme | `active` |  |
-| [0023](./0023-translations-hebrew-locale-subtree.md) | Translated articles live in a Hebrew locale subtree with compliance-bound attribution | `active` |  |
-| [0024](./0024-content-model-collections-and-analytics-key.md) | Content model — three typed collections and a namespaced analytics key contract | `active` |  |
+| [0023](./0023-translations-hebrew-locale-subtree.md) | Translated articles live in a Hebrew locale subtree with compliance-bound attribution | `active` | narrows 0019 |
+| [0024](./0024-content-model-collections-and-analytics-key.md) | Content model — three typed collections and a namespaced analytics key contract | `active` | narrows 0020 |
+| [0025](./0025-phase2-development-workflow.md) | Phase 2 development workflow — tracks, risk-tiered review, and a retired agent roster | `active` |  |
+| [0026](./0026-worktrees-rejected-phase2-branch-model.md) | Worktrees rejected as the default; Phase 2 branch model is track-prefixed branches through PRs | `active` |  |
+| [0027](./0027-adr-partial-narrowing-relation.md) | The ADR lifecycle gains a partial-narrowing relation, threaded through the validator and the index | `active` |  |
+| [0028](./0028-phase2-enforcement-layer.md) | Phase 2 enforcement layer — edit what is checked, never the checker; closed missions freeze | `active` |  |
+| [0029](./0029-workshop-packaging-boundary.md) | The workshop's export boundary is specified at version 0.1 but not published; brand-voice is reclassified as a project artifact | `active` |  |

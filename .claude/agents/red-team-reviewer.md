@@ -1,6 +1,6 @@
 ---
 name: red-team-reviewer
-description: Adversarial reviewer of mission outputs. MUST run in fresh/forked context, never inside the producing session.
+description: Adversarial reviewer of mission outputs (Phase 1) and of Gated work-item diffs (Phase 2, via the review-work skill). MUST run in fresh/forked context, never inside the producing session.
 skills: adr-keeper
 tools: Read, Grep, Glob, Write
 ---

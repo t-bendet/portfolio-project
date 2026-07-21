@@ -1,3 +1,4 @@
+%% id: file-relations
 flowchart TB
     subgraph CONFIG[".claude/ — loaded as configuration"]
         CM["CLAUDE.md\n(auto-loaded constitution)"]
@@ -17,6 +18,7 @@ flowchart TB
         V["validate-adr.ts"]
         W["validate-workshop.ts"]
         R["reindex-decisions.ts"]
+        T["test-machinery.ts"]
         LIB["lib/frontmatter.ts"]
     end
 
@@ -40,6 +42,7 @@ flowchart TB
     W -->|lints| SK & AG
     H2 -->|reads| ST
     H2 -->|checks verdict in| OUT
+    T -->|drives every hook,\nasserts exit codes| ENFORCE
     H3 -->|runs| V --> LIB
     H3 -->|runs| R -->|writes| IDX
     R -->|reads frontmatter| ADR

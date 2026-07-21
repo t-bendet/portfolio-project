@@ -36,13 +36,82 @@ function sha(text: string): string {
   return createHash('sha256').update(text).digest('hex').slice(0, 16);
 }
 
-function handbookBlocks(): string[] {
+// Diagrams bind to handbook blocks by a declared id, NOT by document order.
+// Positional binding (the original design) had a silent-corruption mode: reorder
+// two handbook sections and `ack` faithfully writes the wrong diagram into the
+// wrong filename, the check then passes, and the filenames lie permanently —
+// with the tool's own remediation message as the trigger. The enforced
+// invariant was "the bytes at index i match the file named DIAGRAM_NAMES[i]",
+// never "each file's name describes its contents". (IMPROVEMENTS.md #7)
+//
+// The id lives in the source as a mermaid comment, which renders as nothing:
+//   ```mermaid
+//   %% id: adr-lifecycle
+//   stateDiagram-v2
+const ID_RE = /^%%\s*id:\s*([a-z0-9-]+)\s*$/;
+
+interface Block {
+  id: string | null;
+  body: string;
+}
+
+function handbookBlocks(): Block[] {
   const src = readFileSync(HANDBOOK, 'utf8');
-  const blocks: string[] = [];
+  const blocks: Block[] = [];
   const re = /```mermaid\n([\s\S]*?)```/g;
   let m: RegExpExecArray | null;
-  while ((m = re.exec(src)) !== null) blocks.push(m[1]);
+  while ((m = re.exec(src)) !== null) {
+    const body = m[1];
+    const first = body.split('\n', 1)[0] ?? '';
+    const idMatch = ID_RE.exec(first.trim());
+    blocks.push({ id: idMatch ? idMatch[1] : null, body });
+  }
   return blocks;
+}
+
+// Resolve blocks to { name -> body }, reporting every integrity failure.
+function blockIndex(blocks: Block[]): {
+  byId: Map<string, string>;
+  problems: string[];
+} {
+  const problems: string[] = [];
+  const byId = new Map<string, string>();
+  const registered = new Set(DIAGRAM_NAMES);
+
+  for (const [i, block] of blocks.entries()) {
+    if (block.id === null) {
+      problems.push(
+        `mermaid block #${i + 1} has no id — add "%% id: <name>" as its first line`,
+      );
+      continue;
+    }
+    if (byId.has(block.id)) {
+      problems.push(`duplicate diagram id "${block.id}" in the handbook`);
+      continue;
+    }
+    if (!registered.has(block.id)) {
+      problems.push(
+        `unknown diagram id "${block.id}" — add it to DIAGRAM_NAMES in sync-docs.ts`,
+      );
+      continue;
+    }
+    byId.set(block.id, block.body);
+  }
+
+  for (const name of DIAGRAM_NAMES) {
+    if (!byId.has(name)) {
+      problems.push(`registered diagram "${name}" has no matching block in the handbook`);
+    }
+  }
+
+  // Backstop: the count check the original design relied on, kept.
+  if (blocks.length !== DIAGRAM_NAMES.length) {
+    problems.push(
+      `handbook has ${blocks.length} mermaid blocks but ${DIAGRAM_NAMES.length} diagram names are registered`,
+    );
+  }
+
+  return { byId, problems };
 }
 
 function fingerprint(): Record<string, string> {
@@ -67,21 +136,17 @@ function fingerprint(): Record<string, string> {
 function check(): void {
   const problems: string[] = [];
 
-  const blocks = handbookBlocks();
-  if (blocks.length !== DIAGRAM_NAMES.length) {
-    problems.push(
-      `handbook has ${blocks.length} mermaid blocks but ${DIAGRAM_NAMES.length} diagram names are registered — update DIAGRAM_NAMES in sync-docs.ts`,
-    );
-  } else {
-    for (const [i, name] of DIAGRAM_NAMES.entries()) {
-      const path = join(DIAGRAMS_DIR, `${name}.mmd`);
-      if (!existsSync(path)) {
-        problems.push(`missing ${path} — run: node scripts/sync-docs.ts ack`);
-        continue;
-      }
-      if (readFileSync(path, 'utf8') !== blocks[i]) {
-        problems.push(`${name}.mmd differs from its handbook block — run ack (handbook is the source)`);
-      }
+  const { byId, problems: idProblems } = blockIndex(handbookBlocks());
+  problems.push(...idProblems);
+
+  for (const [name, body] of byId) {
+    const path = join(DIAGRAMS_DIR, `${name}.mmd`);
+    if (!existsSync(path)) {
+      problems.push(`missing ${path} — run: node scripts/sync-docs.ts ack`);
+      continue;
+    }
+    if (readFileSync(path, 'utf8') !== body) {
+      problems.push(`${name}.mmd differs from its handbook block — run ack (handbook is the source)`);
     }
   }
 
@@ -109,18 +174,19 @@ function check(): void {
 }
 
 function ack(): void {
-  const blocks = handbookBlocks();
-  if (blocks.length !== DIAGRAM_NAMES.length) {
-    console.error(
-      `cannot ack: handbook has ${blocks.length} mermaid blocks, expected ${DIAGRAM_NAMES.length}. Update DIAGRAM_NAMES first.`,
-    );
+  // ack refuses on ANY id problem. This is the whole point of #7: the old ack
+  // would happily write a correct-looking file with the wrong contents.
+  const { byId, problems } = blockIndex(handbookBlocks());
+  if (problems.length > 0) {
+    console.error('cannot ack — handbook diagram ids are not sound:');
+    for (const p of problems) console.error(`  - ${p}`);
     process.exit(1);
   }
-  for (const [i, name] of DIAGRAM_NAMES.entries()) {
-    writeFileSync(join(DIAGRAMS_DIR, `${name}.mmd`), blocks[i]);
+  for (const [name, body] of byId) {
+    writeFileSync(join(DIAGRAMS_DIR, `${name}.mmd`), body);
   }
   writeFileSync(FINGERPRINT, JSON.stringify(fingerprint(), null, 2) + '\n');
-  console.log(`acked: ${DIAGRAM_NAMES.length} diagrams re-extracted, fingerprint recorded`);
+  console.log(`acked: ${byId.size} diagrams re-extracted by id, fingerprint recorded`);
 }
 
 const mode = process.argv[2] ?? 'check';

@@ -1,6 +1,6 @@
 ---
 name: ia-planner
-description: Sitemaps, content models, navigation, page composition. Lead agent for Mission 4.
+description: RETIRED at Phase 2 open (ADR 0025) — its question is answered by ADRs 0022-0024 and Mission 4's outputs, which are the durable output. Do not select for build work; read sitemap.md, content-model.md and the page briefs instead. Kept for provenance. Was: sitemaps, content models, navigation, page composition; lead agent for Mission 4.
 skills: brand-voice, adr-keeper, mission-protocol
 tools: Read, Grep, Glob, Write
 ---

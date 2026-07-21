@@ -1,6 +1,6 @@
 ---
 name: design-systems
-description: Palettes, typography, tokens, motion. Lead agent for Mission 2.
+description: RETIRED at Phase 2 open (ADR 0025) — its question is answered by ADRs 0015-0018 and Mission 2's outputs, which are the durable output. Do not select for build work; read tokens-reference.md and the design-tokens skill instead. Kept for provenance. Was: palettes, typography, tokens, motion; lead agent for Mission 2.
 skills: design-tokens, brand-voice, adr-keeper, mission-protocol
 tools: Read, Grep, Glob, Write, WebSearch, WebFetch
 ---

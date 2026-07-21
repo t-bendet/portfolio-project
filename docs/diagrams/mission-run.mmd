@@ -1,3 +1,4 @@
+%% id: mission-run
 flowchart TB
     START(["Tal invokes /mN"]) --> GATE{"Gate check:\nall depends-on missions\ngenuinely closed?"}
     GATE -->|no| REFUSE["refuse + report\nwhat's blocking"]

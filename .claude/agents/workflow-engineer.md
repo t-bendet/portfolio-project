@@ -1,6 +1,6 @@
 ---
 name: workflow-engineer
-description: Agent workflows, hooks, plugin packaging, dev-loop design. Lead agent for Mission 5.
+description: RETIRED at Phase 2 open (ADR 0025) — its question is answered by ADRs 0025-0029 and Mission 5's outputs. Do not select for build work; in Phase 2 the enforcement layer is not editable by agent sessions at all (ADR 0028), so machinery changes are Tal's and start with a new ADR. Kept for provenance. Was: agent workflows, hooks, plugin packaging, dev-loop design; lead agent for Mission 5.
 skills: prompt-craft, mission-protocol, adr-keeper
 tools: Read, Grep, Glob, Write, Edit, Bash
 ---

@@ -5,6 +5,9 @@ description: How any mission runs — gate check, input manifest, loop, review, 
 
 # Mission Protocol
 
+**Project parameters** (ADR 0029) — `escalation target: Tal`. The proper noun
+below is this binding, not part of the method; packaging substitutes it.
+
 ## Run sequence
 1. **Gate check.** Read this mission's STATUS.md `depends-on`. Every dependency
    must be genuinely closed: STATUS `closed` + outputs/review-verdict.md with
@@ -31,5 +34,11 @@ description: How any mission runs — gate check, input manifest, loop, review, 
 - Never flip your own review verdict. Never write review-verdict.md from the
   mission's own context.
 - Never begin the next mission in the same session "while we're here."
-- Branch-per-mission; merge on close. Worktrees optional (Mission 5 decides).
+- Branch-per-mission (`mission/mN-slug`); merge on close; never delete the
+  branch — it is provenance.
+- **Worktrees: decided (ADR 0026). Not used by default.** The test is "does
+  this task run the app?" — if yes, same working tree. Mission work is paper
+  work, so a worktree is permitted but buys nothing.
+- A CLOSED mission's outputs are frozen — `mission-gate` enforces it (ADR
+  0028). A wrong closed deliverable is a new ADR, not an edit.
 - INDEX.md conflicts on merge: regenerate via script.
