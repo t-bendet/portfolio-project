@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 12 · proposed: 1 · reopened: 2 · superseded: 6
+Summary: active: 13 · reopened: 2 · superseded: 6
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
@@ -19,7 +19,7 @@ Summary: active: 12 · proposed: 1 · reopened: 2 · superseded: 6
 | [0010](./0010-writing-section-tabs.md) | Writing section — original and translated posts as tabs | `reopened` | reopened by mission-4 |
 | [0011](./0011-rtl-hebrew-support.md) | RTL/Hebrew rendering is a hard design and IA constraint | `active` |  |
 | [0012](./0012-showcase-tech-constraints.md) | The portfolio must genuinely showcase SQL, Docker, from-scratch CI/CD, and cloud deployment | `active` |  |
-| [0013](./0013-repo-topology.md) | Repository topology — workshop and app together or separate | `proposed` |  |
+| [0013](./0013-repo-topology.md) | Repository topology — workshop and app live in one monorepo | `active` |  |
 | [0014](./0014-mythology-subordinate-naming-register.md) | Greek mythology enters only as a bounded naming register over real infrastructure | `active` |  |
 | [0015](./0015-prototype-exact-palette.md) | Palette is prototype-exact — two temperatures, six accents, minimal AA nudges | `active` |  |
 | [0016](./0016-prototype-typography-hebrew-companions.md) | Typography is prototype-exact (Syne+DM Mono / Fraunces+IBM Plex Mono) with verified Hebrew companions | `active` |  |
