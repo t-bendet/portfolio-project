@@ -3,7 +3,7 @@
 Improvements identified but deliberately NOT implemented — to be folded in by
 Tal while working, once real mission experience confirms or corrects them.
 Ranked by leverage. Items 1–5 come from the scaffolding session (2026-07-20);
-item 6 was added 2026-07-21.
+items 6–7 were added 2026-07-21.
 
 ---
 
@@ -181,6 +181,68 @@ perhaps an hour, but only in M5, and only for whichever direction wins.
 
 ---
 
+## 7. Bind diagrams to the handbook by id, not by array position
+
+*(Added 2026-07-21, from reading the handbook.)*
+
+**Problem.** `scripts/sync-docs.ts` pairs each ` ```mermaid ` block in
+`docs/HANDBOOK.md` with a file in `docs/diagrams/` **positionally**:
+
+```ts
+for (const [i, name] of DIAGRAM_NAMES.entries()) {
+  if (readFileSync(join(DIAGRAMS_DIR, `${name}.mmd`)) !== blocks[i]) …
+```
+
+`DIAGRAM_NAMES` (`sync-docs.ts:29`) is a hardcoded array; index `i` binds to
+the `i`-th mermaid block in document order. The handbook blocks carry **no
+identifier at all** — no anchor, no `%%` comment, no heading capture. Nothing
+connects the string `"adr-lifecycle"` to the `stateDiagram-v2` block except
+that both happen to be third. The filenames are labels that exist only inside
+the script; the handbook has never heard of them.
+
+So the invariant actually enforced is *"the bytes at index i match the file
+named `DIAGRAM_NAMES[i]`"* — **not** *"each file's name describes its
+contents."* Two consequences:
+
+- **Insert or delete a diagram** → count mismatch → `check()` fails loudly and
+  `ack()` refuses outright. Safe, because it's caught mechanically.
+- **Reorder two sections in the handbook** → `check()` reports
+  `adr-lifecycle.mmd differs from its handbook block — run ack (handbook is
+  the source)`. You run `ack`, as instructed. It faithfully writes the
+  *mission-run* diagram into `adr-lifecycle.mmd`. The check then passes, the
+  filenames lie permanently, and nothing will ever notice — the enforced
+  invariant is still true. **Silent mislabeling, with the tool's own
+  remediation message as the trigger.**
+
+Worst case is live in the current file: blocks 1 and 3 (`file-relations`,
+`mission-run`) are both `flowchart TB`, so even a diagram-type sanity check
+would not distinguish them if they swapped.
+
+**Fix.** Put the identity in the source, as a mermaid comment (renders as
+nothing) on the first line of each block:
+
+```
+%% id: adr-lifecycle
+stateDiagram-v2
+```
+
+Then match by parsed id instead of index. Diagram order in the handbook
+becomes free; missing, duplicate, or unknown ids become loud errors; and
+`DIAGRAM_NAMES` stops being a positional contract that is invisible from the
+handbook side. Keep the existing count check as a backstop.
+
+**Note.** This *strengthens* an existing check rather than adding machinery
+surface, so it clears the bar set in "Deliberately rejected" for the same
+reason items 2–3 do — it verifies what already exists. It is also a plain
+correctness fix with no real counter-argument, which is why it carries no
+tradeoff section (unlike #6).
+
+**Effort:** ~10 lines in `sync-docs.ts` + 5 one-line comment insertions in
+the handbook + one `ack`. But `scripts/` is under `protect-workshop`, so it
+lands in **Mission 5's** license.
+
+---
+
 ## Deliberately rejected
 
 More hooks, more validators, more agent sophistication. The enforcement layer
@@ -198,7 +260,7 @@ it must clear: does a real friction-log entry demand it?
 | Before /m1 | #1 (timeboxes — 5 minutes), #3 (fork experiment) |
 | During /m1 | #4 (first friction log), #5 (start the story capture) |
 | Before Phase 2 | #2 (test suite — becomes CI's first job) |
-| During /m5 | #6 (plugin boundary — M5 owns `.claude/`; decide before packaging) |
+| During /m5 | #6 (plugin boundary — M5 owns `.claude/`; decide before packaging), #7 (diagram ids — same license) |
 
 Note: implementing #2–#4 touches the machinery surface — the docs-sync hook
 will (correctly) demand a HANDBOOK update + `node scripts/sync-docs.ts ack`,
