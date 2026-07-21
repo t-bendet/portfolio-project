@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JS/TS Tooling Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141417;
+    --border: #222228;
+    --text: #e8e8ec;
+    --muted: #6b6b78;
+    --accent1: #ff6b35;   /* bundlers */
+    --accent2: #7c6af7;   /* typescript */
+    --accent3: #2fc98e;   /* module systems */
+    --accent4: #f5c542;   /* linting/format */
+    --accent5: #e06fe8;   /* config files */
+    --accent6: #3fc9d4;   /* runtimes */
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+
+  header {
+    max-width: 960px;
+    margin: 0 auto 56px;
+  }
+
+  header .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  header h1 {
+    font-size: clamp(2rem, 5vw, 3.4rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: #fff;
+  }
+
+  header p {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 400;
+    max-width: 540px;
+    line-height: 1.6;
+  }
+
+  .toc {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 28px;
+  }
+
+  .toc a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 5px 12px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .toc a:hover { color: var(--text); border-color: #444; }
+
+  .grid {
+    max-width: 960px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .section {
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .section-header h2 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .section-header .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .card {
+    background: var(--surface);
+    padding: 20px 22px;
+    transition: background 0.15s;
+  }
+
+  .card:hover { background: #18181d; }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .card-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: #1e1e24;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  /* module systems section — custom layout */
+  .module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  @media (max-width: 640px) {
+    .module-grid { grid-template-columns: 1fr; }
+  }
+
+  .module-card {
+    background: var(--surface);
+    padding: 22px;
+  }
+
+  .module-card:hover { background: #18181d; }
+
+  .module-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .module-sub {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .module-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .module-code {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: #0d0d0f;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    color: #c8c8d4;
+    line-height: 1.7;
+    white-space: pre;
+  }
+
+  .module-code .kw { color: #7c6af7; }
+  .module-code .str { color: #2fc98e; }
+  .module-code .cm { color: #444; }
+
+  /* config section */
+  .config-list {
+    padding: 4px 0;
+  }
+
+  .config-row {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    align-items: start;
+    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .config-row:last-child { border-bottom: none; }
+  .config-row:hover { background: #18181d; }
+
+  .config-file {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #fff;
+  }
+
+  .config-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .config-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  /* vs table */
+  .vs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  @media (max-width: 580px) { .vs-grid { grid-template-columns: 1fr; } }
+
+  .vs-cell {
+    background: var(--surface);
+    padding: 20px 22px;
+  }
+
+  .vs-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .vs-title {
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+
+  .vs-list {
+    list-style: none;
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+
+  .vs-list li::before { content: "→ "; color: var(--border); }
+
+  /* note box */
+  .note {
+    margin: 16px 24px;
+    padding: 14px 18px;
+    background: #111114;
+    border: 1px solid var(--border);
+    border-left: 3px solid;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .note strong { color: var(--text); }
+
+  /* color variants */
+  .c1 { color: var(--accent1); }
+  .c2 { color: var(--accent2); }
+  .c3 { color: var(--accent3); }
+  .c4 { color: var(--accent4); }
+  .c5 { color: var(--accent5); }
+  .c6 { color: var(--accent6); }
+
+  .bg1 { background: rgba(255,107,53,0.12); color: var(--accent1); }
+  .bg2 { background: rgba(124,106,247,0.12); color: var(--accent2); }
+  .bg3 { background: rgba(47,201,142,0.12); color: var(--accent3); }
+  .bg4 { background: rgba(245,197,66,0.12); color: var(--accent4); }
+  .bg5 { background: rgba(224,111,232,0.12); color: var(--accent5); }
+  .bg6 { background: rgba(63,201,212,0.12); color: var(--accent6); }
+
+  .dot1 { background: var(--accent1); }
+  .dot2 { background: var(--accent2); }
+  .dot3 { background: var(--accent3); }
+  .dot4 { background: var(--accent4); }
+  .dot5 { background: var(--accent5); }
+  .dot6 { background: var(--accent6); }
+
+  .bl1 { border-left-color: var(--accent1); }
+  .bl2 { border-left-color: var(--accent2); }
+  .bl3 { border-left-color: var(--accent3); }
+  .bl4 { border-left-color: var(--accent4); }
+  .bl5 { border-left-color: var(--accent5); }
+  .bl6 { border-left-color: var(--accent6); }
+
+  section { scroll-margin-top: 24px; }
+
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 18px 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pipeline-step {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #111114;
+    color: var(--text);
+  }
+
+  .pipeline-arrow { color: var(--border); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Fullstack Developer Reference</div>
+  <h1>JS / TS Tooling<br/>Landscape</h1>
+  <p>A structured map of build tools, module systems, config files, and runtimes — everything that happens before your code runs.</p>
+  <nav class="toc">
+    <a href="#s1">01 · Module Systems</a>
+    <a href="#s2">02 · Bundlers</a>
+    <a href="#s3">03 · TS Build Tools</a>
+    <a href="#s4">04 · Transpilers</a>
+    <a href="#s5">05 · Linting & Formatting</a>
+    <a href="#s6">06 · Config Files</a>
+    <a href="#s7">07 · Runtimes</a>
+    <a href="#s8">08 · Package Managers</a>
+  </nav>
+</header>
+
+<div class="grid">
+
+  <!-- ============ 01 MODULE SYSTEMS ============ -->
+  <section class="section" id="s1">
+    <div class="section-header">
+      <div class="dot dot3"></div>
+      <h2>Module Systems</h2>
+      <span class="num">01</span>
+    </div>
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="module-name c3">CJS</div>
+        <div class="module-sub">CommonJS</div>
+        <div class="module-desc">Node.js original module system. Synchronous, dynamic. Default in <code>.js</code> files when <code>package.json</code> has no <code>"type"</code> or has <code>"type": "commonjs"</code>.</div>
+        <div class="module-code"><span class="kw">const</span> x = <span class="kw">require</span>(<span class="str">'./foo'</span>)
+module.exports = { x }</div>
+      </div>
+      <div class="module-card">
+        <div class="module-name c2">ESM</div>
+        <div class="module-sub">ES Modules</div>
+        <div class="module-desc">The modern standard. Static, async, tree-shakeable. Native in browsers & modern Node. Use <code>.mjs</code> or set <code>"type": "module"</code> in package.json.</div>
+        <div class="module-code"><span class="kw">import</span> { x } <span class="kw">from</span> <span class="str">'./foo.js'</span>
+<span class="kw">export</span> <span class="kw">const</span> y = 1</div>
+      </div>
+      <div class="module-card">
+        <div class="module-name c4">UMD</div>
+        <div class="module-sub">Universal Module Definition</div>
+        <div class="module-desc">Compatibility format for libraries. Works in browser globals, AMD, and CJS. Rarely written by hand — bundlers output it. Mostly legacy today.</div>
+        <div class="module-code"><span class="cm">// works as CJS, AMD, or</span>
+<span class="cm">// browser global window.Lib</span>
+<span class="cm">// output by bundlers only</span></div>
+      </div>
+    </div>
+    <div class="note bl3">
+      <strong>The interop problem:</strong> CJS and ESM don't mix cleanly. CJS can't <code>import</code> ESM. ESM can only <code>require()</code> CJS via dynamic import workarounds. This is the source of most "ERR_REQUIRE_ESM" headaches. Libraries increasingly ship both formats (dual packages).
+    </div>
+    <div class="note bl4" style="margin-top:0;">
+      <strong>File extensions that matter:</strong> <code>.mjs</code> = always ESM · <code>.cjs</code> = always CJS · <code>.js</code> = depends on nearest <code>package.json "type"</code> field
+    </div>
+  </section>
+
+  <!-- ============ 02 BUNDLERS ============ -->
+  <section class="section" id="s2">
+    <div class="section-header">
+      <div class="dot dot1"></div>
+      <h2>Bundlers</h2>
+      <span class="num">02</span>
+    </div>
+    <div class="pipeline">
+      <span>source files</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step">resolve imports</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step">transform (via plugins)</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step">tree-shake</span>
+      <span class="pipeline-arrow">→</span>
+      <span class="pipeline-step">bundle + minify</span>
+      <span class="pipeline-arrow">→</span>
+      <span>dist/</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Webpack</span>
+          <span class="badge bg1">Industry Standard</span>
+        </div>
+        <div class="card-desc">The OG. Extremely powerful and configurable. Complex config. Dominates legacy and large enterprise codebases. CRA used it under the hood.</div>
+        <div class="tags"><span class="tag">webpack.config.js</span><span class="tag">loaders</span><span class="tag">plugins</span><span class="tag">code splitting</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Vite</span>
+          <span class="badge bg3">Modern Default</span>
+        </div>
+        <div class="card-desc">Dev server uses native ESM — no bundling in dev, instant HMR. Rollup under the hood for production builds. The new React/Vue default.</div>
+        <div class="tags"><span class="tag">vite.config.ts</span><span class="tag">esbuild (dev)</span><span class="tag">rollup (prod)</span><span class="tag">HMR</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Rollup</span>
+          <span class="badge bg4">Libraries</span>
+        </div>
+        <div class="card-desc">Best-in-class for library authoring. Excellent tree shaking, clean output. Outputs ESM/CJS/UMD. Vite uses it for production builds.</div>
+        <div class="tags"><span class="tag">rollup.config.js</span><span class="tag">ESM output</span><span class="tag">library bundles</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">esbuild</span>
+          <span class="badge bg6">Speed</span>
+        </div>
+        <div class="card-desc">Written in Go. 10–100× faster than JS-based bundlers. No type checking. Used as the transformer inside Vite and many other tools.</div>
+        <div class="tags"><span class="tag">no tsconfig emit</span><span class="tag">strip types only</span><span class="tag">blazing fast</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Parcel</span>
+          <span class="badge bg5">Zero Config</span>
+        </div>
+        <div class="card-desc">Zero config bundler. Auto-detects everything. Good for quick projects. Less common in production apps today.</div>
+        <div class="tags"><span class="tag">zero config</span><span class="tag">auto transforms</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Turbopack</span>
+          <span class="badge bg2">Emerging</span>
+        </div>
+        <div class="card-desc">Rust-based, Vercel-built Webpack successor. Powers Next.js dev server. Still maturing. Watch this space.</div>
+        <div class="tags"><span class="tag">Next.js 13+</span><span class="tag">Rust</span><span class="tag">incremental</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 TS BUILD TOOLS ============ -->
+  <section class="section" id="s3">
+    <div class="section-header">
+      <div class="dot dot2"></div>
+      <h2>TypeScript Build Tools</h2>
+      <span class="num">03</span>
+    </div>
+    <div class="note bl2" style="margin: 16px 24px 0;">
+      <strong>Key distinction:</strong> Some tools do <em>type checking</em>, some just <em>strip types</em> (transpile). They are different jobs. Speed vs safety tradeoff.
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">tsc</span>
+          <span class="badge bg2">Official</span>
+        </div>
+        <div class="card-desc">The TypeScript compiler. Type checks AND emits JS. Slow on large projects. Used for type checking in CI; often <em>not</em> used for bundling.</div>
+        <div class="tags"><span class="tag">tsconfig.json</span><span class="tag">type check</span><span class="tag">emit JS</span><span class="tag">declaration files</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">ts-node</span>
+          <span class="badge bg6">Node Dev</span>
+        </div>
+        <div class="card-desc">Run TypeScript directly in Node without a build step. Compiles on the fly. Slow startup. Common for scripts and server dev.</div>
+        <div class="tags"><span class="tag">on-the-fly compile</span><span class="tag">no emit</span><span class="tag">scripts</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">tsx</span>
+          <span class="badge bg3">ts-node replacement</span>
+        </div>
+        <div class="card-desc">Modern ts-node alternative using esbuild under the hood. Much faster startup. Type stripping only — no type checking.</div>
+        <div class="tags"><span class="tag">esbuild backed</span><span class="tag">fast</span><span class="tag">no type check</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">tsup</span>
+          <span class="badge bg1">Library Build</span>
+        </div>
+        <div class="card-desc">Zero-config library bundler for TypeScript. Wraps esbuild. Outputs ESM + CJS + <code>.d.ts</code> files with minimal setup.</div>
+        <div class="tags"><span class="tag">tsup.config.ts</span><span class="tag">dual output</span><span class="tag">d.ts gen</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">tsbuildinfo</span>
+          <span class="badge bg4">Incremental</span>
+        </div>
+        <div class="card-desc">Not a tool — a file. Generated by <code>tsc --incremental</code>. Caches compilation state so tsc only recompiles changed files.</div>
+        <div class="tags"><span class="tag">incremental builds</span><span class="tag">cache file</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">SWC</span>
+          <span class="badge bg5">Rust</span>
+        </div>
+        <div class="card-desc">Rust-based TS/JS compiler. Used by Next.js to replace Babel. Strips types only — no type checking. Very fast.</div>
+        <div class="tags"><span class="tag">.swcrc</span><span class="tag">Next.js default</span><span class="tag">no type check</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 TRANSPILERS ============ -->
+  <section class="section" id="s4">
+    <div class="section-header">
+      <div class="dot dot4"></div>
+      <h2>Transpilers</h2>
+      <span class="num">04</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Babel</span>
+          <span class="badge bg4">Legacy / React</span>
+        </div>
+        <div class="card-desc">Transforms modern JS/TS/JSX to older JS for browser compatibility. Huge plugin ecosystem. Slow. Being replaced by esbuild/SWC in most pipelines. Still needed for some custom transforms.</div>
+        <div class="tags"><span class="tag">babel.config.js</span><span class="tag">.babelrc</span><span class="tag">presets</span><span class="tag">plugins</span><span class="tag">JSX</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">esbuild</span>
+          <span class="badge bg6">Both</span>
+        </div>
+        <div class="card-desc">Also acts as a transpiler (not just bundler). Transforms TS/JSX to JS extremely fast. Used directly or via Vite, tsx, tsup.</div>
+        <div class="tags"><span class="tag">transform API</span><span class="tag">JSX</span><span class="tag">target env</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">PostCSS</span>
+          <span class="badge bg5">CSS Only</span>
+        </div>
+        <div class="card-desc">CSS transpiler. Transforms CSS with plugins — autoprefixing, nesting, custom properties. Tailwind runs as a PostCSS plugin.</div>
+        <div class="tags"><span class="tag">postcss.config.js</span><span class="tag">autoprefixer</span><span class="tag">Tailwind</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 LINTING + FORMATTING ============ -->
+  <section class="section" id="s5">
+    <div class="section-header">
+      <div class="dot dot4"></div>
+      <h2>Linting &amp; Formatting</h2>
+      <span class="num">05</span>
+    </div>
+    <div class="note bl4" style="margin: 16px 24px 0;">
+      <strong>Linter vs Formatter:</strong> A linter catches <em>code quality issues</em> (unused vars, bad patterns). A formatter enforces <em>style</em> (indentation, quotes, semicolons). Don't use both for style — let Prettier own style, ESLint own logic.
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">ESLint</span>
+          <span class="badge bg4">Linter</span>
+        </div>
+        <div class="card-desc">The JS/TS linter. Catches bugs and bad patterns. Highly configurable via plugins. V9 introduced flat config (<code>eslint.config.js</code>), replacing the old <code>.eslintrc</code>.</div>
+        <div class="tags"><span class="tag">eslint.config.js</span><span class="tag">.eslintrc</span><span class="tag">typescript-eslint</span><span class="tag">eslint-plugin-react</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Prettier</span>
+          <span class="badge bg5">Formatter</span>
+        </div>
+        <div class="card-desc">Opinionated code formatter. Reformats your code on save. Removes all style debates from teams. Configure it minimally and forget it.</div>
+        <div class="tags"><span class="tag">.prettierrc</span><span class="tag">prettier.config.js</span><span class="tag">.prettierignore</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Biome</span>
+          <span class="badge bg6">All-in-one</span>
+        </div>
+        <div class="card-desc">Rust-based. Does both linting and formatting in one tool. Very fast. Aims to replace ESLint + Prettier combo. Still gaining adoption.</div>
+        <div class="tags"><span class="tag">biome.json</span><span class="tag">Rust</span><span class="tag">ESLint replacement</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">Stylelint</span>
+          <span class="badge bg1">CSS</span>
+        </div>
+        <div class="card-desc">Like ESLint but for CSS/SCSS. Catches CSS errors, enforces ordering, prevents bad patterns.</div>
+        <div class="tags"><span class="tag">.stylelintrc</span><span class="tag">CSS/SCSS</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">lint-staged + Husky</span>
+          <span class="badge bg2">Git Hooks</span>
+        </div>
+        <div class="card-desc">Husky wires up Git hooks. lint-staged runs linters only on staged files. Together they enforce quality on every commit.</div>
+        <div class="tags"><span class="tag">.husky/</span><span class="tag">pre-commit</span><span class="tag">lint-staged config</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 06 CONFIG FILES ============ -->
+  <section class="section" id="s6">
+    <div class="section-header">
+      <div class="dot dot5"></div>
+      <h2>Config Files Reference</h2>
+      <span class="num">06</span>
+    </div>
+    <div class="config-list">
+
+      <div class="config-row">
+        <span class="config-file c2">tsconfig.json</span>
+        <span class="config-desc">TypeScript compiler config. Controls what gets type-checked, what gets emitted, module format, path aliases, strictness. Core to any TS project.</span>
+        <span class="config-badge bg2">TypeScript</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c3">package.json</span>
+        <span class="config-desc">More than dependencies. <code>"type": "module"</code> switches to ESM. <code>"exports"</code> field controls what your package exposes. <code>"main"</code> vs <code>"module"</code> for dual publish.</span>
+        <span class="config-badge bg3">Node / npm</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c1">vite.config.ts</span>
+        <span class="config-desc">Vite's config. Define plugins, aliases (<code>resolve.alias</code>), proxy, build target, env vars. Very clean API.</span>
+        <span class="config-badge bg1">Vite</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c4">.eslintrc / eslint.config.js</span>
+        <span class="config-desc">ESLint rules. Old format: <code>.eslintrc.json/.yml/.js</code>. New flat config (v9+): <code>eslint.config.js</code>. Defines rules, plugins, parser (use <code>@typescript-eslint/parser</code> for TS).</span>
+        <span class="config-badge bg4">ESLint</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c5">.prettierrc</span>
+        <span class="config-desc">Prettier style rules: print width, tab width, single quotes, semicolons, trailing commas. Keep it minimal.</span>
+        <span class="config-badge bg5">Prettier</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c6">.editorconfig</span>
+        <span class="config-desc">Editor-level defaults (indent size, line endings, charset). Respected by VS Code, JetBrains, etc. before any linter runs. Great for cross-IDE teams.</span>
+        <span class="config-badge bg6">Editor</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c3">postcss.config.js</span>
+        <span class="config-desc">Configures PostCSS plugins. Typically just autoprefixer + Tailwind if you use it.</span>
+        <span class="config-badge bg3">PostCSS</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c1">.babelrc / babel.config.js</span>
+        <span class="config-desc">Babel transform config. Defines presets (<code>@babel/preset-env</code>, <code>@babel/preset-react</code>, <code>@babel/preset-typescript</code>) and plugins.</span>
+        <span class="config-badge bg1">Babel</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c2">.nvmrc / .node-version</span>
+        <span class="config-desc">Pins the Node.js version for the project. Used by nvm / Volta to auto-switch runtimes.</span>
+        <span class="config-badge bg2">Node</span>
+      </div>
+
+      <div class="config-row">
+        <span class="config-file c4">.env / .env.local</span>
+        <span class="config-desc">Environment variables. <code>.env</code> is committed (no secrets). <code>.env.local</code> is gitignored. Vite uses <code>VITE_</code> prefix. Node uses <code>process.env</code>.</span>
+        <span class="config-badge bg4">Runtime</span>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 07 RUNTIMES ============ -->
+  <section class="section" id="s7">
+    <div class="section-header">
+      <div class="dot dot6"></div>
+      <h2>JS Runtimes</h2>
+      <span class="num">07</span>
+    </div>
+    <div class="vs-grid">
+      <div class="vs-cell">
+        <div class="vs-label">V8 · 2009</div>
+        <div class="vs-title c3">Node.js</div>
+        <ul class="vs-list">
+          <li>The default server runtime</li>
+          <li>CJS by default, ESM supported</li>
+          <li>Massive npm ecosystem</li>
+          <li>V8 engine</li>
+          <li>No built-in TS support</li>
+          <li>Node 22+ has --strip-types</li>
+        </ul>
+      </div>
+      <div class="vs-cell">
+        <div class="vs-label">V8 · 2020</div>
+        <div class="vs-title c2">Deno</div>
+        <ul class="vs-list">
+          <li>Secure by default</li>
+          <li>Native TypeScript support</li>
+          <li>ESM-only, URL imports</li>
+          <li>Built-in formatter & linter</li>
+          <li>Smaller ecosystem</li>
+          <li>npm compatible since v1.28</li>
+        </ul>
+      </div>
+      <div class="vs-cell">
+        <div class="vs-label">JavaScriptCore · 2022</div>
+        <div class="vs-title c1">Bun</div>
+        <ul class="vs-list">
+          <li>Extremely fast (JSC engine)</li>
+          <li>Built-in TS support</li>
+          <li>Built-in bundler & test runner</li>
+          <li>Drop-in Node replacement</li>
+          <li>Built-in package manager</li>
+          <li>Still maturing</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 08 PACKAGE MANAGERS ============ -->
+  <section class="section" id="s8">
+    <div class="section-header">
+      <div class="dot dot1"></div>
+      <h2>Package Managers</h2>
+      <span class="num">08</span>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">npm</span>
+          <span class="badge bg3">Default</span>
+        </div>
+        <div class="card-desc">Comes with Node. Slowest of the three. <code>package-lock.json</code> for lockfile. Works everywhere — safest default for open source.</div>
+        <div class="tags"><span class="tag">package-lock.json</span><span class="tag">node_modules</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">pnpm</span>
+          <span class="badge bg2">Monorepos</span>
+        </div>
+        <div class="card-desc">Faster, disk-efficient via content-addressable store. Strict dependency isolation. Excellent monorepo support. Growing default in enterprise and monorepo setups.</div>
+        <div class="tags"><span class="tag">pnpm-lock.yaml</span><span class="tag">workspaces</span><span class="tag">hoisting</span></div>
+      </div>
+      <div class="card">
+        <div class="card-top">
+          <span class="card-name">yarn</span>
+          <span class="badge bg4">Legacy / PnP</span>
+        </div>
+        <div class="card-desc">Classic (v1) is still widespread. Yarn Berry (v3+) introduced Plug'n'Play (no node_modules). Largely replaced by pnpm in new projects.</div>
+        <div class="tags"><span class="tag">yarn.lock</span><span class="tag">PnP</span><span class="tag">workspaces</span></div>
+      </div>
+    </div>
+    <div class="note bl1">
+      <strong>Monorepo tools on top:</strong> Turborepo, Nx, and Lerna orchestrate multi-package repos. They add task caching and parallelism on top of your package manager's workspaces. Your Audiophile project uses Turborepo — it handles build ordering, not bundling.
+    </div>
+  </section>
+
+</div>
+
+</body>
+</html>

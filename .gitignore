@@ -1,0 +1,13 @@
+# third-party inspiration material — never committed, never a hard dependency
+assets/reference/inspiration/*
+!assets/reference/inspiration/.gitkeep
+
+# personal PII — local source material only, never committed
+# (about-tal.md stays committed: it carries the identity-relevant facts, no contact details)
+docs/research/Tal_Bendet_CV.pdf
+
+node_modules/
+.env
+.env.*
+.DS_Store
+*.log

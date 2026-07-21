@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant C as Claude (any session)
+    participant Pre as PreToolUse hooks
+    participant FS as File system
+    participant Post as PostToolUse hook
+
+    Note over C: SessionStart:\ninject-project-state.ts prints\nINDEX.md + mission statuses\n(CLAUDE.md is auto-loaded anyway)
+
+    C->>Pre: Write/Edit request
+    Pre->>Pre: protect-reference.ts\npath under assets/reference/? -> BLOCK (exit 2)
+    Pre->>Pre: mission-gate.ts\npath in missions/0N-*/outputs/?\ncheck each depends-on:\nSTATUS closed AND\nreview-verdict.md APPROVED\nelse BLOCK (exit 2)
+    Pre->>Pre: protect-workshop.ts\npath under .claude/ or scripts/?\nallowed only while M5 in-progress\nsettings.json: never\nelse BLOCK (exit 2)
+    Pre-->>FS: allowed -> write happens
+    FS->>Post: decision-guard.ts\npath under docs/decisions/?
+    Post->>Post: INDEX.md edit? -> BLOCK\nADR? -> validate-adr.ts\ninvalid -> exit 2 (Claude must fix)
+    Post->>FS: valid -> reindex-decisions.ts\nregenerates INDEX.md
+    Post->>Post: docs-sync-check.ts\nmachinery surface touched?\nfingerprint stale -> exit 2\n(update docs, then ack)

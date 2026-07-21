@@ -1,0 +1,9 @@
+flowchart LR
+    P0["Phase 0\nBootstrap\n(DONE)"] --> M1["/m1\nIdentity"]
+    M1 --> M2["/m2\nDesign System"]
+    M2 --> M3["/m3\nArchitecture"]
+    M3 --> M4["/m4\nInformation Arch"]
+    M4 --> M5["/m5\nAI Workflow"]
+    M5 --> M6["/m6\nBlueprint Gate"]
+    M6 -->|GO| P2["Phase 2\nBuild\n(app/ created here)"]
+    M6 -->|NO-GO| FIX["fixes routed back\nto owning missions"] --> M6

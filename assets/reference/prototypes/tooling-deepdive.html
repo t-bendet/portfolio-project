@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JS/TS Tooling — Deep Dive</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f5f2eb;
+  --surface:#fffdf8;
+  --surface2:#f0ede4;
+  --border:#ddd8cc;
+  --text:#1a1814;
+  --muted:#7a7060;
+  --subtle:#b0a898;
+  --ink:#2c2820;
+
+  --c1:#c0392b;   /* bundlers — deep red */
+  --c2:#1a5276;   /* TS tools — navy */
+  --c3:#1e6641;   /* module systems — forest */
+  --c4:#7d4e00;   /* linting — amber */
+  --c5:#4a235a;   /* config — plum */
+  --c6:#0e4d6b;   /* runtimes — teal */
+
+  --l1:#fdecea;
+  --l2:#e8f0f8;
+  --l3:#e8f5ee;
+  --l4:#fef9e7;
+  --l5:#f5eef8;
+  --l6:#e8f4f8;
+}
+
+html { scroll-behavior: smooth; }
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Fraunces',serif;
+  line-height:1.7;
+  font-size:16px;
+}
+
+/* ── LAYOUT ── */
+.shell{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  min-height:100vh;
+}
+
+/* ── SIDEBAR ── */
+nav.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  padding:32px 0;
+}
+
+.sidebar-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:var(--subtle);
+  padding:0 24px 20px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+
+.nav-section{
+  margin-bottom:4px;
+}
+
+.nav-section-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--subtle);
+  padding:12px 24px 4px;
+}
+
+.nav-link{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:7px 24px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px;
+  color:var(--muted);
+  text-decoration:none;
+  transition:all 0.15s;
+  border-left:2px solid transparent;
+}
+
+.nav-link:hover{ color:var(--text); background:var(--surface2); }
+.nav-link.active{ color:var(--text); border-left-color:var(--text); background:var(--surface2); }
+
+.nav-dot{
+  width:6px;height:6px;border-radius:50%;flex-shrink:0;
+}
+
+/* ── MAIN ── */
+main{
+  max-width:820px;
+  padding:60px 56px 120px;
+}
+
+/* ── HEADER ── */
+.page-header{
+  margin-bottom:64px;
+  padding-bottom:40px;
+  border-bottom:1px solid var(--border);
+}
+
+.eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.2em;
+  text-transform:uppercase;
+  color:var(--subtle);
+  margin-bottom:16px;
+}
+
+h1{
+  font-size:clamp(2.4rem,5vw,3.8rem);
+  font-weight:700;
+  line-height:1.05;
+  letter-spacing:-0.02em;
+  color:var(--ink);
+  margin-bottom:20px;
+}
+
+.page-desc{
+  font-size:17px;
+  color:var(--muted);
+  font-weight:300;
+  font-style:italic;
+  max-width:560px;
+  line-height:1.7;
+}
+
+/* ── CHAPTER ── */
+.chapter{
+  margin-bottom:72px;
+  scroll-margin-top:32px;
+}
+
+.chapter-header{
+  display:flex;
+  align-items:baseline;
+  gap:16px;
+  margin-bottom:28px;
+  padding-bottom:16px;
+  border-bottom:2px solid var(--border);
+}
+
+.chapter-num{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--subtle);
+  letter-spacing:0.1em;
+}
+
+h2{
+  font-size:1.9rem;
+  font-weight:600;
+  letter-spacing:-0.02em;
+  color:var(--ink);
+}
+
+.chapter-tag{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  padding:3px 8px;
+  border-radius:3px;
+  margin-left:auto;
+  font-weight:600;
+}
+
+/* ── SECTION ── */
+.sec{
+  margin-bottom:40px;
+  scroll-margin-top:32px;
+}
+
+h3{
+  font-size:1.2rem;
+  font-weight:600;
+  letter-spacing:-0.01em;
+  color:var(--ink);
+  margin-bottom:10px;
+}
+
+h4{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin:20px 0 8px;
+}
+
+p{
+  font-size:15.5px;
+  color:var(--text);
+  margin-bottom:14px;
+  font-weight:300;
+  line-height:1.75;
+}
+
+p strong{ font-weight:600; color:var(--ink); }
+
+/* ── CODE ── */
+pre,code{font-family:'IBM Plex Mono',monospace;}
+
+code{
+  font-size:12.5px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  padding:1px 6px;
+  border-radius:3px;
+  color:var(--ink);
+}
+
+pre{
+  background:var(--ink);
+  color:#e8e4d8;
+  padding:20px 22px;
+  border-radius:8px;
+  font-size:12.5px;
+  line-height:1.8;
+  overflow-x:auto;
+  margin:16px 0 20px;
+  border:1px solid #3a3530;
+}
+
+pre code{
+  background:none;
+  border:none;
+  padding:0;
+  color:inherit;
+  font-size:inherit;
+}
+
+.kw{color:#d4a857;}
+.str{color:#7ec87e;}
+.cm{color:#6b6458;}
+.ty{color:#87b3d4;}
+.prop{color:#c99fd0;}
+.num{color:#e08060;}
+.bool{color:#d4a857;}
+
+/* ── CALLOUT BOXES ── */
+.box{
+  border-radius:8px;
+  padding:16px 20px;
+  margin:20px 0;
+  font-size:14.5px;
+  line-height:1.7;
+  border:1px solid;
+}
+
+.box-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+.box p{ font-size:14px; margin-bottom:0; }
+.box p + p { margin-top:8px; }
+
+.box.info{ background:var(--l2); border-color:#b8cfe8; color:var(--c2); }
+.box.info .box-title{ color:var(--c2); }
+.box.info p{ color:#2a4060; }
+
+.box.warn{ background:var(--l4); border-color:#e8d89a; color:var(--c4); }
+.box.warn .box-title{ color:var(--c4); }
+.box.warn p{ color:#4a3800; }
+
+.box.tip{ background:var(--l3); border-color:#a8d8b8; color:var(--c3); }
+.box.tip .box-title{ color:var(--c3); }
+.box.tip p{ color:#1a4428; }
+
+.box.danger{ background:var(--l1); border-color:#e8b8b4; color:var(--c1); }
+.box.danger .box-title{ color:var(--c1); }
+.box.danger p{ color:#5a1a14; }
+
+/* ── COMPARISON TABLE ── */
+.cmp-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+  margin:16px 0 20px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+}
+
+.cmp-table th{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  background:var(--surface2);
+  padding:10px 14px;
+  text-align:left;
+  border-bottom:1px solid var(--border);
+  color:var(--muted);
+  font-weight:600;
+}
+
+.cmp-table td{
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  color:var(--text);
+  font-weight:300;
+  vertical-align:top;
+  line-height:1.5;
+}
+
+.cmp-table tr:last-child td{ border-bottom:none; }
+.cmp-table tr:hover td{ background:var(--surface2); }
+
+.cmp-table td:first-child{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px;
+  font-weight:600;
+  color:var(--ink);
+  white-space:nowrap;
+}
+
+.yes{ color:#1e6641; font-weight:600; }
+.no{ color:#c0392b; }
+.partial{ color:#7d4e00; }
+
+/* ── PROPERTY LIST ── */
+.prop-list{
+  border:1px solid var(--border);
+  border-radius:8px;
+  overflow:hidden;
+  margin:14px 0 20px;
+}
+
+.prop-row{
+  display:grid;
+  grid-template-columns:200px 1fr;
+  border-bottom:1px solid var(--border);
+}
+
+.prop-row:last-child{ border-bottom:none; }
+
+.prop-key{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px;
+  font-weight:600;
+  color:var(--ink);
+  padding:10px 14px;
+  background:var(--surface2);
+  border-right:1px solid var(--border);
+}
+
+.prop-val{
+  padding:10px 14px;
+  font-size:13.5px;
+  color:var(--muted);
+  font-weight:300;
+  line-height:1.5;
+}
+
+.prop-val code{ font-size:11px; }
+
+/* ── FLOW DIAGRAM ── */
+.flow{
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:16px 20px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin:16px 0 20px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px;
+}
+
+.flow-step{
+  padding:5px 12px;
+  border-radius:5px;
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--ink);
+  font-weight:600;
+  white-space:nowrap;
+}
+
+.flow-arrow{ color:var(--subtle); font-size:14px; }
+.flow-label{ color:var(--subtle); font-style:italic; font-size:10.5px; }
+
+/* ── INLINE TAG ── */
+.tag{
+  display:inline-block;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9.5px;
+  font-weight:600;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  padding:2px 7px;
+  border-radius:3px;
+  vertical-align:middle;
+  margin-left:6px;
+}
+
+/* ── DIVIDER ── */
+hr{
+  border:none;
+  border-top:1px solid var(--border);
+  margin:32px 0;
+}
+
+/* ── TOOL CARD ── */
+.tool-card{
+  border:1px solid var(--border);
+  border-radius:8px;
+  margin-bottom:20px;
+  overflow:hidden;
+}
+
+.tool-card-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+}
+
+.tool-name{
+  font-size:1rem;
+  font-weight:700;
+  color:var(--ink);
+}
+
+.tool-card-body{
+  padding:16px 18px;
+}
+
+.tool-card-body p{ font-size:14px; margin-bottom:10px; }
+.tool-card-body p:last-child{ margin-bottom:0; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{ width:6px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:var(--border); border-radius:3px; }
+
+@media(max-width:900px){
+  .shell{ grid-template-columns:1fr; }
+  nav.sidebar{ display:none; }
+  main{ padding:40px 24px 80px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ════ SIDEBAR ════ -->
+<nav class="sidebar">
+  <div class="sidebar-title">JS/TS Tooling<br/>Deep Dive</div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Priority</div>
+    <a class="nav-link" href="#ch-build"><span class="nav-dot" style="background:#1a5276"></span>Build Pipeline</a>
+    <a class="nav-link" href="#ch-tstools"><span class="nav-dot" style="background:#1a5276"></span>TS Build Tools</a>
+    <a class="nav-link" href="#ch-config"><span class="nav-dot" style="background:#4a235a"></span>Config Files</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Core</div>
+    <a class="nav-link" href="#ch-modules"><span class="nav-dot" style="background:#1e6641"></span>Module Systems</a>
+    <a class="nav-link" href="#ch-lint"><span class="nav-dot" style="background:#7d4e00"></span>Linting & Formatting</a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Ecosystem</div>
+    <a class="nav-link" href="#ch-runtimes"><span class="nav-dot" style="background:#0e4d6b"></span>Runtimes</a>
+    <a class="nav-link" href="#ch-pkgmgr"><span class="nav-dot" style="background:#c0392b"></span>Package Managers</a>
+    <a class="nav-link" href="#ch-monorepo"><span class="nav-dot" style="background:#555"></span>Monorepo Tools</a>
+  </div>
+</nav>
+
+<!-- ════ MAIN ════ -->
+<main>
+
+<div class="page-header">
+  <div class="eyebrow">Deep Dive Reference</div>
+  <h1>JS / TS Tooling<br/>Landscape</h1>
+  <p class="page-desc">Everything that happens between writing your code and running it — explained with depth, not just definitions.</p>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 1 — BUILD PIPELINE & BUNDLERS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-build">
+  <div class="chapter-header">
+    <span class="chapter-num">01</span>
+    <h2>Build Pipeline & Bundlers</h2>
+    <span class="chapter-tag" style="background:var(--l2);color:var(--c2)">Priority</span>
+  </div>
+
+  <div class="sec">
+    <h3>What a build pipeline actually does</h3>
+    <p>Before a single bundler is involved, it helps to know what problem they're solving. Browsers can't run TypeScript. They can't resolve <code>import x from './utils'</code> without a file extension. They don't support path aliases like <code>@/components</code>. And shipping 400 separate files over HTTP/1.1 is slow.</p>
+    <p>A build pipeline transforms, resolves, and packages your source code into something browsers or Node can actually execute.</p>
+
+    <div class="flow">
+      <span class="flow-step">Source (.ts/.tsx)</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Parse & Resolve</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Transform</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Tree-shake</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Bundle</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">Minify</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">dist/</span>
+    </div>
+
+    <p>Not every tool does every step. Some only transform (Babel, SWC). Some only bundle (Rollup in basic mode). Modern tools like Vite split dev and prod paths entirely.</p>
+  </div>
+
+  <div class="sec">
+    <h3>Webpack</h3>
+    <p>The tool that defined the modern JS build. Everything is a module — JS, CSS, images, fonts. Webpack builds a dependency graph from your entry point and bundles everything according to that graph.</p>
+
+    <p><strong>Core concepts you need to know:</strong></p>
+
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">Entry</div>
+        <div class="prop-val">Where the graph starts. Usually <code>src/index.ts</code>. Can have multiple entries for code splitting.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">Output</div>
+        <div class="prop-val">Where bundles go. Filename templating: <code>[name].[contenthash].js</code> enables long-term caching.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">Loaders</div>
+        <div class="prop-val">Transform files before they enter the graph. <code>ts-loader</code> or <code>babel-loader</code> for TS/JS. <code>css-loader</code> + <code>style-loader</code> for CSS. Runs right-to-left in the rules array.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">Plugins</div>
+        <div class="prop-val">Operate on the whole bundle. <code>HtmlWebpackPlugin</code> injects script tags. <code>MiniCssExtractPlugin</code> extracts CSS to separate files.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">Mode</div>
+        <div class="prop-val"><code>"development"</code> keeps source maps, skips minification. <code>"production"</code> enables tree-shaking, minification, optimizations.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">Code splitting</div>
+        <div class="prop-val">Dynamic <code>import()</code> creates async chunks. <code>SplitChunksPlugin</code> auto-extracts shared vendor code.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">Source maps</div>
+        <div class="prop-val"><code>devtool: 'source-map'</code> for prod, <code>'eval-source-map'</code> for fast dev rebuilds.</div>
+      </div>
+    </div>
+
+    <pre><code><span class="cm">// webpack.config.js — annotated skeleton</span>
+<span class="kw">const</span> path = <span class="kw">require</span>(<span class="str">'path'</span>)
+<span class="kw">const</span> HtmlWebpackPlugin = <span class="kw">require</span>(<span class="str">'html-webpack-plugin'</span>)
+
+module.exports = {
+  mode: <span class="str">'production'</span>,
+  entry: <span class="str">'./src/index.tsx'</span>,
+  output: {
+    path: path.resolve(__dirname, <span class="str">'dist'</span>),
+    filename: <span class="str">'[name].[contenthash].js'</span>,  <span class="cm">// cache busting</span>
+    clean: <span class="bool">true</span>,
+  },
+  resolve: {
+    extensions: [<span class="str">'.tsx'</span>, <span class="str">'.ts'</span>, <span class="str">'.js'</span>],
+    alias: { <span class="str">'@'</span>: path.resolve(__dirname, <span class="str">'src'</span>) },
+  },
+  module: {
+    rules: [
+      {
+        test: <span class="num">/\.tsx?$/</span>,
+        use: <span class="str">'ts-loader'</span>,  <span class="cm">// or babel-loader with @babel/preset-typescript</span>
+        exclude: <span class="num">/node_modules/</span>,
+      },
+      {
+        test: <span class="num">/\.css$/</span>,
+        use: [<span class="str">'style-loader'</span>, <span class="str">'css-loader'</span>],  <span class="cm">// right-to-left</span>
+      },
+    ],
+  },
+  plugins: [
+    <span class="kw">new</span> HtmlWebpackPlugin({ template: <span class="str">'./public/index.html'</span> }),
+  ],
+  optimization: {
+    splitChunks: { chunks: <span class="str">'all'</span> },  <span class="cm">// extract vendor chunk</span>
+  },
+}</code></pre>
+
+    <div class="box warn">
+      <div class="box-title">⚠ Webpack Pain Points</div>
+      <p>Config is verbose and easy to get wrong. Loader order (right-to-left) trips everyone up. Cold start is slow on large projects. Webpack 5 improved things with persistent caching (<code>cache: { type: 'filesystem' }</code>) but it's still slower than Vite in dev.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>Vite</h3>
+    <p>Vite rethinks the dev/prod split entirely. The key insight: in development, you don't need to bundle at all. Modern browsers support native ES modules — so Vite serves your source files directly and lets the browser do the import resolution.</p>
+
+    <p><strong>Dev mode:</strong> No bundle. Files are served as native ESM. Transforms happen on-demand per file (via esbuild — microseconds per file). HMR replaces only the changed module, not the whole bundle. Result: instant server start regardless of project size.</p>
+    <p><strong>Production:</strong> Switches to Rollup for an optimized, tree-shaken, code-split bundle. Why not esbuild for prod? Rollup has more mature code splitting and plugin ecosystem.</p>
+
+    <pre><code><span class="cm">// vite.config.ts</span>
+<span class="kw">import</span> { defineConfig } <span class="kw">from</span> <span class="str">'vite'</span>
+<span class="kw">import</span> react <span class="kw">from</span> <span class="str">'@vitejs/plugin-react'</span>
+
+<span class="kw">export default</span> defineConfig({
+  plugins: [react()],
+
+  resolve: {
+    alias: { <span class="str">'@'</span>: <span class="str">'/src'</span> },  <span class="cm">// path aliases</span>
+  },
+
+  server: {
+    port: <span class="num">3000</span>,
+    proxy: {
+      <span class="str">'/api'</span>: <span class="str">'http://localhost:4000'</span>,  <span class="cm">// proxy to backend</span>
+    },
+  },
+
+  build: {
+    outDir: <span class="str">'dist'</span>,
+    sourcemap: <span class="bool">true</span>,
+    rollupOptions: {
+      output: {
+        manualChunks: {           <span class="cm">// explicit vendor splitting</span>
+          vendor: [<span class="str">'react'</span>, <span class="str">'react-dom'</span>],
+        },
+      },
+    },
+  },
+
+  <span class="cm">// env vars: VITE_ prefix exposes to client</span>
+  <span class="cm">// import.meta.env.VITE_API_URL</span>
+})</code></pre>
+
+    <div class="box tip">
+      <div class="box-title">✓ Key Vite Concepts</div>
+      <p><strong>Pre-bundling:</strong> On first start, Vite uses esbuild to pre-bundle <code>node_modules</code> into single ESM files. This is why it's fast even with many deps — they become single requests.</p>
+      <p><strong><code>import.meta.env</code></strong> replaces <code>process.env</code>. Only vars prefixed with <code>VITE_</code> are exposed to the browser. Server-only vars stay server-side.</p>
+      <p><strong>Plugin compatibility:</strong> Vite plugins follow the Rollup plugin API. Most Rollup plugins work in Vite as-is.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>Rollup</h3>
+    <p>Rollup's strength is <strong>library output</strong>. It produces very clean, minimal bundles — no Webpack boilerplate runtime, just your code. It pioneered tree shaking (static analysis of ESM <code>import</code>/<code>export</code> to eliminate dead code).</p>
+
+    <pre><code><span class="cm">// rollup.config.js — library build</span>
+<span class="kw">import</span> typescript <span class="kw">from</span> <span class="str">'@rollup/plugin-typescript'</span>
+<span class="kw">import</span> resolve <span class="kw">from</span> <span class="str">'@rollup/plugin-node-resolve'</span>
+
+<span class="kw">export default</span> {
+  input: <span class="str">'src/index.ts'</span>,
+  output: [
+    { file: <span class="str">'dist/index.cjs'</span>, format: <span class="str">'cjs'</span> },  <span class="cm">// for require()</span>
+    { file: <span class="str">'dist/index.mjs'</span>, format: <span class="str">'esm'</span> },  <span class="cm">// for import</span>
+    { file: <span class="str">'dist/index.umd.js'</span>, format: <span class="str">'umd'</span>, name: <span class="str">'MyLib'</span> },
+  ],
+  external: [<span class="str">'react'</span>],  <span class="cm">// don't bundle peer deps</span>
+  plugins: [resolve(), typescript()],
+}</code></pre>
+
+    <div class="box info">
+      <div class="box-title">ℹ Dual Package Publishing</div>
+      <p>When building a library with both CJS and ESM output, your <code>package.json</code> needs the <code>"exports"</code> field to tell consumers which to use. Without it, older tools fall back to <code>"main"</code> (CJS) and newer tools use <code>"module"</code> (ESM).</p>
+    </div>
+
+    <pre><code><span class="cm">// package.json — dual package setup</span>
+{
+  <span class="prop">"main"</span>: <span class="str">"./dist/index.cjs"</span>,    <span class="cm">// CJS fallback</span>
+  <span class="prop">"module"</span>: <span class="str">"./dist/index.mjs"</span>,  <span class="cm">// ESM for bundlers</span>
+  <span class="prop">"exports"</span>: {
+    <span class="prop">"."</span>: {
+      <span class="prop">"import"</span>: <span class="str">"./dist/index.mjs"</span>,   <span class="cm">// ESM consumers</span>
+      <span class="prop">"require"</span>: <span class="str">"./dist/index.cjs"</span>  <span class="cm">// CJS consumers</span>
+    }
+  },
+  <span class="prop">"types"</span>: <span class="str">"./dist/index.d.ts"</span>    <span class="cm">// TypeScript types</span>
+}</code></pre>
+  </div>
+
+  <div class="sec">
+    <h3>esbuild</h3>
+    <p>esbuild is written in Go and parallelizes work across CPU cores. It's 10–100× faster than JS-based tools. It does <strong>not type-check</strong> — it strips TypeScript syntax and moves on. This is intentional. Type checking is a separate concern.</p>
+    <p>You rarely configure esbuild directly — it's the engine inside Vite (dev transforms), tsx, tsup, and other tools. But knowing its model helps you understand why those tools are fast.</p>
+
+    <pre><code><span class="cm">// esbuild direct usage (rare, but useful for scripts)</span>
+<span class="kw">import</span> * <span class="kw">as</span> esbuild <span class="kw">from</span> <span class="str">'esbuild'</span>
+
+<span class="kw">await</span> esbuild.build({
+  entryPoints: [<span class="str">'src/index.ts'</span>],
+  bundle: <span class="bool">true</span>,
+  platform: <span class="str">'node'</span>,          <span class="cm">// or 'browser'</span>
+  target: <span class="str">'node18'</span>,          <span class="cm">// transpile target</span>
+  format: <span class="str">'esm'</span>,
+  outfile: <span class="str">'dist/index.js'</span>,
+  sourcemap: <span class="bool">true</span>,
+})</code></pre>
+
+    <div class="box warn">
+      <div class="box-title">⚠ What esbuild Cannot Do</div>
+      <p>No TypeScript type checking. No decorator metadata emission (required by some NestJS features — needs Babel or tsc for this). Limited code splitting compared to Rollup. Not a full Webpack replacement for complex apps.</p>
+    </div>
+  </div>
+
+  <hr/>
+  <h4>Bundler Comparison</h4>
+  <table class="cmp-table">
+    <thead>
+      <tr><th>Tool</th><th>Type check</th><th>Speed</th><th>Best for</th><th>Used by</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Webpack</td><td class="partial">via loader</td><td class="partial">Medium</td><td>Complex apps, legacy</td><td>CRA, older Next.js</td></tr>
+      <tr><td>Vite</td><td class="no">No</td><td class="yes">Fast dev</td><td>Modern React/Vue apps</td><td>Most new projects</td></tr>
+      <tr><td>Rollup</td><td class="partial">via plugin</td><td class="partial">Medium</td><td>Libraries</td><td>Vite prod, tsup</td></tr>
+      <tr><td>esbuild</td><td class="no">No</td><td class="yes">Fastest</td><td>Transforms, scripts</td><td>Vite dev, tsx, tsup</td></tr>
+      <tr><td>Parcel</td><td class="partial">via tsc</td><td class="partial">Medium</td><td>Zero-config prototypes</td><td>–</td></tr>
+      <tr><td>Turbopack</td><td class="no">No</td><td class="yes">Very fast</td><td>Next.js apps</td><td>Next.js 13+</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 2 — TYPESCRIPT BUILD TOOLS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-tstools">
+  <div class="chapter-header">
+    <span class="chapter-num">02</span>
+    <h2>TypeScript Build Tools</h2>
+    <span class="chapter-tag" style="background:var(--l2);color:var(--c2)">Priority</span>
+  </div>
+
+  <div class="sec">
+    <div class="box danger">
+      <div class="box-title">⚡ The Core Distinction</div>
+      <p><strong>Type checking</strong> = verifying your types are correct. Slow. Only <code>tsc</code> does this.</p>
+      <p><strong>Transpiling</strong> = stripping TypeScript syntax and outputting JS. Fast. esbuild, SWC, Babel, tsx all do this — but they don't check your types. They'll happily compile broken TypeScript.</p>
+      <p>Production pipelines often do both: fast transpiler for the build, <code>tsc --noEmit</code> in CI for type safety.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>tsc — The TypeScript Compiler</h3>
+    <p>The official compiler from Microsoft. It does two things: type-checks your code and emits JavaScript output. On large codebases it's slow because it does both together.</p>
+
+    <p><strong>Key CLI flags:</strong></p>
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">--noEmit</div>
+        <div class="prop-val">Type-check only, don't output files. Used in CI alongside a faster bundler.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">--watch</div>
+        <div class="prop-val">Recompile on file changes. Useful for libraries or Node servers without a bundler.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">--incremental</div>
+        <div class="prop-val">Saves compile state to <code>.tsbuildinfo</code>. Only recompiles changed files. Major speedup on large projects.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">--build (-b)</div>
+        <div class="prop-val">Project references mode. Builds multiple tsconfig files in dependency order. Used in monorepos.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">--project (-p)</div>
+        <div class="prop-val">Points to a specific tsconfig file, e.g. <code>tsc -p tsconfig.build.json</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>ts-node</h3>
+    <p>Runs TypeScript files directly in Node.js without a build step. Registers a require hook that compiles TypeScript on-the-fly using tsc. Startup is slow (compiles on demand). Good for scripts, migrations, one-off tools.</p>
+
+    <pre><code><span class="cm"># Run a TS file directly</span>
+npx ts-node src/seed.ts
+
+<span class="cm"># Skip type checking for speed</span>
+npx ts-node --transpile-only src/seed.ts
+
+<span class="cm"># ESM mode (newer projects)</span>
+npx ts-node --esm src/server.ts</code></pre>
+
+    <div class="box info">
+      <div class="box-title">ℹ ts-node config in tsconfig</div>
+      <p>You can configure ts-node inline in <code>tsconfig.json</code> under a <code>"ts-node"</code> key — useful for setting <code>transpileOnly: true</code> globally for your dev server.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>tsx</h3>
+    <p>Modern replacement for ts-node. Uses esbuild under the hood — startup is near-instant. Type stripping only, no type checking. Supports both CJS and ESM. The recommended default for running TS scripts today.</p>
+
+    <pre><code><span class="cm"># Drop-in ts-node replacement</span>
+npx tsx src/server.ts
+npx tsx watch src/server.ts  <span class="cm"># watch mode</span>
+
+<span class="cm"># As a Node loader (Node 18.19+)</span>
+node --import tsx/esm src/server.ts</code></pre>
+  </div>
+
+  <div class="sec">
+    <h3>tsup</h3>
+    <p>The go-to for building TypeScript libraries. Wraps esbuild with sensible defaults. Outputs CJS, ESM, and declaration files (<code>.d.ts</code>) in one command. Minimal config needed.</p>
+
+    <pre><code><span class="cm">// tsup.config.ts</span>
+<span class="kw">import</span> { defineConfig } <span class="kw">from</span> <span class="str">'tsup'</span>
+
+<span class="kw">export default</span> defineConfig({
+  entry: [<span class="str">'src/index.ts'</span>],
+  format: [<span class="str">'cjs'</span>, <span class="str">'esm'</span>],   <span class="cm">// dual output</span>
+  dts: <span class="bool">true</span>,               <span class="cm">// generate .d.ts files</span>
+  sourcemap: <span class="bool">true</span>,
+  clean: <span class="bool">true</span>,             <span class="cm">// clear dist/ before build</span>
+  splitting: <span class="bool">false</span>,        <span class="cm">// set true for code splitting in ESM</span>
+  treeshake: <span class="bool">true</span>,
+})</code></pre>
+
+    <div class="box tip">
+      <div class="box-title">✓ tsup vs tsc for libraries</div>
+      <p>Use tsup for the build output (fast, dual format). Run <code>tsc --noEmit</code> separately for type safety. Many library setups do both in CI: <code>"build": "tsup && tsc --noEmit"</code>.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>SWC</h3>
+    <p>Rust-based compiler. Replaces Babel in Next.js by default since Next 12. Strips types and transforms syntax extremely fast. Config via <code>.swcrc</code>. Like esbuild — no type checking, just transform.</p>
+
+    <pre><code><span class="cm">// .swcrc</span>
+{
+  <span class="prop">"jsc"</span>: {
+    <span class="prop">"parser"</span>: {
+      <span class="prop">"syntax"</span>: <span class="str">"typescript"</span>,
+      <span class="prop">"tsx"</span>: <span class="bool">true</span>,
+      <span class="prop">"decorators"</span>: <span class="bool">true</span>  <span class="cm">// needed for NestJS</span>
+    },
+    <span class="prop">"target"</span>: <span class="str">"es2020"</span>,
+    <span class="prop">"transform"</span>: {
+      <span class="prop">"legacyDecorator"</span>: <span class="bool">true</span>,
+      <span class="prop">"decoratorMetadata"</span>: <span class="bool">true</span>  <span class="cm">// required for NestJS DI</span>
+    }
+  },
+  <span class="prop">"module"</span>: { <span class="prop">"type"</span>: <span class="str">"commonjs"</span> }
+}</code></pre>
+
+    <div class="box warn">
+      <div class="box-title">⚠ NestJS + SWC</div>
+      <p>NestJS relies on decorator metadata for its dependency injection system. esbuild can't emit this metadata. SWC can (<code>decoratorMetadata: true</code>). This is why NestJS docs recommend SWC over esbuild for fast development builds.</p>
+    </div>
+  </div>
+
+  <hr/>
+  <h4>TS Tool Comparison</h4>
+  <table class="cmp-table">
+    <thead>
+      <tr><th>Tool</th><th>Type checks</th><th>Emits JS</th><th>Speed</th><th>Best for</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>tsc</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">Slow</td><td>CI type checks, d.ts gen</td></tr>
+      <tr><td>ts-node</td><td class="yes">Yes</td><td class="no">Runtime only</td><td class="no">Slow</td><td>Legacy scripts</td></tr>
+      <tr><td>tsx</td><td class="no">No</td><td class="no">Runtime only</td><td class="yes">Fast</td><td>Scripts, dev server</td></tr>
+      <tr><td>tsup</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Fast</td><td>Library builds</td></tr>
+      <tr><td>SWC</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Very fast</td><td>App builds (Next.js)</td></tr>
+      <tr><td>esbuild</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Fastest</td><td>Transforms, tooling engine</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 3 — CONFIG FILES (DEEP DIVE)
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-config">
+  <div class="chapter-header">
+    <span class="chapter-num">03</span>
+    <h2>Config Files</h2>
+    <span class="chapter-tag" style="background:var(--l5);color:var(--c5)">Priority</span>
+  </div>
+
+  <!-- tsconfig -->
+  <div class="sec">
+    <h3>tsconfig.json — Deep Dive</h3>
+    <p>The most important config file in any TypeScript project. Controls the compiler, shapes what errors you get, determines output format. Many developers only set <code>strict: true</code> and move on — there's a lot more here.</p>
+
+    <h4>Compiler Options — Core</h4>
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">target</div>
+        <div class="prop-val">JS version to emit. <code>"ES2020"</code>, <code>"ES2022"</code>, <code>"ESNext"</code>. Affects which syntax is downleveled. <strong>Does not affect what features are available</strong> — that's <code>lib</code>.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">module</div>
+        <div class="prop-val">Module format for emitted JS. <code>"CommonJS"</code> for Node CJS. <code>"ESNext"</code> or <code>"ES2022"</code> for ESM. <code>"NodeNext"</code> for Node with proper ESM interop (requires extensions in imports).</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">moduleResolution</div>
+        <div class="prop-val">How imports are resolved. <code>"node"</code> (classic). <code>"bundler"</code> (Vite/esbuild — allows extensionless imports). <code>"NodeNext"</code> (strict ESM, requires <code>.js</code> extensions in imports).</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">lib</div>
+        <div class="prop-val">Built-in type declarations to include. <code>["DOM", "ES2022"]</code> for browser apps. <code>["ES2022"]</code> for Node-only. Without <code>DOM</code>, you won't have types for <code>window</code>, <code>fetch</code>, etc.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">outDir</div>
+        <div class="prop-val">Where compiled JS goes. Often <code>"dist"</code>. Ignored by Vite (it uses Rollup for output) but used by tsc directly.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">rootDir</div>
+        <div class="prop-val">Root of source files. tsc mirrors the directory structure relative to this in <code>outDir</code>.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">declaration</div>
+        <div class="prop-val"><code>true</code> generates <code>.d.ts</code> files. Required when publishing a library so consumers get types.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">declarationMap</div>
+        <div class="prop-val">Generates <code>.d.ts.map</code> files. Lets IDE "Go to Definition" jump to original TS source instead of compiled <code>.d.ts</code>. Very useful in monorepos.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">sourceMap</div>
+        <div class="prop-val">Generate source maps. Lets debuggers map JS back to TS. Always enable for server-side code.</div>
+      </div>
+    </div>
+
+    <h4>Compiler Options — Strictness</h4>
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">strict</div>
+        <div class="prop-val">Master switch enabling: <code>noImplicitAny</code>, <code>strictNullChecks</code>, <code>strictFunctionTypes</code>, <code>strictBindCallApply</code>, <code>strictPropertyInitialization</code>, <code>noImplicitThis</code>. Always use this.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">noUncheckedIndexedAccess</div>
+        <div class="prop-val">Array index access returns <code>T | undefined</code> instead of just <code>T</code>. More accurate but more verbose. Not included in <code>strict</code>.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">exactOptionalPropertyTypes</div>
+        <div class="prop-val">Prevents assigning <code>undefined</code> to optional properties explicitly. Stricter than default.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">noImplicitReturns</div>
+        <div class="prop-val">Error if a function doesn't return in all code paths.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">noUnusedLocals / noUnusedParameters</div>
+        <div class="prop-val">Errors on unused variables/parameters. Keeps code clean. Can be annoying during active development — some teams leave these off locally.</div>
+      </div>
+    </div>
+
+    <h4>Compiler Options — Interop & Paths</h4>
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">esModuleInterop</div>
+        <div class="prop-val">Enables <code>import React from 'react'</code> style (default imports from CJS modules). Nearly always <code>true</code>. Works with <code>allowSyntheticDefaultImports</code>.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">paths</div>
+        <div class="prop-val">Path aliases for TypeScript: <code>{ "@/*": ["./src/*"] }</code>. <strong>Important:</strong> TypeScript resolves these for type checking only. Your bundler (Vite, Webpack) also needs to know about them separately.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">baseUrl</div>
+        <div class="prop-val">Required when using <code>paths</code>. Sets the base for relative path resolution.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">resolveJsonModule</div>
+        <div class="prop-val">Allows importing <code>.json</code> files with types inferred from their shape.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">skipLibCheck</div>
+        <div class="prop-val">Skip type checking of <code>.d.ts</code> files in <code>node_modules</code>. Almost always <code>true</code> — you don't want to fail your build because of a badly typed third-party lib.</div>
+      </div>
+    </div>
+
+    <h4>includes / excludes / references</h4>
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">include</div>
+        <div class="prop-val">Glob patterns for files to compile. Default is all <code>.ts</code>/<code>.tsx</code> in the project. Usually <code>["src/**/*"]</code>.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">exclude</div>
+        <div class="prop-val">Files to skip. <code>node_modules</code> is excluded by default. Add <code>dist</code>, <code>**/*.spec.ts</code> if needed.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">extends</div>
+        <div class="prop-val">Compose configs. Common pattern: a base <code>tsconfig.base.json</code> with shared settings, extended by <code>tsconfig.json</code> (app) and <code>tsconfig.build.json</code> (emit-only, excludes tests).</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">references</div>
+        <div class="prop-val">Project references for monorepos. Let <code>tsc --build</code> compile packages in dependency order with incremental caching.</div>
+      </div>
+    </div>
+
+    <h4>Real-World tsconfig Patterns</h4>
+    <pre><code><span class="cm">// tsconfig.json — Vite + React app</span>
+{
+  <span class="prop">"compilerOptions"</span>: {
+    <span class="prop">"target"</span>: <span class="str">"ES2020"</span>,
+    <span class="prop">"lib"</span>: [<span class="str">"ES2020"</span>, <span class="str">"DOM"</span>, <span class="str">"DOM.Iterable"</span>],
+    <span class="prop">"module"</span>: <span class="str">"ESNext"</span>,
+    <span class="prop">"moduleResolution"</span>: <span class="str">"bundler"</span>,  <span class="cm">// Vite-specific</span>
+    <span class="prop">"jsx"</span>: <span class="str">"react-jsx"</span>,             <span class="cm">// No React import needed</span>
+    <span class="prop">"strict"</span>: <span class="bool">true</span>,
+    <span class="prop">"noUnusedLocals"</span>: <span class="bool">true</span>,
+    <span class="prop">"noUnusedParameters"</span>: <span class="bool">true</span>,
+    <span class="prop">"noFallthroughCasesInSwitch"</span>: <span class="bool">true</span>,
+    <span class="prop">"allowImportingTsExtensions"</span>: <span class="bool">true</span>,
+    <span class="prop">"resolveJsonModule"</span>: <span class="bool">true</span>,
+    <span class="prop">"isolatedModules"</span>: <span class="bool">true</span>,  <span class="cm">// required for esbuild/Vite</span>
+    <span class="prop">"noEmit"</span>: <span class="bool">true</span>,           <span class="cm">// Vite handles emit, not tsc</span>
+    <span class="prop">"esModuleInterop"</span>: <span class="bool">true</span>,
+    <span class="prop">"skipLibCheck"</span>: <span class="bool">true</span>,
+    <span class="prop">"paths"</span>: { <span class="prop">"@/*"</span>: [<span class="str">"./src/*"</span>] }
+  },
+  <span class="prop">"include"</span>: [<span class="str">"src"</span>],
+  <span class="prop">"exclude"</span>: [<span class="str">"node_modules"</span>, <span class="str">"dist"</span>]
+}</code></pre>
+
+    <pre><code><span class="cm">// tsconfig.json — NestJS (Node.js backend)</span>
+{
+  <span class="prop">"compilerOptions"</span>: {
+    <span class="prop">"module"</span>: <span class="str">"CommonJS"</span>,
+    <span class="prop">"target"</span>: <span class="str">"ES2021"</span>,
+    <span class="prop">"lib"</span>: [<span class="str">"ES2021"</span>],
+    <span class="prop">"moduleResolution"</span>: <span class="str">"node"</span>,
+    <span class="prop">"outDir"</span>: <span class="str">"./dist"</span>,
+    <span class="prop">"sourceMap"</span>: <span class="bool">true</span>,
+    <span class="prop">"declaration"</span>: <span class="bool">true</span>,
+    <span class="prop">"strict"</span>: <span class="bool">true</span>,
+    <span class="prop">"emitDecoratorMetadata"</span>: <span class="bool">true</span>,  <span class="cm">// REQUIRED for NestJS DI</span>
+    <span class="prop">"experimentalDecorators"</span>: <span class="bool">true</span>, <span class="cm">// REQUIRED for NestJS</span>
+    <span class="prop">"esModuleInterop"</span>: <span class="bool">true</span>,
+    <span class="prop">"skipLibCheck"</span>: <span class="bool">true</span>
+  }
+}</code></pre>
+
+    <div class="box warn">
+      <div class="box-title">⚠ isolatedModules: true</div>
+      <p>Required when using esbuild or SWC (including Vite). These tools compile each file independently — they can't see the full type graph. <code>isolatedModules: true</code> makes tsc warn you when you use patterns that require cross-file analysis (e.g. <code>const enum</code>, re-exporting types without the <code>type</code> keyword).</p>
+    </div>
+  </div>
+
+  <!-- ESLint -->
+  <div class="sec">
+    <h3>ESLint Config</h3>
+    <p>ESLint v9 changed the config system significantly. You'll encounter both formats in the wild.</p>
+
+    <h4>Old Format — .eslintrc.* (v8 and below)</h4>
+    <pre><code><span class="cm">// .eslintrc.json</span>
+{
+  <span class="prop">"parser"</span>: <span class="str">"@typescript-eslint/parser"</span>,
+  <span class="prop">"parserOptions"</span>: {
+    <span class="prop">"ecmaVersion"</span>: <span class="str">"latest"</span>,
+    <span class="prop">"sourceType"</span>: <span class="str">"module"</span>,
+    <span class="prop">"project"</span>: <span class="str">"./tsconfig.json"</span>  <span class="cm">// enables type-aware rules</span>
+  },
+  <span class="prop">"plugins"</span>: [<span class="str">"@typescript-eslint"</span>, <span class="str">"react-hooks"</span>],
+  <span class="prop">"extends"</span>: [
+    <span class="str">"eslint:recommended"</span>,
+    <span class="str">"plugin:@typescript-eslint/recommended"</span>,
+    <span class="str">"plugin:react-hooks/recommended"</span>
+  ],
+  <span class="prop">"rules"</span>: {
+    <span class="prop">"@typescript-eslint/no-explicit-any"</span>: <span class="str">"warn"</span>,
+    <span class="prop">"@typescript-eslint/consistent-type-imports"</span>: <span class="str">"error"</span>
+  },
+  <span class="prop">"ignorePatterns"</span>: [<span class="str">"dist"</span>, <span class="str">"node_modules"</span>]
+}</code></pre>
+
+    <h4>New Format — eslint.config.js (v9 flat config)</h4>
+    <p>The new format is a JS array of config objects. No more cascading directory configs. More explicit, more predictable.</p>
+    <pre><code><span class="cm">// eslint.config.js (ESLint v9)</span>
+<span class="kw">import</span> js <span class="kw">from</span> <span class="str">'@eslint/js'</span>
+<span class="kw">import</span> tseslint <span class="kw">from</span> <span class="str">'typescript-eslint'</span>
+<span class="kw">import</span> reactHooks <span class="kw">from</span> <span class="str">'eslint-plugin-react-hooks'</span>
+<span class="kw">import</span> globals <span class="kw">from</span> <span class="str">'globals'</span>
+
+<span class="kw">export default</span> tseslint.config(
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+
+  {
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.es2022 },
+      parserOptions: {
+        project: <span class="bool">true</span>,  <span class="cm">// use nearest tsconfig.json</span>
+        tsconfigRootDir: <span class="kw">import</span>.meta.dirname,
+      },
+    },
+    plugins: { <span class="str">'react-hooks'</span>: reactHooks },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      <span class="str">'@typescript-eslint/no-explicit-any'</span>: <span class="str">'warn'</span>,
+      <span class="str">'@typescript-eslint/consistent-type-imports'</span>: <span class="str">'error'</span>,
+      <span class="str">'@typescript-eslint/no-unused-vars'</span>: [<span class="str">'error'</span>, {
+        argsIgnorePattern: <span class="str">'^_'</span>  <span class="cm">// allow _unused params</span>
+      }],
+    },
+  },
+
+  {
+    ignores: [<span class="str">'dist/**'</span>, <span class="str">'node_modules/**'</span>],
+  }
+)</code></pre>
+
+    <div class="box info">
+      <div class="box-title">ℹ Type-Aware Rules</div>
+      <p>When you pass <code>project: true</code> to parserOptions, ESLint loads your TypeScript type information. This enables more powerful rules like <code>@typescript-eslint/no-floating-promises</code> and <code>await-thenable</code> that need to understand types. These are slower but catch real bugs.</p>
+    </div>
+
+    <h4>Useful ESLint Rules for TS Projects</h4>
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">consistent-type-imports</div>
+        <div class="prop-val">Enforce <code>import type { Foo }</code> for type-only imports. Helps bundlers/esbuild eliminate them cleanly.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">no-floating-promises</div>
+        <div class="prop-val">Disallow unawaited async calls. One of the most useful type-aware rules — prevents silent async bugs. Needs <code>project</code> set.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">no-misused-promises</div>
+        <div class="prop-val">Prevents passing async functions where void-returning ones are expected (e.g. event handlers that should return void).</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">prefer-nullish-coalescing</div>
+        <div class="prop-val">Prefer <code>??</code> over <code>||</code> when dealing with <code>null</code>/<code>undefined</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prettier -->
+  <div class="sec">
+    <h3>Prettier Config</h3>
+    <p>Prettier is deliberately opinionated. The point is to end all style debates — configure it once, commit the config, and forget it.</p>
+
+    <pre><code><span class="cm">// .prettierrc</span>
+{
+  <span class="prop">"semi"</span>: <span class="bool">false</span>,              <span class="cm">// no semicolons</span>
+  <span class="prop">"singleQuote"</span>: <span class="bool">true</span>,       <span class="cm">// 'strings' not "strings"</span>
+  <span class="prop">"trailingComma"</span>: <span class="str">"all"</span>,    <span class="cm">// trailing commas everywhere valid</span>
+  <span class="prop">"printWidth"</span>: <span class="num">100</span>,         <span class="cm">// line length target (not a hard limit)</span>
+  <span class="prop">"tabWidth"</span>: <span class="num">2</span>,
+  <span class="prop">"arrowParens"</span>: <span class="str">"always"</span>,  <span class="cm">// (x) => x, not x => x</span>
+  <span class="prop">"endOfLine"</span>: <span class="str">"lf"</span>          <span class="cm">// consistent line endings cross-platform</span>
+}</code></pre>
+
+    <div class="box warn">
+      <div class="box-title">⚠ ESLint + Prettier Conflict</div>
+      <p>ESLint has style rules that conflict with Prettier. The fix: install <code>eslint-config-prettier</code> and add <code>"prettier"</code> as the last item in your <code>extends</code> array (or spread it last in flat config). This disables all ESLint rules that Prettier handles. <strong>Never use eslint-plugin-prettier</strong> (runs Prettier as a linting rule — slow and gives ugly error output).</p>
+    </div>
+
+    <pre><code><span class="cm">// .prettierignore</span>
+dist
+node_modules
+*.min.js
+public/
+<span class="cm"># Don't format generated files</span></code></pre>
+  </div>
+
+  <!-- package.json deep -->
+  <div class="sec">
+    <h3>package.json — Beyond Dependencies</h3>
+    <p>Most developers only use <code>dependencies</code>, <code>devDependencies</code>, and <code>scripts</code>. The fields that actually matter for module resolution and publishing:</p>
+
+    <pre><code>{
+  <span class="prop">"name"</span>: <span class="str">"my-lib"</span>,
+  <span class="prop">"version"</span>: <span class="str">"1.0.0"</span>,
+
+  <span class="cm">// Tells Node.js how to treat .js files in this package</span>
+  <span class="prop">"type"</span>: <span class="str">"module"</span>,  <span class="cm">// "module" = ESM default | "commonjs" = CJS default</span>
+
+  <span class="cm">// Modern entrypoints (takes precedence over "main"/"module")</span>
+  <span class="prop">"exports"</span>: {
+    <span class="prop">"."</span>: {
+      <span class="prop">"import"</span>: <span class="str">"./dist/index.mjs"</span>,
+      <span class="prop">"require"</span>: <span class="str">"./dist/index.cjs"</span>,
+      <span class="prop">"types"</span>: <span class="str">"./dist/index.d.ts"</span>
+    },
+    <span class="cm">// Named exports for subpaths</span>
+    <span class="prop">"./utils"</span>: <span class="str">"./dist/utils.js"</span>
+  },
+
+  <span class="cm">// Legacy fallbacks (older bundlers that don't read "exports")</span>
+  <span class="prop">"main"</span>: <span class="str">"./dist/index.cjs"</span>,
+  <span class="prop">"module"</span>: <span class="str">"./dist/index.mjs"</span>,
+  <span class="prop">"types"</span>: <span class="str">"./dist/index.d.ts"</span>,
+
+  <span class="cm">// What to include when you npm publish</span>
+  <span class="prop">"files"</span>: [<span class="str">"dist"</span>, <span class="str">"README.md"</span>],
+
+  <span class="cm">// Tooling that lives in package.json</span>
+  <span class="prop">"lint-staged"</span>: {
+    <span class="prop">"*.{ts,tsx}"</span>: [<span class="str">"eslint --fix"</span>, <span class="str">"prettier --write"</span>]
+  }
+}</code></pre>
+  </div>
+
+  <!-- .editorconfig -->
+  <div class="sec">
+    <h3>.editorconfig</h3>
+    <p>Often overlooked. Sets editor defaults that apply before any linter or formatter runs. Ensures consistent indentation and line endings even if a team member hasn't installed Prettier.</p>
+
+    <pre><code><span class="cm"># .editorconfig</span>
+root = true
+
+[*]
+indent_style = space
+indent_size = 2
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+trim_trailing_whitespace = false  <span class="cm"># trailing spaces = line break in MD</span></code></pre>
+  </div>
+
+  <!-- .env -->
+  <div class="sec">
+    <h3>.env Files</h3>
+    <p>Environment variable files. Loaded by dotenv (Node), Vite, or Next.js. Key rule: <strong>never commit secrets</strong>.</p>
+
+    <pre><code><span class="cm"># .env            — committed, no secrets. Defaults.</span>
+<span class="cm"># .env.local       — gitignored. Local overrides.</span>
+<span class="cm"># .env.development — loaded in dev mode only</span>
+<span class="cm"># .env.production  — loaded in prod mode only</span>
+<span class="cm"># Priority (Vite): .env.local > .env.development > .env</span>
+
+<span class="cm"># Vite — only VITE_ prefixed vars reach the browser</span>
+VITE_API_URL=http://localhost:4000
+VITE_APP_NAME=MyApp
+
+<span class="cm"># Server-only (not exposed to browser in Vite)</span>
+DATABASE_URL=postgresql://...
+JWT_SECRET=secret123</code></pre>
+
+    <div class="box tip">
+      <div class="box-title">✓ Type-safe env vars</div>
+      <p>Use <code>vite-plugin-env-compatible</code> or define augmentations for <code>import.meta.env</code> in a <code>vite-env.d.ts</code> file to get autocomplete and type errors on unknown env vars.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 4 — MODULE SYSTEMS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-modules">
+  <div class="chapter-header">
+    <span class="chapter-num">04</span>
+    <h2>Module Systems</h2>
+    <span class="chapter-tag" style="background:var(--l3);color:var(--c3)">Core</span>
+  </div>
+
+  <div class="sec">
+    <h3>CommonJS (CJS)</h3>
+    <p>Node's original module system, designed for synchronous server-side file loading. <code>require()</code> is synchronous and dynamic — you can call it anywhere, with computed strings.</p>
+
+    <pre><code><span class="cm">// CJS — dynamic, synchronous</span>
+<span class="kw">const</span> path = <span class="kw">require</span>(<span class="str">'path'</span>)
+<span class="kw">const</span> { readFile } = <span class="kw">require</span>(<span class="str">'fs/promises'</span>)
+
+<span class="cm">// Can be dynamic</span>
+<span class="kw">const</span> plugin = <span class="kw">require</span>(<span class="str">`./plugins/${name}`</span>)
+
+module.exports = { readFile }
+module.exports.default = readFile  <span class="cm">// named + default</span></code></pre>
+
+    <p>Active when: file has <code>.cjs</code> extension, or <code>.js</code> and nearest <code>package.json</code> has no <code>"type"</code> or has <code>"type": "commonjs"</code>.</p>
+  </div>
+
+  <div class="sec">
+    <h3>ES Modules (ESM)</h3>
+    <p>The TC39 standard. Static imports — the module graph is resolved before any code runs. This is what enables tree shaking. Native in browsers. Supported in Node 12+.</p>
+
+    <pre><code><span class="cm">// ESM — static, async-capable</span>
+<span class="kw">import</span> { readFile } <span class="kw">from</span> <span class="str">'fs/promises'</span>
+<span class="kw">import</span> type { User } <span class="kw">from</span> <span class="str">'./types.js'</span>  <span class="cm">// type-only, erased at runtime</span>
+
+<span class="cm">// Dynamic import (lazy-loaded, returns Promise)</span>
+<span class="kw">const</span> { heavy } = <span class="kw">await import</span>(<span class="str">'./heavy-module.js'</span>)
+
+<span class="kw">export</span> { readFile }
+<span class="kw">export default</span> readFile</code></pre>
+
+    <div class="box warn">
+      <div class="box-title">⚠ ESM in Node.js — The Extension Rule</div>
+      <p>When using <code>"moduleResolution": "NodeNext"</code> in tsconfig, imports must include the <code>.js</code> extension — even when importing a <code>.ts</code> file. You write <code>import { x } from './foo.js'</code>, tsc resolves it to <code>foo.ts</code> at build time, and emits <code>./foo.js</code>. This trips everyone up at first.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>CJS ↔ ESM Interop</h3>
+    <p>This is where real pain lives. The rules:</p>
+    <div class="prop-list">
+      <div class="prop-row">
+        <div class="prop-key">ESM → CJS</div>
+        <div class="prop-val">ESM can import CJS. The CJS module's <code>module.exports</code> becomes the ESM default export. Named exports are sometimes inferred from static analysis.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">CJS → ESM</div>
+        <div class="prop-val">CJS cannot <code>require()</code> an ESM module. This is the source of <code>ERR_REQUIRE_ESM</code>. You can use dynamic <code>import()</code> as a workaround in async contexts.</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-key">Dual packages</div>
+        <div class="prop-val">Libraries shipping both formats use <code>"exports"</code> in package.json with <code>"import"</code> and <code>"require"</code> conditions. The consumer's bundler picks the right one.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>UMD</h3>
+    <p>A wrapper format that detects the environment and exposes itself as a CJS module, AMD module, or browser global. Generated by bundlers for legacy compatibility. You almost never write it by hand — it's a build output format. Mostly legacy.</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 5 — LINTING & FORMATTING
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-lint">
+  <div class="chapter-header">
+    <span class="chapter-num">05</span>
+    <h2>Linting &amp; Formatting</h2>
+    <span class="chapter-tag" style="background:var(--l4);color:var(--c4)">Core</span>
+  </div>
+
+  <div class="sec">
+    <h3>The Division of Responsibility</h3>
+    <table class="cmp-table">
+      <thead><tr><th>Tool</th><th>Purpose</th><th>Examples</th><th>Auto-fix</th></tr></thead>
+      <tbody>
+        <tr><td>ESLint</td><td>Code quality & logic rules</td><td>unused vars, no-floating-promises</td><td class="partial">Partial</td></tr>
+        <tr><td>Prettier</td><td>Code style / formatting</td><td>indentation, quotes, line length</td><td class="yes">Full</td></tr>
+        <tr><td>TypeScript</td><td>Type correctness</td><td>type errors, missing props</td><td class="no">No</td></tr>
+      </tbody>
+    </table>
+    <p>The key: <strong>don't use ESLint for style</strong>. Let Prettier own formatting. Use <code>eslint-config-prettier</code> to disable any ESLint rules that overlap with Prettier. This prevents conflicts and keeps linting fast.</p>
+  </div>
+
+  <div class="sec">
+    <h3>Git Hooks — Husky + lint-staged</h3>
+    <p>Enforces quality at commit time. Husky hooks into Git. lint-staged filters the hook to only run on staged (changed) files — so you're not linting your entire codebase on every commit.</p>
+
+    <pre><code><span class="cm"># Setup</span>
+npx husky init
+npm install --save-dev lint-staged</code></pre>
+
+    <pre><code><span class="cm">// package.json</span>
+{
+  <span class="prop">"lint-staged"</span>: {
+    <span class="prop">"*.{ts,tsx,js}"</span>: [
+      <span class="str">"eslint --fix --max-warnings 0"</span>,
+      <span class="str">"prettier --write"</span>
+    ],
+    <span class="prop">"*.{json,md,yml}"</span>: [<span class="str">"prettier --write"</span>]
+  }
+}</code></pre>
+
+    <pre><code><span class="cm"># .husky/pre-commit</span>
+npx lint-staged</code></pre>
+
+    <div class="box tip">
+      <div class="box-title">✓ Also useful: commit-msg hook</div>
+      <p>Add Conventional Commits validation via <code>commitlint</code>. Enforces <code>feat:</code>, <code>fix:</code>, <code>chore:</code> prefix format. Required if you use automated changelog generation or semantic versioning.</p>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>Biome — The All-in-One Alternative</h3>
+    <p>Biome is a Rust-based tool that replaces both ESLint and Prettier. Single binary, single config, much faster. It's not a complete ESLint replacement yet (fewer rules, fewer plugins), but for new projects it's worth considering.</p>
+
+    <pre><code><span class="cm">// biome.json</span>
+{
+  <span class="prop">"$schema"</span>: <span class="str">"https://biomejs.dev/schemas/1.8.3/schema.json"</span>,
+  <span class="prop">"formatter"</span>: {
+    <span class="prop">"enabled"</span>: <span class="bool">true</span>,
+    <span class="prop">"indentWidth"</span>: <span class="num">2</span>,
+    <span class="prop">"lineWidth"</span>: <span class="num">100</span>
+  },
+  <span class="prop">"linter"</span>: {
+    <span class="prop">"enabled"</span>: <span class="bool">true</span>,
+    <span class="prop">"rules"</span>: { <span class="prop">"recommended"</span>: <span class="bool">true</span> }
+  },
+  <span class="prop">"javascript"</span>: {
+    <span class="prop">"formatter"</span>: { <span class="prop">"quoteStyle"</span>: <span class="str">"single"</span> }
+  }
+}</code></pre>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 6 — RUNTIMES
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-runtimes">
+  <div class="chapter-header">
+    <span class="chapter-num">06</span>
+    <h2>JS Runtimes</h2>
+    <span class="chapter-tag" style="background:var(--l6);color:var(--c6)">Ecosystem</span>
+  </div>
+
+  <div class="sec">
+    <table class="cmp-table">
+      <thead><tr><th>Runtime</th><th>Engine</th><th>Native TS</th><th>Module default</th><th>Use today</th></tr></thead>
+      <tbody>
+        <tr><td>Node.js</td><td>V8</td><td class="no">No (22+ has --strip-types)</td><td>CJS</td><td class="yes">Production default</td></tr>
+        <tr><td>Deno</td><td>V8</td><td class="yes">Yes</td><td>ESM</td><td class="partial">Niche / Deno Deploy</td></tr>
+        <tr><td>Bun</td><td>JavaScriptCore</td><td class="yes">Yes</td><td>ESM+CJS</td><td class="partial">Growing fast</td></tr>
+      </tbody>
+    </table>
+
+    <p><strong>Bun</strong> is worth watching for your NestJS work. It runs Node-compatible code, understands TypeScript natively, and has a built-in package manager that's significantly faster than npm. Bun as a runtime for NestJS is increasingly practical in 2024+.</p>
+
+    <div class="box info">
+      <div class="box-title">ℹ Node.js --strip-types (v22.6+)</div>
+      <p>Node 22.6 added experimental <code>--strip-types</code> flag — run TypeScript directly without a compiler, similar to tsx/ts-node but built-in. It's just type stripping (no checking), and some syntax like decorators still need Babel/SWC. But it signals the direction: TS as a first-class Node.js citizen.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 7 — PACKAGE MANAGERS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-pkgmgr">
+  <div class="chapter-header">
+    <span class="chapter-num">07</span>
+    <h2>Package Managers</h2>
+    <span class="chapter-tag" style="background:var(--l1);color:var(--c1)">Ecosystem</span>
+  </div>
+
+  <div class="sec">
+    <table class="cmp-table">
+      <thead><tr><th>Manager</th><th>Lockfile</th><th>node_modules</th><th>Workspace support</th><th>Disk usage</th></tr></thead>
+      <tbody>
+        <tr><td>npm</td><td>package-lock.json</td><td>Standard hoisting</td><td class="yes">Yes (v7+)</td><td class="no">High (duplicates)</td></tr>
+        <tr><td>pnpm</td><td>pnpm-lock.yaml</td><td>Symlinked from store</td><td class="yes">Excellent</td><td class="yes">Low (content-addressed)</td></tr>
+        <tr><td>yarn (v1)</td><td>yarn.lock</td><td>Standard hoisting</td><td class="yes">Yes</td><td class="no">High</td></tr>
+        <tr><td>yarn (v3+)</td><td>yarn.lock</td><td>Optional (PnP)</td><td class="yes">Yes</td><td class="yes">Low (with PnP)</td></tr>
+        <tr><td>bun</td><td>bun.lockb</td><td>Standard + fast</td><td class="yes">Yes</td><td class="partial">Medium</td></tr>
+      </tbody>
+    </table>
+
+    <h3>pnpm — Why It Matters</h3>
+    <p>pnpm stores packages once in a global content-addressable store, then symlinks them into each project's <code>node_modules</code>. If 10 projects use React 18, it's stored once. This makes it significantly faster to install and uses far less disk.</p>
+    <p>It also enforces <strong>strict dependency isolation</strong>: you can only import packages that are in your own <code>package.json</code> — not packages that a dependency of yours happened to install. This catches a class of bugs where you accidentally depend on a transitive dependency.</p>
+
+    <pre><code><span class="cm"># pnpm workspace setup (pnpm-workspace.yaml)</span>
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+<span class="cm"># Install in specific workspace</span>
+pnpm --filter my-app add react
+
+<span class="cm"># Run script in all packages</span>
+pnpm --recursive run build</code></pre>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     CH 8 — MONOREPO TOOLS
+══════════════════════════════════════════ -->
+<div class="chapter" id="ch-monorepo">
+  <div class="chapter-header">
+    <span class="chapter-num">08</span>
+    <h2>Monorepo Tools</h2>
+    <span class="chapter-tag" style="background:#f0f0f0;color:#444">Ecosystem</span>
+  </div>
+
+  <div class="sec">
+    <div class="box info">
+      <div class="box-title">ℹ Monorepo vs Package Manager Workspaces</div>
+      <p>Workspaces (npm/pnpm/yarn) handle <em>installing</em> packages together. Monorepo tools (Turborepo, Nx) handle <em>building, testing, and running tasks</em> efficiently across packages. They're different layers. Your Audiophile project uses Turborepo on top of npm/pnpm workspaces.</p>
+    </div>
+
+    <h3>Turborepo</h3>
+    <p>Adds a task orchestration and caching layer. Knows the dependency graph between packages, runs tasks in parallel where possible, and caches outputs. If nothing changed in <code>packages/ui</code>, its build is a cache hit — instant.</p>
+
+    <pre><code><span class="cm">// turbo.json</span>
+{
+  <span class="prop">"$schema"</span>: <span class="str">"https://turbo.build/schema.json"</span>,
+  <span class="prop">"tasks"</span>: {
+    <span class="prop">"build"</span>: {
+      <span class="prop">"dependsOn"</span>: [<span class="str">"^build"</span>],  <span class="cm">// build deps first (^)</span>
+      <span class="prop">"outputs"</span>: [<span class="str">"dist/**"</span>]   <span class="cm">// what to cache</span>
+    },
+    <span class="prop">"dev"</span>: {
+      <span class="prop">"cache"</span>: <span class="bool">false</span>,          <span class="cm">// don't cache dev server</span>
+      <span class="prop">"persistent"</span>: <span class="bool">true</span>
+    },
+    <span class="prop">"lint"</span>: {
+      <span class="prop">"dependsOn"</span>: [<span class="str">"^build"</span>]
+    },
+    <span class="prop">"test"</span>: {
+      <span class="prop">"dependsOn"</span>: [<span class="str">"build"</span>],
+      <span class="prop">"outputs"</span>: [<span class="str">"coverage/**"</span>]
+    }
+  }
+}</code></pre>
+
+    <h3>Nx</h3>
+    <p>More opinionated than Turborepo. Has generators (scaffold new apps/libs), a plugin system, and a dependency graph visualizer. Popular in enterprise Angular/React monorepos. XM Cyber's stack uses Nx — it goes deeper on affected-only builds (only build/test what's affected by your changes).</p>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// Sidebar active state on scroll
+const chapters = document.querySelectorAll('.chapter, .sec');
+const navLinks = document.querySelectorAll('.nav-link');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navLinks.forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

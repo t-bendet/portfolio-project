@@ -1,0 +1,348 @@
+# The Handbook — how this project works
+
+Written for Tal. Everything in one place: what this repo is, how its parts
+relate, and how to operate it day to day. Diagrams are embedded as Mermaid
+(render in VS Code with a Mermaid extension, or on GitHub); standalone copies
+live in `docs/diagrams/`.
+
+---
+
+## 1. What this repo is
+
+Two things, in sequence:
+
+1. **Right now: a decision workshop.** A mission-driven process that produces a
+   complete, adversarially-reviewed blueprint for the portfolio — identity,
+   design system, architecture, IA, dev workflow — *before any app code exists*.
+2. **Later: the portfolio itself.** `app/` gets created at the start of
+   Phase 2, per whatever Mission 3 decided. Whether it stays in this repo is
+   itself an open decision (ADR 0013).
+
+The workshop machinery is deliberately part of the portfolio's story: ADRs,
+gates, hooks, and agents demonstrate engineering process in public.
+
+### The three phases
+
+```mermaid
+flowchart LR
+    P0["Phase 0\nBootstrap\n(DONE)"] --> M1["/m1\nIdentity"]
+    M1 --> M2["/m2\nDesign System"]
+    M2 --> M3["/m3\nArchitecture"]
+    M3 --> M4["/m4\nInformation Arch"]
+    M4 --> M5["/m5\nAI Workflow"]
+    M5 --> M6["/m6\nBlueprint Gate"]
+    M6 -->|GO| P2["Phase 2\nBuild\n(app/ created here)"]
+    M6 -->|NO-GO| FIX["fixes routed back\nto owning missions"] --> M6
+```
+
+Strictly sequential — your decision. Each arrow is a *mechanical* gate, not a
+convention (see §6).
+
+---
+
+## 2. The five building blocks
+
+| Block | Lives in | What it is | Mutable? |
+|---|---|---|---|
+| **ADRs** | `docs/decisions/` | The single source of truth for every decision — status in frontmatter, never moved, never deleted | Status flips only; new conclusions = new files |
+| **Missions** | `.claude/skills/m*/` + `missions/0N-*/` | Procedure (skill) + workspace (STATUS, outputs) — function vs call site | Skill: rarely. Workspace: constantly |
+| **Skills** | `.claude/skills/` | Reusable capabilities and the 6 mission procedures | Only M5 may modify `.claude/` |
+| **Agents** | `.claude/agents/` | Role definitions: 5 specialists + 1 adversarial reviewer | Same |
+| **Hooks + scripts** | `.claude/settings.json` → `scripts/` | Mechanical enforcement: TypeScript, zero deps, Node native type-stripping | Same |
+
+### Who reads and writes what
+
+```mermaid
+flowchart TB
+    subgraph CONFIG[".claude/ — loaded as configuration"]
+        CM["CLAUDE.md\n(auto-loaded constitution)"]
+        SK["skills/\n8 capability + 6 mission"]
+        AG["agents/\n6 judgment + 1 worker"]
+        SET["settings.json"]
+    end
+
+    subgraph ENFORCE["scripts/ — mechanical enforcement"]
+        H1["hooks/protect-reference.ts"]
+        H2["hooks/mission-gate.ts"]
+        H3["hooks/decision-guard.ts"]
+        H4["hooks/inject-project-state.ts"]
+        H5["hooks/protect-workshop.ts"]
+        H6["hooks/docs-sync-check.ts"]
+        SY["sync-docs.ts"]
+        V["validate-adr.ts"]
+        W["validate-workshop.ts"]
+        R["reindex-decisions.ts"]
+        LIB["lib/frontmatter.ts"]
+    end
+
+    subgraph TRUTH["docs/ — source of truth"]
+        ADR["decisions/*.md (ADRs)"]
+        IDX["decisions/INDEX.md\n(GENERATED)"]
+        RES["research/\n(about-tal, CV, mythology notes)"]
+    end
+
+    subgraph WORK["missions/ — live state"]
+        PLAN["00-mission-plan.md"]
+        ST["0N-*/STATUS.md"]
+        OUT["0N-*/outputs/"]
+    end
+
+    REF["assets/reference/\nprototypes (committed)\ninspiration (gitignored)"]
+
+    SET --> H1 & H2 & H3 & H4 & H5 & H6
+    H6 -->|runs| SY -->|extracts .mmd +\nfingerprints machinery| ENFORCE
+    H5 -->|guards writes to| SK & AG & SET
+    W -->|lints| SK & AG
+    H2 -->|reads| ST
+    H2 -->|checks verdict in| OUT
+    H3 -->|runs| V --> LIB
+    H3 -->|runs| R -->|writes| IDX
+    R -->|reads frontmatter| ADR
+    H4 -->|injects| IDX & ST
+    H1 -->|blocks writes to| REF
+    SK -->|input manifests point at| ADR & RES & REF & OUT
+    AG -->|write deliverables to| OUT
+    AG -->|write/flip| ADR
+    CM -->|points to| IDX
+```
+
+---
+
+## 3. The ADR system
+
+One flat directory. A decision's **identity is its number**; its **state is a
+frontmatter field**. Files never move, never get deleted, never have their
+reasoning edited after the fact.
+
+```mermaid
+stateDiagram-v2
+    [*] --> proposed : question raised,\nowner assigned
+    proposed --> active : decided
+    active --> reopened : question reopened\n(reopened-by mission-N)
+    reopened --> superseded : new ADR written,\nold one flipped\n(superseded-by NNNN)
+    reopened --> active : re-affirmed\nafter re-evaluation
+    active --> superseded : replaced directly
+    proposed --> rejected : evaluated and declined
+    superseded --> [*]
+    rejected --> [*]
+```
+
+Rules that matter in practice:
+
+- **New conclusion = new ADR.** Never rewrite an old one; flip it to
+  `superseded` with a pointer. Superseded ADRs are your rejection log —
+  history is the point.
+- Missions may **act on `active`** ADRs only. `reopened` = open question
+  (prior conclusion is input, not law). `proposed` = don't build on it.
+- `INDEX.md` is **generated** (`node scripts/reindex-decisions.ts`). Never
+  hand-edit; on merge conflict, regenerate.
+- Frontmatter is **flat** `key: value` only — this constraint is what lets the
+  validator stay dependency-free.
+
+Snapshot at Phase 0 close (live truth: `INDEX.md`, regenerated on every ADR
+write): **4 active** (0001 identity mark, 0002 easter-egg mechanism,
+0011 RTL, 0012 showcase constraints) · **8 reopened** · **1 proposed** (0013
+repo topology → M3). Full table: `docs/decisions/INDEX.md`.
+
+---
+
+## 4. Anatomy of a mission
+
+Every mission = **procedure** (the skill, invoked as `/m1`…`/m6`) +
+**workspace** (`missions/0N-*/`). Every mission skill follows the same
+template (see `prompt-craft`): role → memory block → starting state → input
+manifest → output contract → scope boundaries → stop conditions → checkpoints.
+
+The run, end to end:
+
+```mermaid
+flowchart TB
+    START(["Tal invokes /mN"]) --> GATE{"Gate check:\nall depends-on missions\ngenuinely closed?"}
+    GATE -->|no| REFUSE["refuse + report\nwhat's blocking"]
+    GATE -->|yes| LOAD["load CLAUDE.md, INDEX,\ninput manifest\nrecord ADR statuses seen"]
+    LOAD --> PROG["STATUS -> in-progress"]
+    PROG --> WORK["specialist agents work\ndeliverables -> outputs/ only\nADR changes within license only"]
+    WORK --> CONTRACT{"output contract\nfully met?"}
+    CONTRACT -->|no| WORK
+    CONTRACT -->|yes| RT["red-team-reviewer\nFRESH CONTEXT subagent\ngets contract + artifacts only"]
+    RT --> VERDICT{"verdict?"}
+    VERDICT -->|REJECTED\ncycles < 3| REV["revise\nrevision-cycles += 1"] --> WORK
+    VERDICT -->|REJECTED\ncycle 3| ESC["STOP — escalate to Tal\nwith objections verbatim"]
+    VERDICT -->|APPROVED| CLOSE["review-verdict.md written\nhandoff notes filled\nSTATUS -> closed\ncommit + merge branch"]
+    CLOSE --> NEXT(["next mission unlocked"])
+```
+
+Key protections baked into that loop:
+
+- The **reviewer never sees the producing conversation** — fresh context only,
+  so it can't inherit the mission's blind spots. It writes
+  `outputs/review-verdict.md` itself; the mission may never write its own.
+- **Loop cap of 3.** Persistent disagreement between producer and reviewer is
+  signal you should see, not noise to grind away.
+- **"Closed" requires evidence.** Flipping STATUS.md alone unlocks nothing —
+  the gate also demands the APPROVED verdict file (§6).
+
+### What each mission owns
+
+| Mission | Decides | ADR license | Notable rules |
+|---|---|---|---|
+| M1 Identity | Identity thesis; mythology reconciliation (spine / layer / rejected); fate of 0002 | 0001, 0002 | Checkpoint 0: asks you for mythology input if notes absent; no colors/fonts/routes |
+| M2 Design System | Palettes, typography, tokens, motion; hero concept (0007) and illustration role (0008) | 0004–0008 | M1 outputs are law; Hebrew font coverage verified, not assumed |
+| M3 Architecture | Stack (0003 re-run from first principles); dynamic boundary for SQL/Docker/CI-CD/cloud; repo topology (0013) | 0003, 0013 + new | **Must not read M2 outputs** — architecture isn't decided by mood; paper only, no scaffolding |
+| M4 Information Arch | Routes, content model, translated-articles placement (0010), theme-model inconsistency in 0009 | 0009, 0010 + new | RTL behavior specified precisely |
+| M5 AI Workflow | Phase 2 workflow, hooks, worktree call, plugin packaging | workflow ADRs | The only mission allowed to modify `.claude/` |
+| M6 Blueprint Gate | GO / NO-GO for Phase 2 | flags only, flips via you | Security + performance skills in **design mode**; its own outputs get red-teamed by a second reviewer instance |
+
+---
+
+## 5. The skills catalog
+
+**Capability skills** (reusable; travel in the future `portfolio-workshop` plugin):
+
+| Skill | One-liner |
+|---|---|
+| `adr-keeper` | ADR format, lifecycle, and the never-edit/never-delete rules |
+| `tech-eval` | First-principles evaluation: requirements before candidates, incumbent included, versions verified by search, honest tradeoffs |
+| `design-tokens` | How palettes/type ship as semantic CSS variables; restraint rules; RTL checks |
+| `brand-voice` | Identity invariants; the anti-theme-soup rule for new symbolic layers |
+| `prompt-craft` | The mission-prompt template (patterns adapted from prompt-master: start/target state, stop conditions, scope, memory block) |
+| `mission-protocol` | The run sequence in §4; gate, loop cap, closure rules |
+| `security-review` | Dual-mode: design (threat-model the blueprint, M6) / code (Phase 2 CI) |
+| `performance-review` | Dual-mode: design (budgets with numbers, M6) / code (CI enforcement) |
+
+**Mission skills**: `m1-identity` … `m6-blueprint-gate`, each with
+`disable-model-invocation: true` — they run only when *you* type the slash
+command; Claude can never auto-trigger a mission mid-conversation.
+
+**Agents**: `brand-strategist` (M1), `design-systems` (M2), `tech-architect`
+(M3), `ia-planner` (M4), `workflow-engineer` (M5), `red-team-reviewer`
+(every closure + leads M6). Agents are deliberately thin on procedure — steps
+live in skills, one copy each. What every agent DOES carry: a `skills:`
+frontmatter preload (its methods arrive in-context automatically) and an
+Operating contract (what its delegation prompt must include, and an order to
+refuse loudly if underspecified — subagents run isolated and must never
+improvise from missing context), plus a `tools:` allowlist scoped to its job.
+
+There is a second agent species: **workers** — self-contained mechanical
+procedures with an embedded Workflow, a fixed Output format, and a pinned
+cheaper model. First worker: `docs-explorer` (parallel documentation and
+version lookup, used by tech-eval / M3). Judgment agents stay thin because
+their methods live in skills; workers are rich because the procedure is
+theirs alone. `validate-workshop.ts` holds each species to its own contract.
+
+---
+
+## 6. The enforcement layer
+
+Instructions can be ignored under context pressure; hooks can't. Six hooks,
+all TypeScript run directly by Node (≥24 guaranteed; type-stripping — no build
+step, no dependencies; `enum`/`namespace` forbidden because stripping can't
+erase them).
+
+```mermaid
+sequenceDiagram
+    participant C as Claude (any session)
+    participant Pre as PreToolUse hooks
+    participant FS as File system
+    participant Post as PostToolUse hook
+
+    Note over C: SessionStart:\ninject-project-state.ts prints\nINDEX.md + mission statuses\n(CLAUDE.md is auto-loaded anyway)
+
+    C->>Pre: Write/Edit request
+    Pre->>Pre: protect-reference.ts\npath under assets/reference/? -> BLOCK (exit 2)
+    Pre->>Pre: mission-gate.ts\npath in missions/0N-*/outputs/?\ncheck each depends-on:\nSTATUS closed AND\nreview-verdict.md APPROVED\nelse BLOCK (exit 2)
+    Pre->>Pre: protect-workshop.ts\npath under .claude/ or scripts/?\nallowed only while M5 in-progress\nsettings.json: never\nelse BLOCK (exit 2)
+    Pre-->>FS: allowed -> write happens
+    FS->>Post: decision-guard.ts\npath under docs/decisions/?
+    Post->>Post: INDEX.md edit? -> BLOCK\nADR? -> validate-adr.ts\ninvalid -> exit 2 (Claude must fix)
+    Post->>FS: valid -> reindex-decisions.ts\nregenerates INDEX.md
+    Post->>Post: docs-sync-check.ts\nmachinery surface touched?\nfingerprint stale -> exit 2\n(update docs, then ack)
+```
+
+What each blocks, in plain words:
+
+- **protect-reference** — nobody edits your prototypes or inspiration. Ever.
+- **mission-gate** — no mission produces outputs while its dependency chain
+  isn't *genuinely* closed. The rubber-stamp loophole is dead: a STATUS flip
+  without the reviewer's APPROVED verdict file does not count.
+- **decision-guard** — malformed ADRs bounce back with the reason; INDEX.md
+  can't be hand-edited; every valid ADR write auto-regenerates the index.
+- **inject-project-state** — every fresh session starts already knowing the
+  decision index and where every mission stands.
+- **docs-sync-check** — docs can't be linted for truth, but staleness can be
+  detected: a fingerprint of the documented surface (skills/agents/hooks/
+  scripts inventory + settings.json + mission plan) is recorded whenever docs
+  are confirmed current (`node scripts/sync-docs.ts ack`). Any machinery write
+  after that trips the check until docs are updated and re-acked. It also
+  mechanically verifies every `.mmd` file matches its handbook block — the
+  handbook is the single source; diagrams are extractions. **Definition of a
+  docs-triggering change:** add/remove/rename of any skill, agent, hook, or
+  script, or edits to `settings.json` / `00-mission-plan.md`. ADR flips,
+  mission outputs, and research notes are NOT docs-triggering — the handbook
+  points at live sources for state instead of snapshotting it.
+- **protect-workshop** — the machinery guards itself: agent sessions can't
+  modify `.claude/` or `scripts/` except during Mission 5 (its license), and
+  `settings.json` — which wires the hooks — never (escalate to Tal). You are
+  exempt: hooks bind Claude Code sessions, not your editor. Structural
+  best-practices (skill frontmatter, mission template sections, agent
+  Operating contracts + skill preloads) are linted by
+  `node scripts/validate-workshop.ts`.
+
+---
+
+## 7. Operating manual
+
+**Run a mission:** open Claude Code in the repo → type `/m1` (etc.) → the
+skill carries everything: gate check, inputs, contract, stop conditions. You
+don't write prompts; you invoke them.
+
+**When the reviewer rejects:** normal, up to 3 cycles. On the third rejection
+the mission stops and hands you the objections verbatim — you arbitrate.
+
+**When you're asked to escalate:** the mission hit something outside its
+license (an ADR flip it doesn't own, an identity conflict, a budget change).
+Decide, answer in chat, the mission continues.
+
+**Branching:** branch per mission, merge on close. If `INDEX.md` conflicts on
+merge: `node scripts/reindex-decisions.ts`, commit, done — never hand-merge it.
+
+**Adding source material anytime:** notes → `docs/research/` · your own
+artifacts → `assets/reference/prototypes/` · third-party → `inspiration/`
+(gitignored; never a hard dependency of any contract).
+
+**Useful commands:**
+
+```bash
+node scripts/validate-adr.ts            # validate all ADRs
+node scripts/validate-adr.ts <path>     # validate one
+node scripts/reindex-decisions.ts       # regenerate INDEX.md
+node scripts/hooks/inject-project-state.ts  # preview what sessions see
+node scripts/validate-workshop.ts       # lint skills + agents structure
+node scripts/sync-docs.ts check         # are docs current vs machinery?
+node scripts/sync-docs.ts ack           # after updating docs: extract + record
+```
+
+**Gotchas already learned so you don't relearn them:**
+
+- Verify npm versions by web search before writing any package.json (rule
+  lives in `tech-eval`; hard-won).
+- No bash brace expansion for directory creation.
+- `@astrojs/tailwind` is deprecated for Tailwind 4 — `@tailwindcss/vite` in
+  `vite.plugins` (relevant only if M3 keeps Astro).
+- Scripts: erasable TypeScript only — union types instead of enums.
+
+---
+
+## 8. Where things stood at Phase 0 close
+
+(Point-in-time section, deliberately dated 2026-07-20. Live state = the
+session injection: INDEX.md + STATUS files.)
+
+Phase 0: **closed.** All 13 ADRs decomposed and signed off (0007/0008 deferred
+to M2 per your call). Bio + CV + prototypes in place. Hooks tested: reference
+writes blocked, gate blocks M2 while M1 is open, closed-without-verdict
+correctly rejected, validation and reindex green.
+
+Next action, in order: *(optional)* `docs/research/greek-mythology-notes.md`
+→ `git init` + commit → `/m1`. If you skip the notes, Mission 1's Checkpoint 0
+will ask you before exploring — that's by design.
