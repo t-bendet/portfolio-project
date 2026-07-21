@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 13 · reopened: 2 · superseded: 6
+Summary: active: 16 · superseded: 8
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
@@ -15,8 +15,8 @@ Summary: active: 13 · reopened: 2 · superseded: 6
 | [0006](./0006-typography-system.md) | Typography system (DM Mono / Fraunces / IBM Plex Mono) | `superseded` | superseded by 0016 |
 | [0007](./0007-hero-terminal-animation.md) | Hero is a terminal window with the T://bendet typing animation | `superseded` | superseded by 0017 |
 | [0008](./0008-personal-illustration-brand.md) | Hand-drawn personal illustration as brand element and favicon | `superseded` | superseded by 0018 |
-| [0009](./0009-site-structure-five-routes.md) | Site structure — five routes with per-route theme assignment | `reopened` | reopened by mission-4 |
-| [0010](./0010-writing-section-tabs.md) | Writing section — original and translated posts as tabs | `reopened` | reopened by mission-4 |
+| [0009](./0009-site-structure-five-routes.md) | Site structure — five routes with per-route theme assignment | `superseded` | superseded by 0022 |
+| [0010](./0010-writing-section-tabs.md) | Writing section — original and translated posts as tabs | `superseded` | superseded by 0023 |
 | [0011](./0011-rtl-hebrew-support.md) | RTL/Hebrew rendering is a hard design and IA constraint | `active` |  |
 | [0012](./0012-showcase-tech-constraints.md) | The portfolio must genuinely showcase SQL, Docker, from-scratch CI/CD, and cloud deployment | `active` |  |
 | [0013](./0013-repo-topology.md) | Repository topology — workshop and app live in one monorepo | `active` |  |
@@ -28,3 +28,6 @@ Summary: active: 13 · reopened: 2 · superseded: 6
 | [0019](./0019-framework-astro7-static-core-plus-api.md) | Framework is Astro 7.x — static core plus hand-built API and containerized Postgres | `active` |  |
 | [0020](./0020-dynamic-layer-scope-analytics-reactions-admin.md) | Dynamic layer scope — first-party analytics, reactions, private admin dashboard; comments deferred but designed for | `active` |  |
 | [0021](./0021-cloud-deploy-ec2-compose-ecr-pipeline.md) | Cloud and deploy — EC2 t4g.micro with Docker Compose, ECR via OIDC, Route 53, Caddy TLS, hand-written GitHub Actions pipeline | `active` |  |
+| [0022](./0022-site-structure-routes-global-theme.md) | Site structure — twelve public routes, archetype differentiation, one global theme | `active` |  |
+| [0023](./0023-translations-hebrew-locale-subtree.md) | Translated articles live in a Hebrew locale subtree with compliance-bound attribution | `active` |  |
+| [0024](./0024-content-model-collections-and-analytics-key.md) | Content model — three typed collections and a namespaced analytics key contract | `active` |  |
