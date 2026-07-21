@@ -66,3 +66,23 @@ what the next mission must know)
      the pushed 3-direction package is stale and should be trimmed.
   5. Hero (0007) + illustration (0008) remain open — the prototypes
      contain neither. Second checkpoint still required there.
+
+- **Post-pivot execution (2026-07-21, same session):** palette-spec.md
+  REWRITTEN prototype-exact (all six accents + warm l1–l6 restored; exactly
+  six minimal AA nudges, contrast.ts-verified; archetype × temperature
+  union roster). tokens-reference.md, motion-and-texture.md,
+  typography-spec.md produced. Hebrew coverage web-verified by
+  design-verifier (none of the 4 locked families covers Hebrew; companions:
+  Heebo / Frank Ruhl Libre / IBM Plex Sans Hebrew; no Hebrew monospace
+  exists on Google Fonts — recorded asymmetry). ADR 0015 supersedes
+  0004+0005; ADR 0016 supersedes 0006 (also corrects 0006's misrecorded
+  "DM Mono for everything"). Lapidary license declined for base system,
+  reserved to hero. Stale 3-direction exploration package trimmed to
+  hero-only (04-hero-exploration-brief.md).
+
+- **AWAITING CHECKPOINT 2 (hero + illustration):**
+  outputs/hero-and-illustration.md is checkpoint material — recommendation
+  is B (bare protocol resolution, no window chrome) + B1 (dark-only
+  completion glow) and confirming 0008's About+favicon placement with
+  tightened treatment rules. ADRs 0007/0008 flip only after Tal reacts.
+  Review loop runs after that.
