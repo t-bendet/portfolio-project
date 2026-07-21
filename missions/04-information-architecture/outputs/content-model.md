@@ -70,7 +70,9 @@ a cross-system contract between a static build and a Postgres row, so it is
 specified here rather than discovered in Phase 2.
 
 **The key is `<collection>:<id>` — for example `writing:design-system-nobody-hates`,
-`translations:aha-programming`.** Rules:
+`translations:aha-programming`.** Static pages that emit view events use a
+reserved `page:` namespace instead (`page:home` is currently its only
+member — §6); the rules below apply to both forms. Rules:
 
 1. **Namespaced by collection**, because bare `id` collides: an original
    and a translation may legitimately share a slug stem, and un-namespaced
@@ -533,42 +535,82 @@ credit in the item description.
 
 Where the API meets content, and the invariant that governs it.
 
-**Reads and writes are governed by different rules, and conflating them is
-a mistake this section originally made.** A *read* returns something the
-page must then display, so it can tempt a layout into reserving space. A
-*write* is a fire-and-forget beacon: nothing is rendered from it, nothing
-waits for it, and its failure is invisible by construction. Only reads are
+**Reads and writes are governed by different rules.** A *read* returns
+something the page must then display, so it can tempt a layout into
+reserving space. A *write* is a fire-and-forget beacon: nothing is rendered
+from it, nothing waits for it, and its failure is invisible. Only reads are
 constrained by the invariant below.
 
-| Surface | Reads | Writes | Degrades to |
-|---|---|---|---|
-| `/writing/[id]/` | view count, reactions | view event, reaction | absence |
-| `/he/writing/[id]/` | view count, reactions | view event, reaction | absence |
-| `/projects/[id]/` | — | view event | absence |
-| `/writing/`, `/he/writing/` | view counts (optional) | view event | absence |
-| `/`, `/projects/`, `/about/`, `/colophon/`, `/contact/` | — | view event | absence |
-| `/404`, `/he/404` | — | view event | absence |
+| Surface | Reads | Writes | Key | Degrades to |
+|---|---|---|---|---|
+| `/writing/[id]/` | view count, reactions | view event, reaction | `writing:<id>` | absence |
+| `/he/writing/[id]/` | view count, reactions | view event, reaction | `translations:<id>` | absence |
+| `/projects/[id]/` | — | view event | `projects:<id>` | absence |
+| `/` | — | view event | `page:home` | absence |
+| `/writing/`, `/he/writing/` | view counts (optional, off at launch) | — | — | absence |
+| every other public route | — | — | — | n/a |
 
-**View events fire on every public page.** An earlier draft of this model
-restricted them to entry pages on the stated ground that "the home page must
-not depend on the API" — which confuses the two rules above. A beacon
-creates no dependency: the page is already rendered, static, and complete.
+**View events fire on content pages and the home page. Nowhere else.**
 
-The cost of the earlier restriction was concrete rather than theoretical.
-ADR 0020 puts **per-referrer** aggregation in the admin dashboard, and the
-home page is the site's actual entry point — the surface where referrer data
-is most of the value. Collecting nothing there would have left the dashboard
-blind to how people arrive. The 404s are included for the same reason
-inverted: a spike of 404s with a referrer is how a broken inbound link
-announces itself, and it is the only signal that would ever report one.
+This section reached its current form by over-correcting twice, and both
+errors are recorded because the reasoning matters more than the answer.
 
-**Identifying a page in a view event.** Collection-backed pages carry the
-`<collection>:<id>` key from §2. Static pages have no collection entry, so
-they are identified by their route path — which is acceptable *for them
-specifically* because the static route set is small, enumerated in
-`sitemap.md` §1, and changes only by an explicit sitemap decision. This does
-not weaken §2 rule 3: content entries are numerous and renameable, which is
-exactly why they are never path-keyed.
+*The first draft* fired events only on content detail pages, justified as
+"the home page must not depend on the API". That reason was wrong — a
+fire-and-forget beacon creates no rendering dependency — but the conclusion
+was nearly right for a reason the draft never gave. It also left a real gap:
+ADR 0020 puts **per-referrer** aggregation in the admin dashboard, and `/`
+is the site's actual entry point, so collecting nothing there left the
+dashboard blind to how people arrive.
+
+*The second draft* fixed the gap by firing on **every** public page. That
+over-corrected, and the price went unstated: **a beacon is client
+JavaScript.** Under ADR 0019 the static core ships near-zero JS, and R1 was
+the top-weighted requirement in M3's entire evaluation. Six routes —
+`/about/`, `/colophon/`, `/contact/`, `/projects/`, and both 404s — ship no
+script at all, and a universal beacon would have given each of them their
+first one purely to be counted. `/colophon/`'s brief calls its lack of a
+dynamic layer *load-bearing*; that page arguing for a restrained stack while
+carrying a script to measure who read the argument is precisely the kind of
+incoherence this project's rules exist to catch.
+
+**The rule, and what it costs.** A view event is emitted from pages whose
+readership the dashboard has a genuine consumer for: the three content
+detail routes (ADR 0020 aggregates per-article) and `/` (per-referrer, at
+the point where arrival actually happens). Everything else stays at zero
+JavaScript.
+
+- **What this buys:** six routes keep zero-JS static delivery, and the
+  entry-point gap that motivated the change is closed.
+- **What it costs, named rather than hidden:** there is **no traffic data
+  for `/about/`, `/colophon/`, `/contact/`, the two indexes, or the 404s.**
+  That is a real blind spot. It is accepted because those pages are
+  navigational or terminal — the shape of arrival (`/`) plus the shape of
+  consumption (content pages) is what ADR 0020's dashboard is actually for,
+  and neither is served by knowing how many people opened `/contact/`.
+- **`/projects/[id]/` gains its first script** under this rule. Priced and
+  accepted: it is content, it belongs in the per-article view, and the cost
+  is a beacon, not a framework.
+
+**The 404s emit nothing, and that reverses a claim the second draft made.**
+That draft argued a 404 beacon is how a broken inbound link announces
+itself. It is not deliverable as designed: ADR 0020's event stores the
+page's own identifier and the referrer *host*, so a `/404` event records
+that *a* 404 happened, never *which URL broke* — the entire value. Making it
+deliverable means storing arbitrary visitor-supplied request paths, which
+turns a small enumerated key set into an unbounded one and pushes directly
+against ADR 0020's "nothing stored identifies a visitor". Dropped on those
+grounds. Broken inbound links are a web-server-log question, not a
+first-party-analytics one.
+
+**Every view event carries a stable key — there is no path keying anywhere.**
+Content pages use `<collection>:<id>` (§2). `/` uses the explicit key
+**`page:home`**, in a `page:` namespace reserved for static pages that emit
+events. This keeps §2 rule 3 ("never the URL path") true without
+qualification: a static page's key is a name this document assigns, not a
+URL that presentation decisions can respell. The `page:` namespace currently
+has exactly one member, and adding one is a deliberate decision, not a
+side-effect of adding a route.
 
 **The invariant, restated from ADR 0019 because it constrains composition:
 no layout may reserve space that only the API can fill.** A count that
@@ -638,3 +680,19 @@ solved here. Both are publish-time workflow, which is M5's brief.
 
 Recorded here rather than only in STATUS.md so they survive into M5's input
 manifest as content-level facts.
+
+Two further handoff items, both raised in red-team review as real risks with
+**no in-license fix inside M4**:
+
+3. **ADR 0019 → 0023 is a one-directional pointer.** ADR 0023 records that
+   it narrows 0019 on hreflang; 0019 names nothing, because editing an
+   `active` ADR's body is forbidden (adr-keeper rule 1) and `INDEX.md`'s
+   generator has no field for a "narrowed-by" relationship — and `scripts/`
+   is hook-protected outside Mission 5. **Consequence to carry:** a Phase 2
+   scaffolder configuring `@astrojs/sitemap` from ADR 0019 alone will emit
+   hreflang alternates that ADR 0023 forbids. M5 must either surface the
+   relationship in the workflow or extend the index generator.
+4. **The CI RTL stage's assertions 2, 3 and 5 are M4 impositions, not M3
+   inheritance** (§5 labels them, but the distinction is easy to lose). M5
+   owns the pipeline and should receive them as new requirements it is being
+   handed, not as pre-existing stage description.

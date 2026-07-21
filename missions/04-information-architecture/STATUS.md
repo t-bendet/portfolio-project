@@ -4,7 +4,7 @@ status: in-progress
 depends-on: m3
 opened: 2026-07-21
 closed: null
-revision-cycles: 1
+revision-cycles: 2
 ---
 
 # Status — Information Architecture

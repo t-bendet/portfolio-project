@@ -8,7 +8,7 @@ Mission 4 · 2026-07-21
 | Archetype | overview (`sitemap.md` §2 row 1) |
 | Collections read | `writing` (recent, ≤3) · `projects` (selected, ≤3) |
 | `lang` / `dir` | `en` / `ltr` |
-| Dynamic layer | **none** — "the home page must not depend on the API" (`sitemap.md` §2 row 1) |
+| Dynamic layer | **view-event beacon only**, keyed `page:home` — no reads, nothing rendered from the API (`content-model.md` §6) |
 | Chrome | per `navigation-spec.md` §1–4; eyebrow `T://bendet · home` |
 
 Basis (law): `sitemap.md` §2 row 1 · `content-model.md` §1, §6 · ADR 0017
@@ -62,7 +62,8 @@ Nothing pads to three.
 | **No writing** | zero non-draft `writing` entries | section 4 is **omitted entirely** — heading, list, and closing link together |
 | **No projects** | zero non-draft `projects` entries | section 5 omitted entirely (not expected: two real projects exist) |
 | **Floor** | both collections empty | header · hero · tagline · person line · footer. This must read as a complete page |
-| **Degraded — no JS** | scripts blocked or failed | hero renders its **final frame**; every section is present and readable; no content is hidden |
+| **Degraded — no JS** | scripts blocked or failed | hero renders its **final frame**; every section is present and readable; no content is hidden; the view event is simply not recorded |
+| **Degraded — API down** | beacon POST fails | **nothing observable.** This page reads nothing from the API, so there is nothing to degrade |
 | **Degraded — reduced motion** | `prefers-reduced-motion: reduce` | hero renders its final frame immediately, glow included (it is static decoration, not motion — `hero-and-illustration.md` §1) |
 | **Error** | n/a | this route cannot 404 |
 
@@ -138,11 +139,22 @@ list, or an English-language block *about* the Hebrew work) are worse: one
 degrades both readers' experience, the other talks about the work instead of
 showing it.
 
-**No view counts, no reactions, nothing from the API — anywhere on this
-page.** `sitemap.md` §2 row 1 is explicit and `content-model.md` §6's table
-gives `/` no row. The recent-writing rows show date and description only.
-This is the site's most-linked page and it must render identically whether
-the API is up, down, or deleted.
+**No view counts, no reactions — nothing is READ from the API anywhere on
+this page.** The recent-writing rows show date and description only. This is
+the site's most-linked page and it must render identically whether the API
+is up, down, or deleted.
+
+**One write, and it renders nothing.** `content-model.md` §6 gives `/` a
+view-event beacon keyed `page:home` — the only static page that emits one,
+because this is the site's entry point and ADR 0020's per-referrer
+aggregation is worth most where arrival actually happens. It is
+fire-and-forget: nothing waits for it, nothing is drawn from it, and its
+failure is invisible. The paragraph above is therefore unaffected — "renders
+identically whether the API is up, down, or deleted" remains exactly true,
+because reads are what could break rendering and this page performs none.
+The marginal cost is also near zero here specifically: `/` already ships
+script for the hero's typing sequence (ADR 0017), so the beacon adds no
+new dependency class to a page that had none.
 
 **No search box, no tag cloud, no "latest activity".** No search route exists
 (`sitemap.md` §4); tag routes are deferred with a recorded threshold; an

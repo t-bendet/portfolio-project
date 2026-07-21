@@ -26,7 +26,8 @@ which `lang` attribute — not the specific word.
 
 ## 1. The chrome model
 
-Three regions, identical in structure on all twelve public routes, in this
+Four regions (a skip link, then three landmarks), identical in structure on
+all twelve public routes, in this
 DOM order:
 
 | # | Region | Contents | Landmark |
@@ -310,7 +311,7 @@ and §3 accepted-cost 2 (the persistent Hebrew link):
 | Feed | `/rss.xml` | `/he/rss.xml` |
 | Colophon | `/colophon/` (label: en) | `/colophon/` (label: en — it is an English page) |
 | Direct links | email · GitHub · LinkedIn | same |
-| Hebrew translations | `/he/writing/`, labelled `תרגומים`, `lang="he"` | same, marked current |
+| Hebrew translations | `/he/writing/`, labelled `תרגומים`, `lang="he"` | same link, but **never marked current** — the nav occurrence carries `aria-current`, this one carries nothing (§2.3's duplicated-link rule) |
 
 **One feed per page, not both.** The footer offers the feed matching the
 current locale. Offering both on every page doubles a chrome element for a

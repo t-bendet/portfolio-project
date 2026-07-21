@@ -8,7 +8,7 @@ Mission 4 · 2026-07-21
 | Archetype | overview — card grid, the archetype's native pattern (`sitemap.md` §2 row 6) |
 | Collection | `projects` (`content-model.md` §3.3), non-draft, sorted by `order` |
 | `lang` / `dir` | `en` / `ltr` |
-| Dynamic layer | **none** — `content-model.md` §6 gives this route no row |
+| Dynamic layer | **none** — no reads, no view event; this route ships zero JavaScript (`content-model.md` §6) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · projects` |
 
 Basis (law): `sitemap.md` §2 rows 6–7 · `content-model.md` §3.3, §6 ·

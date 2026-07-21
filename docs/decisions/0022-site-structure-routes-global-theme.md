@@ -50,6 +50,14 @@ The public route set:
 | `/contact/` | minimal | yes |
 | `/404` · `/he/404` | minimal | no |
 
+**`minimal` is an M4 label, not a third M2 archetype.** It denotes the
+deep-dive archetype without its sidebar — a short editorial column — used by
+routes with too little content to carry either archetype at full strength.
+It adds no tokens, no patterns, and no composition rules, which is why it
+does not reopen ADR 0015 or M2's two-archetype model; it is defined in
+`sitemap.md` §2. If Phase 2 finds it needs anything the two archetypes do
+not already provide, that is a design decision and belongs to a new ADR.
+
 Plus non-page routes: `/rss.xml`, `/he/rss.xml`, `/sitemap-index.xml`, and
 `/he/` as a redirect to `/he/writing/`. `/admin` and `/api/v1/*` answer on
 the domain but are not public IA (ADR 0020) and are excluded from nav,

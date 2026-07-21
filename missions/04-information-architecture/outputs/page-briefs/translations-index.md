@@ -9,7 +9,7 @@ Mission 4 · 2026-07-21
 | Collection | `translations` (`content-model.md` §3.2), non-draft, `pubDate` desc |
 | `lang` / `dir` | `he` / `rtl` — set on `<html>`, derived from the locale (`content-model.md` §5) |
 | Chrome language | Hebrew, except the mark and the four English nav labels (`navigation-spec.md` §2.2) |
-| Dynamic layer | optional per-entry view counts — **off at launch**, same decision as `/writing/` |
+| Dynamic layer | optional per-entry view counts — **off at launch**, same decision as `/writing/`. No view event on the index (`content-model.md` §6) |
 | Feed | `/he/rss.xml` (footer, locale-scoped) |
 | Chrome | eyebrow `T://bendet · תרגומים` |
 

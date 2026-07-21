@@ -85,13 +85,15 @@ does not collide with ADR 0002. Every row in §2 carries an archetype.
 
 Trailing slashes are shown as the canonical form; the exact
 `trailingSlash` config is a Phase 2 setting, but it must be consistent —
-one form, enforced. The RSS feed uses absolute URLs, and view events carry
-the request path as an *attribute* (ADR 0020), so two spellings of one page
-would produce two link targets and two path values for the same content.
-**The analytics key itself is not a path** — it is `<collection>:<id>`
-(`content-model.md` §2, ADR 0024), chosen precisely so that presentation
-decisions like this one cannot split a page's history. The non-canonical
-spelling must redirect, never reach the 404.
+one form, enforced, because the RSS feed uses absolute URLs and two
+spellings of one page would produce two link targets for the same content.
+The non-canonical spelling must redirect, never reach the 404.
+
+**Analytics keys are never paths** — content pages use `<collection>:<id>`
+and the one static page that emits events uses `page:home`
+(`content-model.md` §2, §6; ADR 0024). This is exactly why a trailing-slash
+change cannot split a page's history: the key is a name the content model
+assigns, not a URL.
 
 ---
 
@@ -126,11 +128,10 @@ this label.
   line pointing at `/about`.
 - **Carries the portrait?** **No** — ADR 0018 is explicit: About + favicon
   only, and the hero is the mark's register, not the person's.
-- **Dynamic layer:** a view-event beacon only — no reads, nothing rendered
-  from the API. The home page must not *depend* on the API, which a
-  fire-and-forget write does not create; and as the site's actual entry
-  point it is where ADR 0020's per-referrer aggregation is worth most
-  (`content-model.md` §6).
+- **Dynamic layer:** a view-event beacon only, keyed `page:home` — no
+  reads, nothing rendered from the API. Included because this is the site's
+  entry point, where ADR 0020's per-referrer aggregation is worth most; it
+  is the only static page that emits an event (`content-model.md` §6).
 
 ### 2. `/writing/` — original articles (English)
 
@@ -140,7 +141,9 @@ this label.
 - **States:** populated · **empty state required** (the site will launch with
   few or zero entries — see `page-briefs/`).
 - **Dynamic layer:** optional per-entry view counts, progressive
-  enhancement, degrade to absence (ADR 0019). No reactions on the index.
+  enhancement, degrade to absence (ADR 0019) — **off at launch**, so the
+  route ships zero JavaScript until it is turned on. No reactions on the
+  index, and **no view event** (`content-model.md` §6).
 - **Cross-link:** persistent pointer to the Hebrew translations (§3).
 
 ### 3. `/writing/[id]/` — an original article
@@ -183,7 +186,8 @@ this label.
   pattern).
 - **States:** populated · empty state not required in practice (there are
   already two real projects) but specified anyway.
-- **Dynamic layer:** none.
+- **Dynamic layer:** none — no reads, and **no view event**. This route
+  ships zero JavaScript and keeps it (`content-model.md` §6).
 
 ### 7. `/projects/[id]/` — a project case study — **OPTIONAL PER PROJECT**
 
@@ -209,6 +213,8 @@ this label.
   bio, and quiet details meet — reference density stays at zero here. The
   person carries this page, not the symbols.
 - **CV:** the PDF is linked from this page. It is not a route (§4).
+- **Dynamic layer:** none — no reads, no view event, zero JavaScript
+  (`content-model.md` §6).
 
 ### 9. `/colophon/` — how this site is built
 
@@ -232,9 +238,12 @@ this label.
   fails the M1 anti-test), `/how-this-works` (verbose).
 - **Nav placement:** footer only, not primary nav — it is a reward for the
   curious, not a headline claim. Consistent with restraint.
-- **Dynamic layer:** none. Notably it must **not** display live build or
-  deploy status; that would make a static page depend on the API and invert
-  the R4 anchor.
+- **Dynamic layer:** none — no reads, and **no view event**. Two distinct
+  reasons, both load-bearing. It must **not** display live build or deploy
+  status: that would make a static page depend on the API and invert the R4
+  anchor. And it emits no beacon, so the page ships zero JavaScript — a page
+  arguing for a restrained stack while carrying a script to measure who read
+  the argument would undercut itself (`content-model.md` §6).
 - **Page vs article — the alternative Tal rejected at checkpoint 1.** The
   same material could ship as a dated article at
   `/writing/how-this-site-is-built/`: it would enter the feed, sit where
@@ -268,6 +277,8 @@ this label.
   real ongoing cost. Static links only.
 - **Voice constraint:** the "let's connect" phrase family is banned and this
   is the single page most likely to reach for it (symbol map, banned #6).
+- **Dynamic layer:** none — no reads, no view event, zero JavaScript
+  (`content-model.md` §6). The absent form is a separate decision, above.
 - **Honest note:** this page is thin by nature — roughly fifty words and
   three links is its honest maximum, not a strawman. It survives on Tal's
   own list of required pages, and on one substantive argument: "open to
@@ -291,6 +302,11 @@ this label.
   features. It **must not.** No hint, no label, no nudge toward the
   incantation (ADR 0002, symbol map banned #7). It points to `/writing/` and
   `/` and nothing else.
+- **Dynamic layer:** none — no reads, no view event, zero JavaScript. A 404
+  beacon was considered and rejected on data-model grounds: it could record
+  that *a* 404 occurred but not *which URL broke*, and making it record that
+  means storing arbitrary visitor-supplied paths (`content-model.md` §6).
+  Broken inbound links are a server-log question.
 
 ### 11b. `/he/404` — the Hebrew error page
 
@@ -306,7 +322,8 @@ an English error page.
   English 404 *recoverable*, which is not the same as *coherent*.
 - **Scope:** it is the same minimal composition as `/404`, in Hebrew, RTL,
   pointing at `/he/writing/` and `/`. Every exclusion binding on `/404`
-  binds here identically — above all, no hint of a second theme.
+  binds here identically — above all, no hint of a second theme, and no
+  view event or JavaScript of any kind.
 - **Mechanism, flagged not asserted:** a static build emits one conventional
   `404.html`; serving a different error page for the `/he/*` prefix is a
   `handle_errors` matcher in the Caddyfile (`architecture-decision.md` §4

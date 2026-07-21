@@ -8,7 +8,7 @@ Mission 4 · 2026-07-21
 | Archetype | overview — entry rows, chip badges (`sitemap.md` §2 row 2) |
 | Collection | `writing` (`content-model.md` §3.1), non-draft, `pubDate` desc |
 | `lang` / `dir` | `en` / `ltr` — from the locale, not frontmatter (`content-model.md` §5) |
-| Dynamic layer | optional per-entry view counts — **off at launch**, see §5 |
+| Dynamic layer | optional per-entry view counts — **off at launch**, see §5. No view event on the index (`content-model.md` §6) |
 | Feed | `/rss.xml` (footer, per `navigation-spec.md` §4.1) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · writing` |
 

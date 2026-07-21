@@ -8,7 +8,7 @@ Mission 4 · 2026-07-21
 | Archetype | deep-dive editorial (`sitemap.md` §2 row 8) |
 | Collection | none — authored static page (`content-model.md` §1) |
 | `lang` / `dir` | `en` / `ltr` |
-| Dynamic layer | **none** |
+| Dynamic layer | **none** — no reads, no view event; zero JavaScript (`content-model.md` §6) |
 | Binding obligation | reserves the bio-beside-portrait slot; **no other route carries the portrait** (ADR 0018, `hero-and-illustration.md` §3) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · about` |
 

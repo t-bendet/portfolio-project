@@ -86,17 +86,25 @@ defers.
   `<collection>:<id>` key, which is what M3 meant by "articles referenced by
   stable content `id` so comments tables can arrive later without reshaping
   anything."
-- **Scope of "never the URL path" (decision rule 3): it binds
-  collection-backed pages.** Static pages — `/`, `/about/`, `/colophon/`,
-  `/contact/`, the two 404s — have no collection entry and are identified in
-  view events by their route path. That is safe for them specifically
-  because the static route set is small, enumerated in `sitemap.md` §1, and
-  changes only by an explicit sitemap decision; content entries are numerous
-  and renameable, which is precisely why the rule exists for them. **View
-  events fire on every public page, not only content pages**, because a
-  write is a fire-and-forget beacon that creates no rendering dependency —
-  and because ADR 0020's per-referrer aggregation is worth most at the
-  site's entry point.
+- **View events fire on the three content detail routes and on `/`, and
+  nowhere else.** A write is a fire-and-forget beacon that creates no
+  rendering dependency, so the boundary is not about dependency — it is
+  about **cost against R1**. A beacon is client JavaScript, and `/about/`,
+  `/colophon/`, `/contact/`, `/projects/` and both 404s ship none; a
+  universal beacon would give six zero-JS routes their first script purely
+  to be counted, against the top-weighted requirement of M3's evaluation.
+  `/` is included because ADR 0020's per-referrer aggregation is worth most
+  at the site's entry point. **Accepted cost, named:** no traffic data for
+  those six routes. The 404s are excluded additionally on data-model
+  grounds — an event there could record that *a* 404 occurred but not
+  *which URL broke*, and making it record that would mean storing arbitrary
+  visitor-supplied paths, pushing against ADR 0020's "nothing stored
+  identifies a visitor".
+- **Decision rule 3 ("never the URL path") holds without exception.** Static
+  pages that emit events use a reserved `page:` namespace with an explicitly
+  assigned name — currently `page:home` alone — not their URL. A static
+  page's key is therefore a name this model assigns, which no presentation
+  decision can respell.
 - `trailingSlash` must be configured to one form and enforced, because both
   the feed and the analytics key path-adjacent surfaces would otherwise
   admit two spellings of one page. The non-canonical spelling must redirect,

@@ -1,14 +1,17 @@
-# Page Brief — Not found (`/404`)
+# Page Brief — Not found (`/404` and `/he/404`)
 
 Mission 4 · 2026-07-21
 
+**This brief governs both 404 routes.** They are one composition in two
+locales; every rule below binds both unless a row says otherwise (§5).
+
 | | |
 |---|---|
-| Route | `/404` — served for any unresolved path (`sitemap.md` §2 row 11) |
+| Route | `/404` — any unresolved path outside `/he/*` (`sitemap.md` §2 row 11) · `/he/404` — any unresolved path under `/he/*` (`sitemap.md` §11b) |
 | Archetype | minimal |
 | Collection | none |
-| `lang` / `dir` | `en` / `ltr` |
-| Dynamic layer | **none** — no view event, no counts, nothing |
+| `lang` / `dir` | `/404`: `en` / `ltr` · `/he/404`: `he` / `rtl` |
+| Dynamic layer | **none** — no view event, no counts, nothing; zero JavaScript. The 404 beacon was considered and rejected on data-model grounds (`content-model.md` §6) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · 404`; **no nav item is current** |
 
 Basis (law): `sitemap.md` §1 (canonical trailing-slash form), §2 row 11 ·
@@ -63,10 +66,11 @@ static bundle is served from disk.
 canonical trailing-slash form, consistently enforced. The non-canonical
 spelling of a real page must **redirect** to the canonical one, never render
 this page. Three reasons: it is the most common source of false 404s on a
-static site; `sitemap.md` §1 already flags that two spellings of one page
-would split its analytics counts (`content-model.md` §2 keys rows by content
-`id` precisely to avoid path-shaped keys, but the ADR 0020 event still records
-a `path`); and a visitor who typed a real address correctly-but-differently
+static site; two spellings of one page would produce two link targets in the
+feed (`sitemap.md` §1), and while analytics counts are safe from this by
+construction — `content-model.md` §2 keys every event by content `id` or an
+assigned `page:` name, never by path — a redirect is still the correct
+behaviour; and a visitor who typed a real address correctly-but-differently
 has not made an error worth an error page. Recorded here because "what must
 *not* reach the 404" is part of this route's specification.
 
