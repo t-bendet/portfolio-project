@@ -1,8 +1,9 @@
 # Improvements Backlog
 
-Five improvements identified at the end of the scaffolding session (2026-07-20),
-deliberately NOT implemented — to be folded in by Tal while working, once real
-mission experience confirms or corrects them. Ranked by leverage.
+Improvements identified but deliberately NOT implemented — to be folded in by
+Tal while working, once real mission experience confirms or corrects them.
+Ranked by leverage. Items 1–5 come from the scaffolding session (2026-07-20);
+item 6 was added 2026-07-21.
 
 ---
 
@@ -117,6 +118,69 @@ the moment.
 
 ---
 
+## 6. Decide the plugin extraction boundary before M5 packages anything
+
+*(Added 2026-07-21, from reading the handbook — not yet tested against mission
+experience.)*
+
+**Problem.** `docs/HANDBOOK.md` §5 promises the eight capability skills
+"travel in the future `portfolio-workshop` plugin." All eight currently carry
+T://bendet specifics, so that promise cannot be kept as written. The mission
+skills (`m1-identity` … `m6-blueprint-gate`) are **not** the issue — they are
+the call site in the function/call-site split, and project specifics belong
+there by design. The leakage is in the half that ships.
+
+Three kinds of leakage, in ascending severity:
+
+| Kind | Where | Why it matters |
+|---|---|---|
+| **Role name** | `adr-keeper:29,35` · `mission-protocol:27` · `prompt-craft:20` · `tech-eval:20` · `security-review:28` | "Escalate to Tal" is a *role* (the human who arbitrates) wearing a proper noun. Visibly wrong to any reader; find-and-replaceable. |
+| **Identity content** | `brand-voice:9,10,20` — `T://bendet` namespace, eyebrow format, Marauder's Map / HP layer | Suggests **mis-classification, not contamination**: strip the specifics and one reusable idea remains (the anti-theme-soup rule for adding a symbolic layer). The rest is a project brand book shelved as a capability. |
+| **Domain assumption** | `security-review:27` ("a portfolio is a low-value target; do not inflate") · `performance-review:15` (Hebrew subsets) · `design-tokens:15,28` (Hebrew coverage; "Tal's prototypes") · `tech-eval:20` (solo-dev maintenance budget) | The dangerous class. A name is *visibly* wrong; a baked-in threat model reads as **calibration guidance** and silently under-rates severity in a project where the asset value is not low. |
+
+**Fix.** This is a decision, not a cleanup — it wants an ADR (M5's, distinct
+from ADR 0013, which asks where the *app* lives; this asks what the *workshop*
+exports). Candidate directions:
+
+- **(A) Parameterize in place.** Give each capability skill a project-profile
+  header — owner/escalation target, asset-value tier for security calibration,
+  script/RTL requirements, team size — with the generic method below it, and
+  ship placeholders in the plugin. The seam already exists and is already
+  specified: `prompt-craft:27` prescribes "a PROJECT PARAMETERS block at the
+  top (T://bendet specifics — swapped per project)," and every mission skill
+  carries one. This applies the existing pattern to the other half.
+- **(B) One profile file.** A single `docs/PROJECT-PROFILE.md` that skills
+  point at. No drift across eight files, but it costs an indirection at exactly
+  the moment a skill needs the value — and skills that read cleanly
+  top-to-bottom get followed more reliably under context pressure.
+- **(C) Reclassify `brand-voice`.** Split the thin reusable method from the
+  thick project brand book, or accept it as a project artifact and drop it from
+  the plugin set. Cheapest honest resolution of the middle row.
+- **(D) Don't ship a plugin.** `docs/HANDBOOK.md` §1 says the machinery is
+  "deliberately part of the portfolio's story." A workshop visibly built *for
+  this project* is arguably the better portfolio artifact; extraction only pays
+  if reuse or publication is genuinely intended. Rejecting extraction is a
+  legitimate outcome — but then §5's plugin claim should be reworded.
+
+**Honest tradeoff.** Parameterizing has a real cost. "Escalate to Tal" is more
+actionable than "escalate to the project owner defined in your profile."
+Abstraction is how skills become vague, and vague skills get ignored under
+context pressure — the exact failure mode the hook layer exists to compensate
+for. Do not extract on principle; extract only if (D) is actually rejected.
+
+**Sequencing note.** Nothing here can be acted on now: M5 is the only mission
+licensed to modify `.claude/`, and `protect-workshop.ts` blocks the writes
+mechanically. Recorded here so M5 inherits the finding instead of
+rediscovering it. Note also that M6 runs `security-review` in **design mode**
+against this very blueprint — so `security-review:27`'s "low-value target"
+line is load-bearing for *this* project's threat model too, not only for
+hypothetical plugin consumers. Sanitizing it is not free.
+
+**Effort:** the ADR is one session of judgment; the mechanical edits are
+perhaps an hour, but only in M5, and only for whichever direction wins.
+
+---
+
 ## Deliberately rejected
 
 More hooks, more validators, more agent sophistication. The enforcement layer
@@ -134,6 +198,7 @@ it must clear: does a real friction-log entry demand it?
 | Before /m1 | #1 (timeboxes — 5 minutes), #3 (fork experiment) |
 | During /m1 | #4 (first friction log), #5 (start the story capture) |
 | Before Phase 2 | #2 (test suite — becomes CI's first job) |
+| During /m5 | #6 (plugin boundary — M5 owns `.claude/`; decide before packaging) |
 
 Note: implementing #2–#4 touches the machinery surface — the docs-sync hook
 will (correctly) demand a HANDBOOK update + `node scripts/sync-docs.ts ack`,
