@@ -1,11 +1,11 @@
 ---
 id: 0006
 title: Typography system (DM Mono / Fraunces / IBM Plex Mono)
-status: reopened
+status: superseded
 date: 2026-07-20
 decided-by: pre-workshop
 reopened-by: mission-2
-superseded-by: null
+superseded-by: 0016
 ---
 
 ## Decision (as originally made)

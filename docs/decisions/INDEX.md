@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 6 · proposed: 1 · reopened: 6 · superseded: 2
+Summary: active: 7 · proposed: 1 · reopened: 5 · superseded: 3
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
@@ -12,7 +12,7 @@ Summary: active: 6 · proposed: 1 · reopened: 6 · superseded: 2
 | [0003](./0003-framework-astro-6.md) | Framework is Astro 6 | `reopened` | reopened by mission-3 |
 | [0004](./0004-hyde-dark-palette.md) | Hyde default dark palette | `superseded` | superseded by 0015 |
 | [0005](./0005-jekyll-warm-palette.md) | Jekyll warm editorial palette | `superseded` | superseded by 0015 |
-| [0006](./0006-typography-system.md) | Typography system (DM Mono / Fraunces / IBM Plex Mono) | `reopened` | reopened by mission-2 |
+| [0006](./0006-typography-system.md) | Typography system (DM Mono / Fraunces / IBM Plex Mono) | `superseded` | superseded by 0016 |
 | [0007](./0007-hero-terminal-animation.md) | Hero is a terminal window with the T://bendet typing animation | `reopened` | reopened by mission-2 |
 | [0008](./0008-personal-illustration-brand.md) | Hand-drawn personal illustration as brand element and favicon | `reopened` | reopened by mission-2 |
 | [0009](./0009-site-structure-five-routes.md) | Site structure — five routes with per-route theme assignment | `reopened` | reopened by mission-4 |
@@ -22,3 +22,4 @@ Summary: active: 6 · proposed: 1 · reopened: 6 · superseded: 2
 | [0013](./0013-repo-topology.md) | Repository topology — workshop and app together or separate | `proposed` |  |
 | [0014](./0014-mythology-subordinate-naming-register.md) | Greek mythology enters only as a bounded naming register over real infrastructure | `active` |  |
 | [0015](./0015-prototype-exact-palette.md) | Palette is prototype-exact — two temperatures, six accents, minimal AA nudges | `active` |  |
+| [0016](./0016-prototype-typography-hebrew-companions.md) | Typography is prototype-exact (Syne+DM Mono / Fraunces+IBM Plex Mono) with verified Hebrew companions | `active` |  |
