@@ -45,7 +45,7 @@ discovering that the article they are reading is not Tal's.
 | 4 | Scope pointer | one line: Tal's own writing is in English at `/writing/`, labelled in English per the label rule (`navigation-spec.md` §2.2). This is the seam, shown | always |
 | 5 | Entry list | one row per entry: Hebrew `title` (link), Hebrew `description`, translation `pubDate`, `original.author` in Latin script, `tags` as non-linking chips | when ≥1 entry |
 | 6 | Empty block | replaces section 5 — see §4 | when 0 entries |
-| 7 | Footer | `/he/rss.xml`, colophon, direct links, the Hebrew link (marked current) | always |
+| 7 | Footer | `/he/rss.xml`, colophon, direct links, the Hebrew link — **not** marked current here, even though this is its destination: the nav occurrence carries `aria-current`, the footer duplicate carries nothing (`navigation-spec.md` §2.3, test N-4) | always |
 
 ### 2.1 Why rows carry the original author
 

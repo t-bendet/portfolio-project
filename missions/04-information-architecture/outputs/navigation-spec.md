@@ -37,6 +37,15 @@ DOM order:
 | 2 | Main | the page (per `page-briefs/`) | `<main id="content">` |
 | 3 | Footer | feed · colophon · direct links · the Hebrew link | `<footer>` |
 
+**Every page also carries one inline head script** — the ADR 0002 theme
+mechanism (keydown buffer, `data-theme`, `localStorage`), which
+`tokens-reference.md` §2 requires to run before first paint. It is chrome in
+the same sense the footer is: present on all twelve routes, identical, and
+not a per-page decision. **Consequence worth stating once here so no page
+brief has to rediscover it: there are no zero-JS routes on this site.** When
+a brief says a route has "no JavaScript", it means no *dynamic-layer* script
+— no beacon, no API reads. It never means an empty `<head>`.
+
 **INV-3 — chrome is content-independent.** The header, nav, eyebrow, and
 footer render identically whether the site has zero articles or two hundred.
 No chrome element appears, disappears, or changes label as a function of how

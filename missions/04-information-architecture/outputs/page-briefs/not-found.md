@@ -11,7 +11,7 @@ locales; every rule below binds both unless a row says otherwise (§5).
 | Archetype | minimal |
 | Collection | none |
 | `lang` / `dir` | `/404`: `en` / `ltr` · `/he/404`: `he` / `rtl` |
-| Dynamic layer | **none** — no view event, no counts, nothing; zero JavaScript. The 404 beacon was considered and rejected on data-model grounds (`content-model.md` §6) |
+| Dynamic layer | **none** — no view event, no counts, nothing; no dynamic-layer script (the only client script on this route is the global theme script — ADR 0002, `tokens-reference.md` §2). The 404 beacon was considered and rejected on data-model grounds (`content-model.md` §6) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · 404`; **no nav item is current** |
 
 Basis (law): `sitemap.md` §1 (canonical trailing-slash form), §2 row 11 ·

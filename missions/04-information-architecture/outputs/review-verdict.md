@@ -2,477 +2,462 @@
 mission: m4
 reviewer: red-team-reviewer
 date: 2026-07-21
-cycle: 2
-verdict: REJECTED
+cycle: 3
+verdict: APPROVED
 ---
 
-# Red-team review — Mission 4 (Information Architecture), cycle 2
+# Red-team review — Mission 4 (Information Architecture), cycle 3
 
 Reviewed in fresh context against the M4 output contract, CLAUDE.md, all 24
 ADRs in `docs/decisions/`, the closed outputs of M1/M2/M3, and the
-`adr-keeper`, `brand-voice`, and `mission-protocol` skills. No
+`adr-keeper`, `brand-voice` and `mission-protocol` skills. No
 producing-conversation content was available to me and none was used. I read
-the cycle-1 verdict first, as instructed, and re-checked each of its eleven
-findings against the current artifacts rather than trusting the revision.
+the cycle-2 verdict first, as instructed, then re-checked every cycle-1 and
+cycle-2 finding against the current artifacts rather than trusting the
+revision, and swept specifically for the failure mode this mission has now
+exhibited twice — a change made in one place and its consequences missed
+elsewhere.
 
 ## Verdict summary
 
-**REJECTED on one blocking finding, which is a direct product of the cycle-1
-revision.**
+**APPROVED**, with six non-blocking findings, two of which must be fixed
+before Mission 5 consumes these documents.
 
-Both cycle-1 blocking findings are genuinely fixed — `/he/404` is now
-consistent across all five deliverables, both ADRs, and every route count
-(finding 1), and ADR 0023 now records its divergence from `active` ADR 0019
-at ADR level with a defensible lifecycle argument (finding 2). Seven of the
-nine non-blocking findings are fixed as well.
+**F12, the cycle-2 blocking finding, is genuinely fixed.** The mission did
+not propagate the reversal — it re-made the decision, and this time it
+propagated. I checked all fifteen surfaces individually (every `sitemap.md`
+§2 row, `content-model.md` §2 and §6, ADR 0024, and all eleven briefs'
+headers, state tables and body prose). **They agree, with no exceptions and
+no stale citations.** The two false citations of `content-model.md` §6 in
+`home.md` §5 and `projects-index.md` are gone; the `sitemap.md` §1
+"not a path" sentence and the view-event boundary no longer contradict each
+other; the `page:` namespace dissolves F13 as claimed. F14, F16, F17 and F19
+are fixed. This is the first cycle in which a change was carried to every
+document it touches.
 
-The failure is elsewhere. Cycle-1 finding **4** (non-blocking) invited the
-mission to either record the no-view-events-on-static-pages exclusion as a
-tradeoff *or* reverse it. The mission reversed it — correctly, on the
-merits — in `content-model.md` §6, `sitemap.md` §2 row 1, and ADR 0024's
-Consequences, and then **did not propagate the reversal to the six page
-briefs and the four sitemap rows that still assert the opposite.** `ADR
-0024` is `active` and says view events fire on every public page;
-`not-found.md` says "**none** — no view event, no counts, nothing";
-`projects-index.md` and `home.md` cite `content-model.md` §6 for rows that
-§6 now contains. This is the same defect class the cycle-1 reviewer rejected
-on — law in one document, contradicted in the documents Phase 2 builds
-from — relocated rather than avoided.
-
-Nothing in the decisions themselves needs to change. The fix is propagation
-plus one un-stated cost.
+The findings that remain are of a different and smaller class. The largest
+(F20) is that the corrected decision is defended with a factual claim that
+`active` ADR 0002 and closed M2 law contradict: six routes are said to
+"ship no script at all", when every public page must carry the theme
+mechanism's inline head script. I considered blocking on it and decided not
+to — §2 below states that reasoning in full, and states what would have
+changed it.
 
 ---
 
 ## 0. What I could and could not run
 
-**I had no shell in this session** (Read / Grep / Glob / Write only), so I
-could not execute `node scripts/validate-adr.ts`, `node
-scripts/reindex-decisions.ts`, or `git diff`, and no docs tool was available
-either. This repeats cycle 1's limitation and the revision should still run
-the validator. What I did instead, and what it establishes:
+**No shell** (Read / Grep / Glob / Write only), no `git` command, no network,
+no docs tool. What I did instead:
 
 - **ADR validation** — read `scripts/validate-adr.ts` and
-  `scripts/lib/frontmatter.ts` and applied every rule by hand to all 24 ADR
-  files (filename regex, `id`/filename agreement, required keys, status
-  enum, `YYYY-MM-DD`, `superseded-by` non-null on both superseded ADRs, flat
-  scalar frontmatter, no duplicate keys). All 24 pass. `null` values on
-  `reopened-by`/`superseded-by` for `active` ADRs are accepted by the parser
-  and match the existing convention in 0013/0019/0020/0021.
+  `scripts/lib/frontmatter.ts` and applied every rule by hand: filename
+  regex, `id`/filename agreement, the four required keys, status enum,
+  `YYYY-MM-DD`, `superseded-by` non-null on both superseded ADRs, flat scalar
+  values, no indentation, no arrays, no duplicate keys. I inspected the
+  frontmatter of all 24 files. **All 24 pass.** `null` on
+  `reopened-by`/`superseded-by` for `active` ADRs is accepted by the parser
+  and matches existing convention.
 - **INDEX.md staleness** — read `scripts/reindex-decisions.ts` and
-  reconstructed its output by hand: `readdirSync().sort()` gives 0001→0024;
-  every row's id, title, status, and note string matches its source file;
-  `Object.entries(counts).sort()` yields `active: 16 · superseded: 8`, and
-  the files are exactly 16 active and 8 superseded (0003–0010). **INDEX.md
-  is byte-consistent with a regeneration.** ADR 0022's corrected title
-  ("twelve public routes") is present in the index, so the index was
-  regenerated after the cycle-1 fix.
-- **Commit state (contract item 5)** — I could not run `git`, but
-  `.git/logs/HEAD` is readable and records the mission's commits:
-  `ab89bcf` (sitemap), `5de1134` (content-model), **`d0c1ec8` "M4: page
-  briefs, navigation spec, ADRs 0022-0024; 0009/0010 superseded"**, and
-  **`169e7f0` "M4: cycle-1 red-team rejection addressed"** at HEAD. Contract
-  item 5's "committed" requirement is satisfied. (The git snapshot supplied
-  to me was stale — it showed HEAD at `5de1134`. The reflog is
-  authoritative.)
-- **0009/0010 frontmatter-only change** — still **unverified**. Without
-  `git diff` I cannot prove no reasoning was edited. Both bodies read as
-  untouched pre-workshop records in the shapes `adr-keeper` allows for
-  `reopened` records (`## Decision (as originally made)`, `## Why reopened`,
-  0010's `## Preserved requirement`), and 0009's "Why reopened" still
-  carries the sentence that generated this mission's mandate — the sentence
-  an editor would most likely have updated. Both retain `reopened-by:
-  mission-4` alongside `superseded` / `superseded-by`, which preserves
-  history and passes the validator. Recommend the mission lead run
-  `git diff 678ca70 -- docs/decisions/0009-*.md docs/decisions/0010-*.md`.
-- **Not verifiable by me:** the upstream `CONTRIBUTING.md` quote in
-  `content-model.md` §4.0 (no network), and `@astrojs/sitemap`'s actual
-  `i18n` behaviour (no docs tool). See §5.
+  reconstructed its output by hand from all 24 sources: every row's id,
+  title, status and note string matches its file exactly; the sort is the
+  filename sort 0001→0024; `Object.entries(counts).sort()` yields
+  `active: 16 · superseded: 8`, and the files are exactly 16 active
+  (0001, 0002, 0011–0024) and 8 superseded (0003–0010). **INDEX.md is
+  consistent with a regeneration.** Run the script anyway for confirmation.
+- **Commit state (contract item 5)** — `.git/logs/HEAD` records
+  **`603ae66` "M4: cycle-2 rejection addressed — view-event scope re-decided
+  and propagated to all 15 surfaces"** at HEAD, after `169e7f0` (cycle-1
+  fixes) and `d0c1ec8` (briefs, nav spec, ADRs 0022–0024, 0009/0010
+  superseded). Contract item 5's "committed" requirement is satisfied.
+- **STATUS.md** — `revision-cycles: 2`, `status: in-progress`. Correct at
+  this point in the loop (`mission-protocol` §6: increment on each
+  rejection). Handoff notes and "inputs actually read" are still placeheld
+  for closure, which is correct.
 
 ---
 
-## 1. Cycle-1 findings — current status
+## 1. Status of every prior finding
 
-| # | Cycle-1 finding | Status |
+### Cycle-1 findings
+
+| # | Cycle-1 finding | Status now |
 |---|---|---|
-| 1 | BLOCKING — `/he/404` not propagated | **FIXED** |
-| 2 | BLOCKING — ADR 0023 vs `active` ADR 0019 on hreflang | **FIXED** (residual note, F15) |
-| 3 | sitemap §1 "analytics `path` key" | **FIXED**, but the replacement text is now false for static pages — see F12 |
-| 4 | No view event on `/`, indexes, static pages | **FIX INTRODUCED A NEW PROBLEM — see F12 (BLOCKING)** |
+| 1 | BLOCKING — `/he/404` not propagated | **FIXED** (re-verified; see below) |
+| 2 | BLOCKING — ADR 0023 vs `active` ADR 0019 on hreflang | **FIXED** |
+| 3 | sitemap §1 "analytics `path` key" | **FIXED** — and now consistent with the view-event boundary |
+| 4 | No view event on `/`, indexes, static pages | **RESOLVED** — decision re-made and propagated (see F12 below) |
 | 5 | CI assertion did not test "states it is a translation" | **FIXED** |
 | 6 | Stale pre-checkpoint conditionals in `content-model.md` §4.1/§4.4 | **FIXED** |
-| 7 | "minimal" archetype not defined by M2 | **FIXED in the mission outputs; not at ADR level** — F16 |
-| 8 | `aria-current` on the duplicated Hebrew link | **PARTIALLY FIXED** — F14 |
-| 9 | `[slug]` vs `[id]` | **FIXED** |
+| 7 | "minimal" archetype not defined by M2 | **FIXED**, including at ADR level (F16) |
+| 8 | `aria-current` on the duplicated Hebrew link | **STILL PARTIAL** — third location, see **F21** |
+| 9 | `[slug]` vs `[id]` | **FIXED** (`grep` for `[slug]`: zero hits repo-wide) |
 | 10 | `contact.md` sourcing overclaim | **FIXED** |
-| 11 | "Three regions" over four rows | **NOT FIXED** — F17 (cosmetic) |
+| 11 | "Three regions" over four rows | **FIXED** (F17) |
 
-### 1 — FIXED. What I checked.
+Re-verification of item 1, because a propagation pass is exactly where a
+previously-fixed item gets re-broken: `/he/404` still appears in
+`sitemap.md` §1 row 11b and §2 §11b, `content-model.md` §1 line 28 and §6,
+`navigation-spec.md` §1/§2.3/§3.2/§3.4/§7.1, `not-found.md` §5 and §7, and
+`translations-article.md` §3 and §6. Test N-6's eight distinct segments still
+hold over the twelve route rows. ADR 0022's title still reads "twelve public
+routes" and INDEX.md carries it. Nothing was lost.
 
-`/he/404` now appears in: `sitemap.md` §1 row 11b and §2 §11b;
-`content-model.md` §1's collection-less list (line 28) and §6's table (line
-550); `navigation-spec.md` §1 ("all **twelve** public routes"), §2.3 (no
-owning nav item), §3.2 (eyebrow row + the explicit statement that `/404` and
-`/he/404` **share** the `404` segment, which keeps test N-6's eight-segment
-count true), §3.4 (`<title>` row), §7.1 (link inventory row);
-`page-briefs/not-found.md` §5 and §7; `page-briefs/translations-article.md`
-§3 and §6. Test N-6's eight segments are {home, writing, תרגומים, projects,
-about, colophon, contact, 404} — I counted the §3.2 table: twelve route rows,
-eight distinct segments. Correct.
+### Cycle-2 findings
 
-`translations-article.md` §6 no longer contradicts the sitemap: the stale
-"M4 does not invent a second one" sentence has been **rewritten in place with
-the correction narrated** ("This brief originally recorded the opposite …
-Corrected here rather than deleted, so the change is legible"), matching how
-`not-found.md` §7 handles its own superseded rejection (`~~struck~~` +
-"Accepted, not rejected"). That is the right treatment.
-
-ADR 0022's title now reads "twelve public routes" and its Decision table
-lists exactly twelve public routes; INDEX.md carries the corrected title.
-`grep` for `eleven` across the repo returns only ADR 0022's "the eleven
-briefs in `outputs/page-briefs/`" (there are exactly 11 brief files — twelve
-routes, eleven briefs, because `not-found.md` governs both 404s) and
-`colophon.md` §3's "all eleven sections" (its §2 table has exactly 11 rows).
-Both correct. `grep` for `[slug]` returns zero hits anywhere.
-
-### 2 — FIXED. What I checked, and why I accept the mechanism.
-
-ADR 0023's Consequences now carry a dedicated paragraph that quotes ADR
-0019's clause verbatim ("hreflang via @astrojs/sitemap"), states that both
-are `active` and "instruct opposite markup", states the relationship ("0019
-chose the mechanism, 0023 finds it has nothing valid to declare"), states
-explicitly that 0019 is **not** superseded and its status is untouched, and
-names the one future case (Tal's own bilingual article) where 0019's
-mechanism becomes usable.
-
-**Is "narrowing without superseding" lifecycle-legitimate?** I pushed on
-this because it was flagged as the most likely place for prose cover. I find
-it legitimate, for three independent reasons:
-
-1. `adr-keeper` rule 2 attaches to a **new conclusion** displacing an old
-   one. ADR 0019's conclusion is the framework and architecture; the
-   hreflang clause is one item in a bulleted stack description, and 0023
-   reverses none of the rest. Flipping 0019 to `superseded` would retire the
-   Astro 7.x decision, the container topology, and the API split over one
-   clause — that destroys more history than it preserves, which is the
-   opposite of what the rule protects.
-2. CLAUDE.md: "Flipping any ADR status outside a mission's declared scope →
-   escalate." M4's license is 0009/0010 plus new IA ADRs. Superseding 0019
-   was not available to this mission without escalation, and the cycle-1
-   verdict offered the Consequences note as the alternative remedy. The
-   mission took it and executed it fully rather than minimally.
-3. The substance is a factual correction, not a preference: the option pairs
-   translations *of the same page*, and this site has none. I could not
-   verify `@astrojs/sitemap`'s behaviour (no docs tool), but the direction is
-   safe either way, and I note independently that the pairing the option
-   *would* find — `/writing/` ↔ `/he/writing/` — is precisely a false
-   equivalence, since one indexes Tal's English originals and the other
-   indexes Hebrew translations of third-party work. Declining to emit is
-   correct on the mission's own facts.
-
-Residual, non-blocking: the pointer is one-directional (F15).
-
----
-
-## 2. BLOCKING findings
-
-### F12. BLOCKING — the view-event reversal was applied in three places and contradicted in ten; `active` ADR 0024 is contradicted by six of the eleven page briefs and four sitemap rows
-
-**What I checked.** I grepped `Dynamic layer|view event|view-event`,
-`touches the API|nothing scripted|no dynamic surface`, and read every
-occurrence in context.
-
-**The new law.** `content-model.md` §6 (lines 545–571) now gives **every**
-public route a write row — `/`, `/projects/`, `/about/`, `/colophon/`,
-`/contact/` (line 549) and `/404`, `/he/404` (line 550) — and states "**View
-events fire on every public page.**" `sitemap.md` §2 row 1 was updated to
-match ("a view-event beacon only"). ADR 0024 — `active` — records it in
-Consequences: "**View events fire on every public page, not only content
-pages**", and adds that static pages "are identified in view events by their
-route path."
-
-**What still says the opposite.** These are not ambiguous phrasings; they are
-flat denials, and three of them cite the very section that now contradicts
-them:
-
-*In `page-briefs/` (contract item 3 — the per-page spec Phase 2 builds from):*
-
-| File | Line / § | Text |
+| # | Cycle-2 finding | Status now |
 |---|---|---|
-| `not-found.md` | header, line 11 | "Dynamic layer \| **none** — no view event, no counts, nothing" |
-| `home.md` | header, line 11 | "Dynamic layer \| **none**" |
-| `home.md` | §5, line 143 | "`content-model.md` §6's table gives `/` no row" — **false**; §6 line 549 lists `/` |
-| `projects-index.md` | header, line 11 | "**none** — `content-model.md` §6 gives this route no row" — **false**; §6 line 549 lists `/projects/` |
-| `projects-index.md` | §2.4, §3 | "`content-model.md` §6: no dynamic surface on this route at all"; "this page never touches the API" |
-| `about.md` | header line 11; §3 lines 101–102 | "**none**"; "this page never touches the API"; "**there is nothing scripted on this page**" |
-| `contact.md` | header line 11; §3 line 99 | "**none**"; "no dynamic surface exists here" |
-| `colophon.md` | header, line 11 | "**none, and this is load-bearing**" |
-| `writing-index.md` / `translations-index.md` | headers | describe reads only; the view-event write is unmentioned |
+| F12 | **BLOCKING** — reversal applied in 3 places, contradicted in 10 | **FIXED** — verified surface by surface, §1.1 |
+| F13 | static-page identifier under-specified; 404 justification undeliverable | **DISSOLVED** — verified, §1.2 |
+| F14 | `navigation-spec.md` §4.1 footer cell "marked current" | **FIXED in §4.1** — but the same claim survives in `translations-index.md`: **F21** |
+| F15 | 0023→0019 pointer one-directional | **RECORDED** as M5 handoff item (`content-model.md` §9 item 3) — correct treatment; no in-license fix inside M4 |
+| F16 | "minimal" undefined in ADR 0022 | **FIXED** — 0022's Decision now carries the definition, the "adds no tokens/patterns/rules" clause, the pointer to `sitemap.md` §2, and the escape condition |
+| F17 | "Three regions" over four rows | **FIXED** — `navigation-spec.md` §1 now reads "Four regions (a skip link, then three landmarks)" over a four-row table |
+| F18 | CI assertions are M4 impositions, not M3 inheritance | **RECORDED** as M5 handoff item (`content-model.md` §9 item 4) |
+| F19 | `not-found.md` header described only `/404` | **FIXED** — the header now scopes each route by prefix |
 
-*In `sitemap.md` — which `content-model.md` names as its own basis (law):*
+#### 1.1 F12 — fixed. Every surface, checked.
 
-- §2 row 6 (`/projects/`): "**Dynamic layer:** none."
-- §2 row 9 (`/colophon/`): "**Dynamic layer:** none."
-- §2 rows 8, 10, 11, 11b (`/about/`, `/contact/`, `/404`, `/he/404`): no
-  dynamic-layer statement at all, so `not-found.md`'s "none" is the only
-  thing a reader is told about the 404s.
-- §1's rewritten trailing-slash paragraph — the fix for cycle-1 finding 3 —
-  now asserts "**The analytics key itself is not a path** — it is
-  `<collection>:<id>` … chosen precisely so that presentation decisions like
-  this one cannot split a page's history." Under ADR 0024's own Consequences
-  that is **false for six of the twelve public routes**, whose key *is* a
-  path and *would* be split by exactly the presentation decision that
-  sentence is about. The fix for finding 3 and the fix for finding 4 now
-  contradict each other inside one document.
+The decision now on the record: view events fire on `/writing/[id]/`,
+`/he/writing/[id]/`, `/projects/[id]/` and `/`; nowhere else. I checked each
+statement of it:
 
-**Why this is blocking, not cosmetic.** CLAUDE.md: only `active` ADRs are
-binding, and ADR 0024 is active. A Phase 2 implementer working from
-`not-found.md`, `about.md`, `contact.md`, `colophon.md`, `projects-index.md`,
-or `home.md` ships no beacon on half the site and writes an `about.md` test
-asserting "there is nothing scripted on this page" — which the content model
-now requires to fail. An implementer working from ADR 0024 ships the beacon
-and leaves six briefs' Degraded-state rows untrue. Either way something is
-built wrong, and the analytics dataset the reversal exists to obtain is the
-thing that silently does not arrive.
+| Surface | Says |
+|---|---|
+| `content-model.md` §6 table | four write rows (`writing:<id>`, `translations:<id>`, `projects:<id>`, `page:home`); indexes read-only and off at launch; "every other public route" all-dashes |
+| `sitemap.md` row 1 | beacon only, keyed `page:home`, "the only static page that emits an event" |
+| `sitemap.md` rows 2, 4 | "**no view event**" / "same as `/writing/`" |
+| `sitemap.md` rows 3, 7 | view event POST / "view events only" |
+| `sitemap.md` rows 6, 8, 9, 10, 11, 11b | each carries an explicit dynamic-layer line saying no view event — including rows 8, 10, 11, 11b, which previously had none |
+| ADR 0024 Consequences | "View events fire on the three content detail routes and on `/`, and nowhere else" |
+| `home.md` | header row and §5 both `page:home`; the old false "§6 gives `/` no row" is gone |
+| `projects-index.md` | header, §2.4 and §3 all consistent; the false §6 citation is gone |
+| `about.md`, `contact.md`, `colophon.md`, `not-found.md` | "no view event" — now true |
+| `writing-index.md`, `translations-index.md` | "No view event on the index" stated explicitly in both headers (previously unmentioned) |
+| `writing-article.md`, `translations-article.md`, `project-detail.md` | unchanged and still correct |
 
-**The un-stated cost, which is a second half of the same finding.**
-`content-model.md` §6 argues the reversal in one direction only (per-referrer
-value at the entry point) and never prices it. The price is concrete: a
-fire-and-forget beacon is client JavaScript, so **every public page now ships
-a script**, including `/404` and `/colophon/` — the page whose brief calls
-"no dynamic layer" *load-bearing*. Before the reversal, six routes had no
-script at all. R1 ("near-zero JS") was M3's top-weighted requirement and
-`navigation-spec.md` §2.4 rejects a hamburger menu by citing it. CLAUDE.md
-requires honest tradeoff analysis always; this reversal currently has none.
-Note also that ADR 0024 records the decision in **Consequences** while its
-Decision section's rule 3 still reads, unqualified, "**Never the URL
-path.**" A reader of the Decision alone gets the wrong rule.
+`sitemap.md` §1's trailing-slash paragraph — the collision between the fix
+for cycle-1 finding 3 and the fix for finding 4 — now reads "**Analytics keys
+are never paths** — content pages use `<collection>:<id>` and the one static
+page that emits events uses `page:home`", which is true under the current
+decision rather than true-for-six-routes-only. The two fixes no longer
+contradict each other.
 
-**What fixed looks like.** All four, and none requires changing the
-decision:
+`content-model.md` §6 also does something the protocol should want: it
+records *both* over-corrections and why each was wrong, rather than
+presenting the third answer as if it were the first. That is the right
+treatment of a twice-reversed decision.
 
-1. Update the six brief header rows and the state tables so every public page
-   reads "writes a view event; reads nothing; degrades to absence", with the
-   no-JS/API-down rows using the wording `project-detail.md` §3 and
-   `writing-article.md` §3 already use — "the view event is simply not
-   recorded" — and delete "there is nothing scripted on this page" from
-   `about.md`. Correct the two false citations of `content-model.md` §6 in
-   `home.md` §5 and `projects-index.md` (header, §2.4).
-2. Update `sitemap.md` §2 rows 6 and 9 from "Dynamic layer: none", and give
-   rows 8, 10, 11, 11b an explicit dynamic-layer line. `/colophon/`'s "none"
-   must be restated as what it actually means — **no reads, no live status**
-   — since that is the part that is load-bearing.
-3. Reword `sitemap.md` §1 so the "not a path" claim is scoped to
-   collection-backed pages, matching ADR 0024's Consequences.
-4. State the cost once, where the reversal is argued (`content-model.md` §6):
-   every public page now carries a beacon script; name what that spends
-   against R1 and why it is accepted. If instead the mission concludes the
-   cost is not worth it, withdrawing the reversal and recording the
-   exclusion as a priced tradeoff — cycle-1 finding 4's other branch — is
-   equally acceptable and needs the same propagation pass in reverse.
+#### 1.2 F13 — dissolved, verified rather than accepted
 
----
+Cycle-2's F13 had two halves. Both are gone, and for structural reasons, not
+by assertion:
 
-## 3. NON-BLOCKING findings
+- **The route-path/request-path ambiguity** existed only because static pages
+  were keyed by path. They are not: `/` is keyed `page:home`, an assigned
+  name. `grep` finds no surviving claim that events carry a request path —
+  `sitemap.md` §1's "carry the request path as an attribute" sentence is
+  gone, and the only remaining occurrence of "request path" is
+  `content-model.md` §6's *rejection* of storing them.
+- **The 404 justification that the data model could not deliver** is gone
+  with the 404 beacon, and §6 states plainly why the earlier draft's argument
+  ("a spike of 404s with a referrer is how a broken inbound link announces
+  itself") was not deliverable: ADR 0020 stores the referrer *host*, so the
+  event records that *a* 404 happened, never which URL broke. Dropping the
+  event on that ground also removes the unbounded-key-set and
+  visitor-supplied-string risk against ADR 0020's "nothing stored identifies
+  a visitor." This is a better answer than the one F13 asked for.
 
-Ordered by cost if left. **F13 and F14 should be fixed before Mission 5
-consumes these documents**; the rest are hygiene.
+`not-found.md` §3 carries the same rule correctly ("keys every event by
+content `id` or an assigned `page:` name, never by path").
 
-### F13. NON-BLOCKING — the static-page identifier is under-specified exactly where the reversal's stated benefit lives
+#### 1.3 The `page:` namespace against ADR 0020's event schema
 
-ADR 0024 and `content-model.md` §6 identify static pages by "their **route**
-path". `sitemap.md` §1 says view events "carry the **request** path as an
-attribute (ADR 0020)". For eleven routes these coincide; for the 404s they do
-not, and nothing says which is aggregated. Follow the literal rule and every
-404 event is keyed `/404`, which means the broken URL is never recorded.
-Follow the other and the static key set becomes unbounded and
-visitor-supplied, which destroys the justification the same paragraph gives
-for allowing path keys at all ("the static route set is small, enumerated in
-`sitemap.md` §1, and changes only by an explicit sitemap decision").
+Checked, because the delegation flagged it. ADR 0020 decision 1 describes
+view events as storing "article/path, timestamp, referrer host, coarse UA
+class". ADR 0024 forbids path keys entirely. **This is not a contradiction:**
+0020's "article/path" is an either/or enumeration of what identifies the
+event's subject, and 0024 — which is the ADR whose job is to specify that
+identifier, at 0020's own invitation ("Mission 4 should account for where
+counts/reactions appear") — picks the article form and extends it to the one
+static page that needs one. No markup or schema instruction points two ways.
+Recorded so it is not re-litigated.
 
-This matters because §6 justifies the 404 event specifically: "a spike of
-404s with a referrer is how a broken inbound link announces itself." Under
-the literal rule it cannot announce itself — ADR 0020 stores only the
-**referrer host**, not the referring URL, so the dashboard would show "N
-404s from `news.ycombinator.com`" and neither which page linked wrong nor
-which URL was requested. The decision is defended by a capability the data
-model as written does not deliver.
-
-Related, and the reason I checked ADR 0020's privacy stance: on the
-unbounded reading, a mistyped or rewritten inbound URL can carry
-visitor-identifying material (a token, an address) into a stored string,
-which is the one way this change could brush ADR 0020's "nothing stored
-identifies a visitor." On the literal (route-path) reading it cannot. Fix:
-say which path is stored, and if it is the requested one, bound it (record
-it truncated/normalized, or store only a `404` identifier plus a separate
-capped field).
-
-### F14. NON-BLOCKING — cycle-1 finding 8's fix is partial: `navigation-spec.md` §4.1 still says the footer's Hebrew link is "marked current"
-
-§2.3 now resolves the duplicated-link case correctly and generally ("the
-nav item wins … the footer occurrence carries no current-state attribute …
-when one URL appears in more than one chrome region, the primary nav
-occurrence is the one marked"). But §4.1's footer table cell was not
-updated: "Hebrew translations | … | **same, marked current**". A reader who
-reaches §4.1 first implements the thing §2.3 forbids, and test N-4 fails.
-(If "marked current" was meant visually only, it collides with §2.3's own
-"the current state must not be carried by color alone.") One cell.
-
-### F15. NON-BLOCKING — the 0023→0019 pointer is one-directional, and the reader most at risk starts from 0019
-
-ADR 0023 names 0019; 0019 names nothing, and INDEX.md's generator has no
-field that could surface the relationship (I read
-`reindex-decisions.ts` — the note column only carries reopened/superseded
-strings). Editing 0019's body is correctly off-limits (`adr-keeper` rule 1)
-and modifying the script is outside M4's license (`scripts/` is
-hook-protected outside Mission 5). So the residual risk is real but has no
-in-license fix inside M4. Flag it into M5's input manifest instead: a Phase 2
-scaffolder configuring `@astrojs/sitemap` from ADR 0019 must be told to read
-0023 first. Recording it here so it is a handoff item rather than a
-discovery.
-
-### F16. NON-BLOCKING — "minimal" is now honest in the mission outputs but undefined in the ADR that binds
-
-`sitemap.md` §2's new paragraph is the right fix and answers cycle-1
-finding 7 squarely: "**an M4 addition, not an M2 one**", named rather than
-smuggled, "a *reduction* of the deep-dive archetype", "introduces no new
-tokens, no new patterns, and no new composition rules", with the escape
-condition ("if Phase 2 finds it needs anything the two archetypes do not
-already provide, that is … a new ADR"). I checked it against
-`palette-spec.md` §1 and ADR 0015's Decision ("The two prototypes are two
-page archetypes … each rendering in both temperatures") — neither forbids a
-third label, so this is an honest scope call and not M2's job being redone.
-
-What is missing is one layer up: **ADR 0022's Decision table assigns
-`minimal` to three routes with no definition and no pointer.** ADRs are the
-binding layer; a Phase 2 reader who consults 0022 and `palette-spec.md`
-finds three archetype names and two definitions. Fix: one clause in ADR 0022
-noting that `minimal` is an M4 label for the deep-dive archetype without its
-sidebar, adding no tokens or patterns, defined in `sitemap.md` §2.
-
-### F17. NON-BLOCKING — `navigation-spec.md` §1 still labels four rows "Three regions"
-
-Not fixed from cycle 1. Rows 0–3 (skip link, header, main, footer) sit under
-"Three regions". Cosmetic; noted only because §1 is the file's structural
-contract.
-
-### F18. NON-BLOCKING — minor scope asymmetry on CI content
-
-`content-model.md` §4.7 hands the upstream back-link PR to M5 on the
-principle that "pre-empting it here would be M4 legislating outside its
-brief", while §5 fixes three new assertions into M3's CI RTL stage (items 2,
-3, 5, marked as M4 additions). I think the CI additions are defensible —
-they assert properties of the rendered content model, which is contract item
-2, and item 2's ordering clause is genuinely forced by the grant — but M5
-owns the pipeline and should be told these are M4 impositions rather than
-M3 inheritance. §5 does label them; make sure the handoff notes repeat it.
-
-### F19. NON-BLOCKING — `not-found.md`'s header describes only `/404` while the brief governs both
-
-"Route | `/404` — served for any unresolved path". Post-`/he/404` that is
-true only outside the `/he/*` prefix. §5 gets it right; the header table
-does not. Trivial, but it is the first thing a reader of that brief sees.
+The namespace itself has one precision defect: F22.
 
 ---
 
-## 4. Contract completeness (re-checked after the edits)
+## 2. Findings
+
+All non-blocking. Ordered by cost if left.
+
+### F20. NON-BLOCKING (must fix before Mission 5) — "zero JavaScript" is false for every route that claims it; `active` ADR 0002 and closed M2 law require an inline script on all twelve pages
+
+**What I checked.** ADR 0002 (`active`): "Typing … **anywhere** transforms
+the site … Global keydown buffer → `data-theme` on `<html>` → localStorage
+persistence." `tokens-reference.md` §2 (M2, closed, LAW) implements it and is
+explicit about the delivery mechanism: "**because the persisted theme is
+applied by script, the attribute must be set before first paint (inline head
+script — the standard pattern). Recorded here so it becomes an
+implementation requirement, not a discovery.**" `sitemap.md` §2's own
+preamble binds rows 1–11b to "renders in the visitor's active temperature …
+persisted across navigation." On a fully static core with no adapter
+(ADR 0019) there is no non-script way to satisfy that. **Every public page
+ships a script. There are no zero-JS routes on this site.**
+
+The claim to the contrary appears in fifteen places:
+
+| File | Location | Text |
+|---|---|---|
+| ADR 0024 (**`active`**) | Consequences | "`/about/`, `/colophon/`, `/contact/`, `/projects/` and both 404s **ship none**"; "would give six zero-JS routes their first script" |
+| `content-model.md` | §6 | "Six routes … **ship no script at all**"; "Everything else stays at **zero JavaScript**"; "six routes keep **zero-JS** static delivery"; "**`/projects/[id]/` gains its first script**" |
+| `sitemap.md` | rows 2, 6, 8, 9, 10, 11 | "ships zero JavaScript" (×6) |
+| `sitemap.md` | row 11b | "no view event or **JavaScript of any kind**" |
+| `about.md` | header; §3 | "zero JavaScript"; "**there is nothing scripted on this page**" |
+| `contact.md`, `colophon.md`, `projects-index.md`, `not-found.md` | headers | "zero JavaScript" (×4) |
+
+**Why this matters beyond pedantry.** It is the *load-bearing* premise of the
+re-made decision. §6 prices the excluded beacon as "their first script …
+against the top-weighted requirement of M3's evaluation." That price is not
+real: those pages already carry an inline head script that M2 requires before
+first paint. The genuine remaining cost of a beacon is an outbound request
+and a new dependency class — smaller, and worth naming accurately, because
+this is the third time this boundary has moved and the next person to move it
+will read this paragraph.
+
+**Why I did not block.** Three reasons, and I want the record to show they
+were weighed rather than assumed:
+
+1. **No instruction points two ways.** The build that satisfies every
+   document simultaneously is well-defined and correct: inline theme script
+   on all twelve routes (M2), beacons on four (M4). Unlike cycle-1's blocking
+   0019×0023 finding, an implementer is not asked to do opposite things; they
+   are told a false fact *about* a build they would otherwise get right. The
+   claims all sit inside "Dynamic layer" rows, the theme script is specified
+   nowhere in M4 and entirely in M2, and `navigation-spec.md` §1 makes chrome
+   "identical in structure on all twelve public routes."
+2. **The decision survives the correction on an argument already present.**
+   §6 gives a second, independent reason for the boundary — those pages are
+   "navigational or terminal", and ADR 0020's dashboard consumes the shape of
+   arrival plus the shape of consumption. That argument does not mention
+   JavaScript and is untouched by this finding. So the correction is a
+   re-pricing, not a re-decision; nothing downstream of the boundary changes.
+3. **The failure mode it could cause is loud, not silent.** The only wrong
+   build reachable from here is an implementer stripping the theme script
+   from six pages — which produces a visible theme flash or a theme that
+   stops persisting, contradicts an explicit M2 implementation requirement
+   Phase 2 reads directly, and breaks the ADR 0002 easter egg on half the
+   site the first time anyone tests it.
+
+**What would have flipped me to BLOCKING:** if the boundary rested *only* on
+the zero-JS argument, or if M4 had specified the theme script itself and
+specified it inconsistently. Neither is the case.
+
+**What fixed looks like.** Textual, and it must not change the decision:
+
+1. Scope every "zero JavaScript" claim to what is actually meant — no
+   dynamic-layer script, no API dependency. Suggested form: "no beacon, no
+   reads; the only client script on this route is the global theme script
+   (ADR 0002, `tokens-reference.md` §2)." Same for `sitemap.md` row 11b's "no
+   JavaScript of any kind", and delete or scope `about.md` §3's "there is
+   nothing scripted on this page."
+2. Re-price the cost in `content-model.md` §6 honestly: the six routes are
+   not zero-JS, so what a beacon spends is an outbound request per view and a
+   new dependency class on pages that have none — then keep the conclusion on
+   §6's second argument, which already carries it.
+3. **ADR 0024's Consequences clause.** Correct the "ship none" parenthetical
+   now, while M4 is open and 0024 is still this mission's own unclosed
+   artifact (same basis as this cycle's other ADR edits — see §3). If the
+   mission lead prefers not to touch it again, the alternative is to leave it
+   and record the correction in the M5 handoff; after closure it takes a new
+   ADR either way. Correcting it now is cleaner.
+4. Root cause, cheap to close: `navigation-spec.md` §1's chrome model lists
+   four regions and no script. One line there noting that every page carries
+   the theme mechanism's inline head script from M2 is what would have
+   prevented all fifteen occurrences.
+
+### F21. NON-BLOCKING (must fix before Mission 5) — cycle-1 finding 8 has a third location: `translations-index.md` §2 row 7 still marks the footer's Hebrew link current
+
+`navigation-spec.md` §4.1's cell is fixed ("same link, but **never marked
+current** — the nav occurrence carries `aria-current`, this one carries
+nothing"). But `translations-index.md` §2, section row 7 reads: "Footer |
+`/he/rss.xml`, colophon, direct links, **the Hebrew link (marked current)**".
+On `/he/writing/` — the exact page this brief governs — that is the naive
+both-occurrences behaviour §2.3 exists to forbid, and it fails test N-4 ("at
+most one `aria-current="page"` per document").
+
+This is the same defect class as F12 in miniature: fixed where the reviewer
+pointed, not where else it lived. It is non-blocking because the chrome
+authority (`navigation-spec.md`) states the general rule with its reasoning,
+the brief's mention is a parenthetical in a sections table, and N-4 is an
+automated test that catches it. **Fixed looks like:** delete "(marked
+current)" from that row, or replace it with "(not marked current —
+`navigation-spec.md` §2.3)".
+
+### F22. NON-BLOCKING — `content-model.md` §2 says the key rules "apply to both forms"; two of the five cannot
+
+§2 introduces the reserved `page:` namespace and states "the rules below
+apply to both forms." Rule 2 ("**Derived from the filename**, which is the
+Astro `id`") and rule 4 ("**Renaming a file is a data migration**") have no
+referent for `page:home`, which §6 correctly describes as "a name this
+document assigns". Rules 1, 3 and 5 do apply. The contract itself is
+unambiguous — `page:home` is stated identically in five places — so nothing
+can be built wrong from it; but §2 is the cross-system contract between a
+build artifact and a Postgres row, and it should be exactly right. **Fixed
+looks like:** one clause — rules 1, 3 and 5 bind both forms; rules 2 and 4
+are collection-specific, because a `page:` key is assigned rather than
+derived, and retiring one is a data-migration decision of its own.
+
+### F23. NON-BLOCKING — two enumeration slips inside `content-model.md` §6
+
+Both are precision, not contradiction, and I flag them only because
+enumeration drift is this mission's recurring failure:
+
+- The headline sentence reads "**View events fire on content pages and the
+  home page. Nowhere else.**" The table and ADR 0024 say *content detail
+  routes*. `/writing/` and `/he/writing/` are content pages that emit
+  nothing; a skimmer reading only the bold line gets it wrong. One word:
+  "content detail routes".
+- The named cost lists the blind spot as "`/about/`, `/colophon/`,
+  `/contact/`, the two indexes, or the 404s" — **`/projects/` is missing**,
+  though the sentence above it correctly counts `/projects/` among the six.
+
+### F24. NON-BLOCKING — `sitemap.md` §2 row 5 is the only route row with no dynamic-layer line
+
+`/he/writing/[id]/` (row 5) carries no "Dynamic layer:" bullet, while rows 1,
+2, 3, 4, 6, 7, 8, 9, 10, 11 and 11b all do — including the four that gained
+one this cycle. `content-model.md` §6 and `translations-article.md` both
+specify the route correctly, so nothing is unspecified; the sitemap is simply
+the one place a reader could look and find nothing. One line, matching row 3.
+
+### F25. NON-BLOCKING (optional) — the 0020→0024 relationship is one-directional, like 0019→0023
+
+Recorded for symmetry with F15 rather than as new work. ADR 0024 cites 0020
+twice; 0020's "view events (article/path, …)" names nothing that would tell a
+Phase 2 implementer reading 0020 alone that path keying is forbidden. §1.3
+above explains why this is a narrowing and not a conflict, and editing 0020's
+body is correctly off-limits (`adr-keeper` rule 1). If the mission lead wants
+it covered, the cheapest move is one more line in `content-model.md` §9's
+handoff item 3, which already tells M5 that ADR-to-ADR narrowings exist and
+have no index representation.
+
+---
+
+## 3. ADR lifecycle check (`adr-keeper` rule 1)
+
+ADRs 0022 and 0024 have now been edited in each of the three cycles. I
+checked whether that is a rule-1 violation ("never edit a decision's
+reasoning after the fact") and concluded **it is not, on this specific
+record** — but the reasoning matters, so here it is:
+
+- **What changed.** 0022: title and route table corrected eleven→twelve
+  (cycle 1); the `minimal` definition clause added (cycle 3, F16). 0024: the
+  view-event Consequences bullet rewritten twice — from excluding static
+  pages, to "every public page", to the current boundary — plus the `page:`
+  namespace clause.
+- **What did not change.** Every decision Tal actually made is intact and
+  matches STATUS.md's checkpoint log: checkpoint 1's three calls (locale
+  subtree, colophon ships as a living page, contact stays), the per-route
+  theme deletion as forced by 0002, and checkpoint 2's five calls in
+  `content-model.md` §4. The view-event scope was never a checkpoint
+  question. **No human decision was rewritten** — the edits corrected counts,
+  supplied a definition, and re-stated a boundary the mission itself had got
+  wrong twice.
+- **Why it is in bounds.** Both ADRs were authored by this mission, the
+  mission is `in-progress`, the branch is unmerged, and nothing downstream
+  has consumed them. Contract item 5 makes the ADRs mission artifacts under
+  revision until closure, and the `mission-protocol` review loop presupposes
+  artifacts get revised in place. The alternative — superseding 0024 with a
+  new ADR mid-loop because a reviewer found a contradiction — would produce a
+  0024→0025→0026 chain recording nothing but the review's own iterations,
+  which is the opposite of what rule 1 protects.
+- **Standing rule from here.** Once M4 closes, 0022/0023/0024 are frozen:
+  any later change is a new ADR plus a status flip, with no exceptions. And
+  the history of the twice-reversed view-event boundary is not lost — it
+  lives in `content-model.md` §6, which 0024 names as its full record. That
+  arrangement is legitimate and should be stated in the handoff notes so a
+  future reader knows where to look.
+
+I could not diff 0009/0010 to prove the status flips touched only
+frontmatter (see §4). Both bodies still read as untouched pre-workshop
+records in the shapes `adr-keeper` allows, both retain `reopened-by:
+mission-4` alongside `superseded` / `superseded-by`, and 0009's "Why
+reopened" still carries the sentence that generated this mission's mandate.
+
+---
+
+## 4. Contract completeness
 
 | # | Contract item | Present | Substantive |
 |---|---|---|---|
-| 1 | `sitemap.md` | yes | every route, purpose, theme behavior; §0 resolves ADR 0002 × 0009 explicitly — **but four rows contradict ADR 0024 (F12)** |
-| 2 | `content-model.md` | yes | 3 collections, full schemas, RTL contract §5, credit model §4, §4.0 upstream terms |
-| 3 | `page-briefs/` | 11 files | all 11 carry Goal / Sections / States / Empty states — re-verified individually after the edits — **but six carry a dynamic-layer statement the content model contradicts (F12)** |
-| 4 | `navigation-spec.md` | yes | nav, footer, eyebrow per route (now including `/he/404`), RTL chrome, testable rules index; one stale cell (F14) |
-| 5 | ADR writes/flips | 0022/0023/0024 written, 0009/0010 flipped with pointers, INDEX regenerated, all committed (`d0c1ec8`, `169e7f0`) | valid; 0024's Decision rule 3 needs the qualifier its own Consequences add (F12) |
+| 1 | `sitemap.md` | yes | every route with purpose, archetype and theme behavior; §0 resolves ADR 0002 × 0009 explicitly and is untouched by this cycle's edits; every row now carries a dynamic-layer statement except row 5 (F24) |
+| 2 | `content-model.md` | yes | three collections, full schemas, RTL contract §5, credit model §4 incl. §4.0 upstream terms, §6 dynamic-layer table, §9 handoff obligations (now four items) |
+| 3 | `page-briefs/` | 11 files | all eleven carry Goal / Sections / States / Empty states — re-verified individually this cycle: `home` §1–4 · `writing-index` §1–4 · `writing-article` §1/2/3/5 · `translations-index` §1–4 · `translations-article` §1–4 · `projects-index` §1–4 · `project-detail` §1–4 · `about` §1–4 · `colophon` §1–4 · `contact` §1–4 · `not-found` §1–4. Twelve routes, eleven briefs (`not-found.md` governs both 404s) |
+| 4 | `navigation-spec.md` | yes | nav, footer, eyebrow per route, RTL chrome, reachability invariants, 13 testable rules; §1 and §4.1 corrected this cycle |
+| 5 | ADR writes/flips | 0022/0023/0024 written; 0009→0022 and 0010→0023 flipped with pointers; INDEX consistent with a regeneration; committed at `603ae66` | all valid against `validate-adr.ts` by hand; 0024 carries one factually wrong clause (F20 item 3) |
 | 6 | `review-verdict.md` | this file | — |
 
-**Goal / Sections / States / Empty states, verified per brief after the
-revision** (the four elements most likely to be lost in an edit pass):
-`home` §1/§2/§3/§4 · `writing-index` §1/§2/§3/§4 · `writing-article`
-§1/§2/§3/§5 · `translations-index` §1/§2/§3/§4 · `translations-article`
-§1/§2/§3/§4 · `projects-index` §1/§2/§3/§4 · `project-detail` §1/§2/§3/§4 ·
-`about` §1/§2/§3/§4 · `colophon` §1/§2/§3/§4 · `contact` §1/§2/§3/§4 ·
-`not-found` §1/§2/§3/§4. All eleven intact. `translations-article.md`'s
-§3 Error row and §6 were both correctly updated to `/he/404` without losing
-the empty-state work in §4.
-
 **Scope boundaries.** No implementation, no copywriting beyond placeholder
-intent (Hebrew strings are explicitly flagged as placeholders in
-`navigation-spec.md` and `translations-index.md`), no visual design beyond
-applying M2 tokens conceptually — with the "minimal" label as the single
-edge case, honestly declared (F16). `app/` does not exist; deliverables are
-confined to `missions/04-information-architecture/outputs/`. STATUS.md
-carries `revision-cycles: 1`, correct after one rejection under
-`mission-protocol` §6, and `status: in-progress` with handoff notes still
-placeheld for closure, which is correct at this point in the loop.
+intent (Hebrew strings flagged as placeholders in `navigation-spec.md` and
+`translations-index.md`), no visual design beyond applying M2 tokens
+conceptually — `minimal` remains the single edge case and is now honestly
+declared in both `sitemap.md` §2 and ADR 0022. `app/` does not exist.
+Deliverables are confined to `missions/04-information-architecture/outputs/`.
+
+**Still sound, re-checked this cycle so a revision does not disturb them:**
+ADR 0002 × 0009's resolution (§0) and the zero theme-hint leaks across all
+eleven briefs; the translated-article model and its three enforcement layers;
+the RTL contract and its five CI assertions; the page-rejection log with
+per-page reasons and revisit thresholds; the brand invariants (mark never
+translated, eyebrow everywhere, easter eggs unlabeled, "let's connect" banned
+with a grep test on the page most likely to reach for it); reachability
+R-1…R-6 including both `/he/404` paths; and the empty-state work in
+`writing-index.md` §4 and `translations-index.md` §4, which remains the
+strongest writing in this mission.
 
 ---
 
-## 5. Verified sound this cycle (so a revision does not re-litigate it)
+## 5. Could not verify
 
-- **ADR 0002 × 0009 resolution — unchanged and still clean.** I re-grepped
-  `warm|data-theme|temperature|easter|incantation` across all M4 outputs: 37
-  hits in 11 files, and every one is either §0's resolution argument, a M2
-  token/callout reference, or an explicit *prohibition* (`navigation-spec.md`
-  §4.2 and §6, `colophon.md` §2.4 — correctly identified as the sharpest
-  leak risk on the site, `not-found.md` §6, `about.md` §5, both index briefs'
-  empty-state exclusion lists). Zero reintroductions. The cycle-2 edits did
-  not disturb this.
-- **The translated-article model.** Attribution is enforced at three layers
-  and the CI assertion now tests all three parts of the obligation —
-  cycle-1 finding 5's fix (`content-model.md` §5, assertion 2a: "the block
-  **states that this is a translation** — the condition's first half, and the
-  part a name-and-link check silently omits") is exactly the remedy asked
-  for, and `translations-article.md` §2.1 restates it. §4.1's "OPEN 2.1" and
-  §4.4's "If allowed" leftovers are gone (finding 6).
-- **RTL / ADR 0011.** One source of truth for direction (the locale), the two
-  documented exceptions, logical properties restated at content and chrome
-  level, Hebrew eyebrow tracking rules, five CI assertions, and the `/he/404`
-  row spelling out that the shared `404` segment renders under the Hebrew
-  stack inside `dir="rtl"`. Consistent across `content-model.md` §5,
-  `navigation-spec.md` §5, `translations-article.md` §2.3, and
-  `translations-index.md` §2.2.
-- **Page rejections.** `/uses`, `/now`, `/lab`, `/resume`, `/speaking`,
-  `/newsletter`, `/testimonials`, search, and tag routes each carry a
-  specific reason and, where relevant, a revisit threshold. The two accepted
-  extra pages carry harder conditions than the rejected ones (colophon: a
-  register test, a visible review date, a deletion condition; contact: a word
-  budget and a retirement condition). No promotional framing anywhere — the
-  only superlatives in the corpus appear in sentences banning them
-  (`project-detail.md` §2, `colophon.md` §2.1).
-- **Brand invariants.** `T://bendet` never translated or transliterated
-  (rule + test N-5); eyebrow on every route; easter eggs unlabeled and
-  unhinted; "let's connect" banned with a grep test on the one page most
-  likely to reach for it; portrait scoped to About + favicon and re-refused
-  on `/` and `/404`.
-- **Reachability R-1…R-6** re-checked against the updated §7.1 inventory,
-  including the two new `/he/404` paths. They hold. R-3's "every page …
-  including `/404`" covers `/he/404` trivially via the same footer.
-
-## 6. Could not verify
-
-1. **Script execution** — no shell (see §0). `validate-adr.ts` and
-   `reindex-decisions.ts` were applied by hand; both pass, and INDEX.md
-   matches a regeneration byte-for-byte by my reconstruction. Run them for
-   confirmation.
-2. **Whether 0009/0010 changed only in frontmatter** — no `git diff`. See §0
-   for the recommended command and the circumstantial evidence.
-3. **The upstream `CONTRIBUTING.md` text** — no network. My assessment of
-   the §4.0 derivation remains conditional on the quote being accurate; the
-   document is honest that Tal supplied it and reads it in plain language,
-   and the `rights` field plus the scope-caution paragraph are proportionate
-   to that uncertainty.
-4. **`@astrojs/sitemap`'s `i18n` behaviour** — no docs tool. This does not
-   change my finding on cycle-1 item 2: the decision not to emit is safe
-   either way, and the ADR-level record now exists.
+1. **Script execution** — no shell. `validate-adr.ts` and
+   `reindex-decisions.ts` were applied by hand over all 24 ADRs; both pass by
+   my reconstruction. Run them for confirmation.
+2. **Whether the 0009/0010 flips, and this cycle's 0022/0024 edits, touched
+   only what I believe** — no `git diff`. Recommended:
+   `git diff 678ca70 -- docs/decisions/` and
+   `git diff 169e7f0 603ae66 -- docs/decisions/`.
+3. **The upstream `CONTRIBUTING.md` text** quoted in `content-model.md` §4.0
+   — no network. My assessment of §4.0 remains conditional on the quote being
+   accurate; the document is honest that Tal supplied it, reads it in plain
+   language, and the `rights` field plus the scope-caution paragraph are
+   proportionate to that uncertainty.
+4. **`@astrojs/sitemap`'s `i18n` behaviour** — no docs tool. Does not change
+   my acceptance of ADR 0023's hreflang narrowing: not emitting is safe
+   either way and the ADR-level record exists.
+5. **Whether ADR 0002's incantation listener and the theme-restore script are
+   one script or two** — an implementation question. It does not affect F20:
+   `tokens-reference.md` §2 requires at least the inline head script on every
+   page either way.
 
 ---
 
-## 7. Re-review scope for cycle 3
+## 6. What must be fixed before Mission 5, and what is optional
 
-Limit it to **F12**, plus whichever of F13/F14 the mission chooses to fix.
-Nothing in the decisions needs to change — F12 is a propagation pass and one
-paragraph of cost. I would not want a revision to disturb §0 of `sitemap.md`,
-§4 and §5 of `content-model.md`, ADR 0023's hreflang paragraph, or the
-empty-state work in `writing-index.md` and `translations-index.md`, which are
-the strongest parts of this mission and are all now correct.
+**Must fix before M5 consumes these documents:**
+
+- **F20** — the "zero JavaScript" claims in fifteen places, including
+  `active` ADR 0024's Consequences. Textual scoping plus one honest
+  re-pricing paragraph. **The decision must not change as part of this fix**;
+  if the mission lead comes to believe the corrected pricing changes the
+  answer, that is Tal's call and a separate one, not a review requirement.
+- **F21** — `translations-index.md` §2 row 7's "(marked current)".
+
+**Optional (hygiene; safe to carry into Phase 2 as-is):** F22 (the "both
+forms" clause in `content-model.md` §2), F23 (two enumeration slips in §6),
+F24 (`sitemap.md` row 5's missing dynamic-layer line), F25 (the 0020→0024
+pointer).
+
+**Do not disturb** while making these edits: `sitemap.md` §0, §3 and §4;
+`content-model.md` §4 and §5; §6's record of the two over-corrections; ADR
+0023's hreflang paragraph; and the empty-state sections of
+`writing-index.md` and `translations-index.md`.

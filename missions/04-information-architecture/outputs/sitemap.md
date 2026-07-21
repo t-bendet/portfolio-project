@@ -142,7 +142,7 @@ this label.
   few or zero entries — see `page-briefs/`).
 - **Dynamic layer:** optional per-entry view counts, progressive
   enhancement, degrade to absence (ADR 0019) — **off at launch**, so the
-  route ships zero JavaScript until it is turned on. No reactions on the
+  route carries no dynamic-layer script until it is turned on. No reactions on the
   index, and **no view event** (`content-model.md` §6).
 - **Cross-link:** persistent pointer to the Hebrew translations (§3).
 
@@ -176,6 +176,11 @@ this label.
   its author. The credit model is checkpoint 2's subject and is specified in
   `content-model.md`.
 - **Code blocks stay LTR** inside the RTL page (typography-spec §7.1).
+- **Dynamic layer:** identical to row 3 — view event POST on load
+  (`translations:<id>`); view count + reactions by progressive enhancement.
+  Both degrade to absence (ADR 0020, `content-model.md` §6). The symmetry is
+  deliberate: asymmetry here would read as second-class treatment of the
+  Hebrew work.
 - **Feed:** `/he/rss.xml`.
 
 ### 6. `/projects/` — projects index
@@ -186,8 +191,7 @@ this label.
   pattern).
 - **States:** populated · empty state not required in practice (there are
   already two real projects) but specified anyway.
-- **Dynamic layer:** none — no reads, and **no view event**. This route
-  ships zero JavaScript and keeps it (`content-model.md` §6).
+- **Dynamic layer:** none — no reads, and **no view event**; no dynamic-layer script (the only client script on this route is the global theme script — ADR 0002, `tokens-reference.md` §2) (`content-model.md` §6).
 
 ### 7. `/projects/[id]/` — a project case study — **OPTIONAL PER PROJECT**
 
@@ -213,8 +217,9 @@ this label.
   bio, and quiet details meet — reference density stays at zero here. The
   person carries this page, not the symbols.
 - **CV:** the PDF is linked from this page. It is not a route (§4).
-- **Dynamic layer:** none — no reads, no view event, zero JavaScript
-  (`content-model.md` §6).
+- **Dynamic layer:** none — no reads, no view event; no dynamic-layer script
+  (the only client script here is the global theme script — ADR 0002,
+  `tokens-reference.md` §2) (`content-model.md` §6).
 
 ### 9. `/colophon/` — how this site is built
 
@@ -241,7 +246,7 @@ this label.
 - **Dynamic layer:** none — no reads, and **no view event**. Two distinct
   reasons, both load-bearing. It must **not** display live build or deploy
   status: that would make a static page depend on the API and invert the R4
-  anchor. And it emits no beacon, so the page ships zero JavaScript — a page
+  anchor. And it emits no beacon, so the page carries no dynamic-layer script (the only client script here is the global theme script — ADR 0002, `tokens-reference.md` §2) — a page
   arguing for a restrained stack while carrying a script to measure who read
   the argument would undercut itself (`content-model.md` §6).
 - **Page vs article — the alternative Tal rejected at checkpoint 1.** The
@@ -277,8 +282,7 @@ this label.
   real ongoing cost. Static links only.
 - **Voice constraint:** the "let's connect" phrase family is banned and this
   is the single page most likely to reach for it (symbol map, banned #6).
-- **Dynamic layer:** none — no reads, no view event, zero JavaScript
-  (`content-model.md` §6). The absent form is a separate decision, above.
+- **Dynamic layer:** none — no reads, no view event; no dynamic-layer script (the only client script here is the global theme script — ADR 0002, `tokens-reference.md` §2) (`content-model.md` §6). The absent form is a separate decision, above.
 - **Honest note:** this page is thin by nature — roughly fifty words and
   three links is its honest maximum, not a strawman. It survives on Tal's
   own list of required pages, and on one substantive argument: "open to
@@ -302,7 +306,7 @@ this label.
   features. It **must not.** No hint, no label, no nudge toward the
   incantation (ADR 0002, symbol map banned #7). It points to `/writing/` and
   `/` and nothing else.
-- **Dynamic layer:** none — no reads, no view event, zero JavaScript. A 404
+- **Dynamic layer:** none — no reads, no view event; no dynamic-layer script (the only client script here is the global theme script — ADR 0002, `tokens-reference.md` §2). A 404
   beacon was considered and rejected on data-model grounds: it could record
   that *a* 404 occurred but not *which URL broke*, and making it record that
   means storing arbitrary visitor-supplied paths (`content-model.md` §6).
@@ -323,7 +327,7 @@ an English error page.
 - **Scope:** it is the same minimal composition as `/404`, in Hebrew, RTL,
   pointing at `/he/writing/` and `/`. Every exclusion binding on `/404`
   binds here identically — above all, no hint of a second theme, and no
-  view event or JavaScript of any kind.
+  view event and no dynamic-layer script.
 - **Mechanism, flagged not asserted:** a static build emits one conventional
   `404.html`; serving a different error page for the `/he/*` prefix is a
   `handle_errors` matcher in the Caddyfile (`architecture-decision.md` §4

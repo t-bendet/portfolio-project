@@ -8,7 +8,7 @@ Mission 4 · 2026-07-21
 | Archetype | **minimal** — a deliberate third, reduced composition: a short editorial column without the deep-dive sidebar |
 | Collection | none — authored static page |
 | `lang` / `dir` | `en` / `ltr` |
-| Dynamic layer | **none** — no reads, no view event; zero JavaScript (`content-model.md` §6) |
+| Dynamic layer | **none** — no reads, no view event; no dynamic-layer script (the only client script on this route is the global theme script — ADR 0002, `tokens-reference.md` §2) (`content-model.md` §6) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · contact` |
 
 Basis (law): `sitemap.md` §2 row 10 (including its honest note and retirement

@@ -72,7 +72,13 @@ specified here rather than discovered in Phase 2.
 **The key is `<collection>:<id>` — for example `writing:design-system-nobody-hates`,
 `translations:aha-programming`.** Static pages that emit view events use a
 reserved `page:` namespace instead (`page:home` is currently its only
-member — §6); the rules below apply to both forms. Rules:
+member — §6).
+
+**Rules 1, 3 and 5 bind both forms. Rules 2 and 4 are collection-specific**,
+because a `page:` key is *assigned* by this document rather than derived
+from a file, so there is no filename to derive from and no rename to
+migrate. Retiring a `page:` key is its own data-migration decision, made
+when the route it names is retired. Rules:
 
 1. **Namespaced by collection**, because bare `id` collides: an original
    and a translation may legitimately share a slug stem, and un-namespaced
@@ -550,7 +556,8 @@ constrained by the invariant below.
 | `/writing/`, `/he/writing/` | view counts (optional, off at launch) | — | — | absence |
 | every other public route | — | — | — | n/a |
 
-**View events fire on content pages and the home page. Nowhere else.**
+**View events fire on the three content detail routes and the home page.
+Nowhere else** — the two writing indexes are content pages and emit nothing.
 
 This section reached its current form by over-correcting twice, and both
 errors are recorded because the reasoning matters more than the answer.
@@ -564,33 +571,54 @@ is the site's actual entry point, so collecting nothing there left the
 dashboard blind to how people arrive.
 
 *The second draft* fixed the gap by firing on **every** public page. That
-over-corrected, and the price went unstated: **a beacon is client
-JavaScript.** Under ADR 0019 the static core ships near-zero JS, and R1 was
-the top-weighted requirement in M3's entire evaluation. Six routes —
-`/about/`, `/colophon/`, `/contact/`, `/projects/`, and both 404s — ship no
-script at all, and a universal beacon would have given each of them their
-first one purely to be counted. `/colophon/`'s brief calls its lack of a
-dynamic layer *load-bearing*; that page arguing for a restrained stack while
-carrying a script to measure who read the argument is precisely the kind of
-incoherence this project's rules exist to catch.
+over-corrected, and the price went unstated.
+
+*This draft* prices it correctly, which required abandoning a claim the
+previous one leaned on. **There are no zero-JS routes on this site, and
+there never were.** ADR 0002 (`active`) requires a global keydown buffer and
+`localStorage` persistence, and `tokens-reference.md` §2 (M2, closed, law)
+fixes the delivery: "because the persisted theme is applied by script, the
+attribute must be set before first paint (inline head script — the standard
+pattern)." On a fully static core with no adapter (ADR 0019) there is no
+non-script way to satisfy that. Every one of the twelve public routes
+carries the theme mechanism's inline script. An earlier version of this
+section argued the boundary by saying six routes "ship no script at all" —
+that was simply false, and it is corrected here rather than quietly dropped,
+because this boundary has now moved three times and the next person to move
+it will read this paragraph.
+
+**What a beacon actually costs, stated accurately:** not a page's first
+script, but an outbound network request per view and a **new dependency
+class** — the theme script is self-contained and local, while a beacon
+introduces a relationship with a service that can be down, blocked, or
+slow, on pages that currently have none. Smaller than the previous framing
+claimed, and still real. `/colophon/`'s brief calls its lack of a dynamic
+layer *load-bearing*: a page arguing for a restrained stack while carrying a
+request to measure who read the argument is the kind of incoherence this
+project's rules exist to catch.
 
 **The rule, and what it costs.** A view event is emitted from pages whose
 readership the dashboard has a genuine consumer for: the three content
-detail routes (ADR 0020 aggregates per-article) and `/` (per-referrer, at
-the point where arrival actually happens). Everything else stays at zero
-JavaScript.
+**detail** routes (ADR 0020 aggregates per-article) and `/` (per-referrer,
+at the point where arrival actually happens). Everything else emits nothing.
 
-- **What this buys:** six routes keep zero-JS static delivery, and the
-  entry-point gap that motivated the change is closed.
+**The boundary rests on this second argument, not on the JS accounting
+above** — which is why correcting that accounting re-prices the decision
+without reopening it. Analytics exist to be read by someone; ADR 0020 names
+exactly two consumers, a per-article view and a per-referrer view, and the
+four emitting routes are precisely the pages those two consumers describe.
+The excluded pages are navigational or terminal, and knowing how many people
+opened `/contact/` answers no question the dashboard poses.
+
+- **What this buys:** six routes take on no dependency on the API at all,
+  and the entry-point gap that motivated the change is closed.
 - **What it costs, named rather than hidden:** there is **no traffic data
-  for `/about/`, `/colophon/`, `/contact/`, the two indexes, or the 404s.**
-  That is a real blind spot. It is accepted because those pages are
-  navigational or terminal — the shape of arrival (`/`) plus the shape of
-  consumption (content pages) is what ADR 0020's dashboard is actually for,
-  and neither is served by knowing how many people opened `/contact/`.
-- **`/projects/[id]/` gains its first script** under this rule. Priced and
-  accepted: it is content, it belongs in the per-article view, and the cost
-  is a beacon, not a framework.
+  for `/about/`, `/colophon/`, `/contact/`, `/projects/`, the two writing
+  indexes, or the 404s.** That is a real blind spot, and it includes pages
+  Tal might one day want numbers for.
+- **`/projects/[id]/` takes on the dynamic layer** under this rule where it
+  otherwise would not. Priced and accepted: it is content, and it belongs in
+  the per-article view its data feeds.
 
 **The 404s emit nothing, and that reverses a claim the second draft made.**
 That draft argued a 404 beacon is how a broken inbound link announces
@@ -692,6 +720,11 @@ Two further handoff items, both raised in red-team review as real risks with
    scaffolder configuring `@astrojs/sitemap` from ADR 0019 alone will emit
    hreflang alternates that ADR 0023 forbids. M5 must either surface the
    relationship in the workflow or extend the index generator.
+   **The same shape exists between ADR 0020 and ADR 0024:** 0020's event
+   description ("view events (article/path, …)") gives a reader no signal
+   that path keying is forbidden, which 0024 establishes. Both are
+   narrowings, not conflicts; neither has index representation. Whatever M5
+   builds for one should cover the other.
 4. **The CI RTL stage's assertions 2, 3 and 5 are M4 impositions, not M3
    inheritance** (§5 labels them, but the distinction is easy to lose). M5
    owns the pipeline and should receive them as new requirements it is being

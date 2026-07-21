@@ -88,14 +88,18 @@ defers.
   anything."
 - **View events fire on the three content detail routes and on `/`, and
   nowhere else.** A write is a fire-and-forget beacon that creates no
-  rendering dependency, so the boundary is not about dependency — it is
-  about **cost against R1**. A beacon is client JavaScript, and `/about/`,
-  `/colophon/`, `/contact/`, `/projects/` and both 404s ship none; a
-  universal beacon would give six zero-JS routes their first script purely
-  to be counted, against the top-weighted requirement of M3's evaluation.
-  `/` is included because ADR 0020's per-referrer aggregation is worth most
-  at the site's entry point. **Accepted cost, named:** no traffic data for
-  those six routes. The 404s are excluded additionally on data-model
+  rendering dependency, so the boundary is not about dependency. It is about
+  **who consumes the data**: ADR 0020 names exactly two consumers — a
+  per-article view and a per-referrer view — and these four routes are
+  precisely the pages those consumers describe. `/` is included because
+  per-referrer aggregation is worth most at the site's entry point; the
+  excluded pages are navigational or terminal and answer no question the
+  dashboard poses. **Accepted cost, named:** no traffic data for `/about/`,
+  `/colophon/`, `/contact/`, `/projects/`, the two writing indexes, or the
+  404s. (Note for accuracy: the excluded routes are **not** zero-JS — every
+  public page carries the ADR 0002 theme mechanism's inline head script per
+  `tokens-reference.md` §2. What a beacon adds is an outbound request and a
+  dependency on a service that can be down, not a page's first script.) The 404s are excluded additionally on data-model
   grounds — an event there could record that *a* 404 occurred but not
   *which URL broke*, and making it record that would mean storing arbitrary
   visitor-supplied paths, pushing against ADR 0020's "nothing stored

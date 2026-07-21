@@ -8,7 +8,7 @@ Mission 4 · 2026-07-21
 | Archetype | deep-dive editorial |
 | Collection | none — authored static page |
 | `lang` / `dir` | `en` / `ltr` |
-| Dynamic layer | **none, and this is load-bearing** — no live build/deploy status (would invert R4), and no view event, so the page ships zero JavaScript (`content-model.md` §6) |
+| Dynamic layer | **none, and this is load-bearing** — no live build/deploy status (would invert R4), and no view event; no dynamic-layer script (the only client script on this route is the global theme script — ADR 0002, `tokens-reference.md` §2) (`content-model.md` §6) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · colophon` |
 
 Basis (law): `sitemap.md` §2 row 9 (decided at checkpoint 1: ships, as a

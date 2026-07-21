@@ -8,7 +8,7 @@ Mission 4 · 2026-07-21
 | Archetype | deep-dive editorial (`sitemap.md` §2 row 8) |
 | Collection | none — authored static page (`content-model.md` §1) |
 | `lang` / `dir` | `en` / `ltr` |
-| Dynamic layer | **none** — no reads, no view event; zero JavaScript (`content-model.md` §6) |
+| Dynamic layer | **none** — no reads, no view event; no dynamic-layer script (the only client script on this route is the global theme script — ADR 0002, `tokens-reference.md` §2) (`content-model.md` §6) |
 | Binding obligation | reserves the bio-beside-portrait slot; **no other route carries the portrait** (ADR 0018, `hero-and-illustration.md` §3) |
 | Chrome | per `navigation-spec.md`; eyebrow `T://bendet · about` |
 
@@ -99,7 +99,7 @@ applying it to a static asset is an M4 extension by analogy, marked as such.)
 | **No portrait asset** | drawing not yet digitized | the bio runs the full column. No placeholder, no reserved box, no stock silhouette (§2.2) |
 | **No CV published** | the PDF is not in the build | section 6 is omitted entirely — not "CV available on request", which is a sentence that exists to fill a hole |
 | **Degraded** | API unreachable | nothing changes — this page never touches the API |
-| **Degraded — no JS** | scripts blocked | nothing changes; there is nothing scripted on this page |
+| **Degraded — no JS** | scripts blocked | nothing changes; this page has no dynamic-layer script. (The global theme script is also inert without JS — the default temperature simply renders, which is ADR 0002's normal case) |
 
 ## 4. Empty states
 
