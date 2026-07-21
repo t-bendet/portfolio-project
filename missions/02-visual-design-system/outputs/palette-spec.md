@@ -1,481 +1,424 @@
-# Palette Spec — T://bendet Visual Design System
+# Palette Spec — T://bendet Visual Design System (v2, prototype-exact)
 
-Mission 2 · 2026-07-21
-Basis (law): `missions/01-product-brand-identity/outputs/design-brief-for-m2.md`,
-`identity-thesis.md`, `symbol-and-language-map.md`, `reconciliation-decision.md`,
-ADRs 0001, 0002, 0011, 0014 (active); ADRs 0004, 0005 (reopened — input, not law).
-Ancestors: Tal's committed prototypes `assets/reference/prototypes/build-tools-overview.html`
-(dark) and `tooling-deepdive.html` (warm).
+Mission 2 · 2026-07-21 · **supersedes v1 of this file in place, per Tal's
+checkpoint decision** (recorded in this mission's STATUS.md, 2026-07-21).
 
-**Status: checkpoint material.** These conclusions are not ADRs yet. Palette
-decisions harden only after Tal's reaction to the open questions at the end of
-this document (superseding ADRs for 0004/0005 come after that checkpoint).
+Basis (law): Tal's checkpoint decision — *palette = prototype-exact + minimal
+AA fixes*; `missions/01-product-brand-identity/outputs/design-brief-for-m2.md`;
+ADRs 0001, 0002, 0011, 0014 (active). Ancestors and normative source of every
+value: Tal's committed prototypes
+`assets/reference/prototypes/build-tools-overview.html` (dark) and
+`tooling-deepdive.html` (warm). ADRs 0004/0005 (reopened) are input only.
+
+**Status: hardened.** The palette checkpoint has happened — Tal's decision was
+to lock the prototypes' own styles. This file is ADR-ready material for the
+superseding ADRs of 0004 and 0005.
+
+## The rule of this spec
+
+1. **Every prototype color that passes WCAG AA ships verbatim.** No taste
+   edits, no trims, no consolidation. That includes all **six accents per
+   theme** and the warm theme's **l1–l6 tint boxes** (v1's 6→4 trim is
+   reverted by checkpoint decision).
+2. **Only failing text colors move, and only as far as AA requires.** Each
+   nudge is hue-preserving (straight-line interpolation toward white or black
+   in sRGB), stopped at the first step where every pair the color actually
+   sits on clears 4.5:1. All six nudges are recorded in §4 with before/after
+   ratios.
+3. **Non-text colors (borders, dots, arrows) are never nudged** — they carry
+   no AA text claim and always co-occur with a text or surface affordance
+   (§7 rule 5).
 
 ## Scope
 
-- **In scope:** full color token sets for both themes, WCAG AA contrast ratios
-  for every text/background pair, badge-pair construction, usage rules, RTL
-  interaction notes, honest provenance and alternatives.
-- **Out of scope:** typefaces, type scale, spacing/radius/grid tokens, motion,
-  component CSS — those live in the companion M2 deliverables. Per the
-  preserved principle of ADR 0005, both themes share identical grid, spacing,
-  radius, and interaction patterns; **only temperature changes**, and this file
-  defines exactly that temperature layer.
-
-Per ADR 0002, two full themes are required: a dark default and a warm
-editorial theme behind the hidden Map switch. Nothing in this spec, in the
-shipped UI, or in shipped identifier naming may acknowledge that the second
-theme exists (see "Hidden-theme discipline" below).
+- **In scope:** full color token sets for both temperatures, the unified
+  token roster across the two page archetypes, WCAG AA ratios for every
+  text/background pair, the accent/tint system, usage rules, RTL notes,
+  provenance for every value (verbatim / nudged / derived).
+- **Out of scope:** typefaces and scale (`typography-spec.md`), CSS custom
+  property naming and switching (`tokens-reference.md`), motion
+  (`motion-and-texture.md`), hero/glow/illustration
+  (`hero-and-illustration.md`).
 
 ---
 
-## 1. System overview — one system, two temperatures
+## 1. System shape — two archetypes × two temperatures
 
-Both themes fill the **identical token roster**. A component references only
-semantic tokens and is never aware of which theme is active. Roles, not hues:
+Per the checkpoint decision, the two prototypes are two **page archetypes**,
+not two themes:
 
-| Token | Role |
-|---|---|
-| `--bg` | Page background |
-| `--surface` | Raised panels/cards (raised = one step *away* from `--bg` toward the theme's light source) |
-| `--surface-2` | Second elevation step: hover states, nested panels |
-| `--border` | Hairline structure (decorative-structural, never the sole affordance) |
-| `--border-strong` | Emphasized edges (hover borders, table heads) |
-| `--text-strong` | Headings, emphasis |
-| `--text` | Body text |
-| `--muted` | Secondary text: eyebrows, captions, descriptions — AA-passing at body sizes |
-| `--accent-1` … `--accent-4` | The four accent roles (below) |
-| `--badge-1` … `--badge-4` | Accent-derived chip fills, badge use only (see §5) |
-| `--glow` | The single licensed glow (derived from `--accent-2`) |
-| `--focus` | Focus indicator color (aliases `--accent-2`) |
-| `--code-bg`, `--code-text`, `--code-muted` | Code panel — in **both** themes an ink-dark panel, so one syntax palette can serve both (§6) |
+- **Overview/map archetype** (from `build-tools-overview.html`): card grids,
+  section panels, chip badges, pipeline rows.
+- **Deep-dive editorial archetype** (from `tooling-deepdive.html`): sidebar +
+  long-form column, callout boxes, comparison tables, code panels.
 
-### Accent roles (temperature-shifted, role-stable)
+Each archetype renders in **both temperatures**; the shared-structure
+through-line (identical grid, spacing, radius, interaction patterns) applies
+per-archetype — only temperature changes. The token roster below is therefore
+the **union** of what both prototypes use, with each temperature filling every
+slot. Provenance is marked per value:
 
-| Role | Dark theme | Warm theme |
-|---|---|---|
-| `--accent-1` — primary signal: the key badge/label of a view | Orange `#ff6b35` | Burnt red `#b23222` |
-| `--accent-2` — structural/interactive: focus ring, glow source | Violet `#8878f8` | Plum `#4a235a` |
-| `--accent-3` — affirmative/status | Green `#2fc98e` | Forest `#1e6641` |
-| `--accent-4` — attention/annotation | Amber `#f5c542` | Ochre `#7d4e00` |
-
-Accent count is **trimmed from the ancestor's six to four** (magenta `#e06fe8`
-and cyan `#3fc9d4` dropped). The prototypes were category-coded reference
-charts that needed six axes; the portfolio's surfaces do not. Restraint is the
-skill: every accent above has a nameable role; the two dropped ones did not
-survive that test. If a future category-coded page genuinely needs more axes,
-that is a new scoped decision, not a silent widening (flagged in Open
-Questions).
-
-### Provenance and compliance note
-
-Every color in this spec descends from Tal's own two prototypes and the
-reopened ADRs 0004/0005, adjusted only for WCAG AA compliance and restraint.
-**No color was chosen for mythological reasons** — there is no "Aegean blue,"
-no terracotta-because-Greece, no marble story. ADR 0014 confines mythology to
-infra naming plus at most one typographic gesture; the palette is neither, and
-this spec's reasoning contains no mythology-derived color logic by
-construction.
-
----
+- **V** — verbatim from a prototype
+- **N** — nudged for AA (§4; minimal, hue-preserving)
+- **D** — derived (no prototype ancestor existed for that temperature; the
+  derivation rule is recorded inline). Only 5 of 44 values are derived, none
+  of them text colors except by alias.
 
 ## 2. Theme 1 — default (dark)
 
+Source: `build-tools-overview.html` `:root` plus its literal in-rule values
+(hover `#18181d`, tag chip `#1e1e24`, inset `#111114`, code colors).
+
 ```css
-/* Attribute model is a placeholder pending tokens-reference.md.
-   ADR 0002 fixes the mechanism as data-theme on <html>; the default
-   theme is the bare :root (no attribute required, nothing to notice). */
+/* Attribute model per ADR 0002: default theme is bare :root. */
 :root {
   /* structure */
-  --bg:            #0d0d0f;
-  --surface:       #141417;
-  --surface-2:     #1a1a1f;
-  --border:        #24242b;
-  --border-strong: #3f3f4a;
+  --bg:            #0d0d0f;   /* V */
+  --surface:       #141417;   /* V */
+  --surface-2:     #18181d;   /* V — the prototype's card/row hover value */
+  --surface-inset: #111114;   /* V — note boxes, pipeline steps */
+  --chip-bg:       #1e1e24;   /* V — neutral .tag chip fill */
+  --border:        #222228;   /* V */
+  --border-strong: #444444;   /* V — the prototype's hover border (.toc a:hover) */
 
   /* text */
-  --text-strong:   #ffffff;
-  --text:          #e8e8ec;
-  --muted:         #8b8b99;
+  --text-strong:   #ffffff;   /* V — headings, card names */
+  --text:          #e8e8ec;   /* V */
+  --muted:         #85858f;   /* N — was #6b6b78, failed AA on every bg (§4) */
 
-  /* accents — never backgrounds */
-  --accent-1:      #ff6b35;
-  --accent-2:      #8878f8;
-  --accent-3:      #2fc98e;
-  --accent-4:      #f5c542;
+  /* six accents — saturated values are never backgrounds (§7) */
+  --accent-1:      #ff6b35;   /* V — orange */
+  --accent-2:      #8676f8;   /* N — was #7c6af7; failed on hover + own tint (§4) */
+  --accent-3:      #2fc98e;   /* V — green */
+  --accent-4:      #f5c542;   /* V — amber */
+  --accent-5:      #e06fe8;   /* V — magenta */
+  --accent-6:      #3fc9d4;   /* V — cyan */
 
-  /* accent-derived chip fills — badge use only (see §5) */
-  --badge-1:       #301e1b;   /* = color-mix(in srgb, var(--accent-1) 12%, var(--surface)) */
-  --badge-2:       #222032;
-  --badge-3:       #172a25;
-  --badge-4:       #2f291c;
+  /* accent-derived chip fills — the prototype's rgba(accent, 0.12) over
+     --surface, resolved to opaque hexes (normative values below;
+     the 12% mix is the derivation, not the definition) */
+  --badge-1:       #301e1b;   /* V (resolved) */
+  --badge-2:       #222032;   /* N (regenerated from nudged --accent-2) */
+  --badge-3:       #172a25;   /* V (resolved) */
+  --badge-4:       #2f291c;   /* V (resolved) */
+  --badge-5:       #2c1f30;   /* V (resolved) */
+  --badge-6:       #192a2e;   /* V (resolved) */
 
-  /* the one glow + focus */
-  --glow:          color-mix(in srgb, var(--accent-2) 35%, transparent);
-  --focus:         var(--accent-2);
+  /* focus — no prototype ancestor; aliases the accent-2 role */
+  --focus:         var(--accent-2);   /* D — ≥3:1 UI target met on all surfaces */
 
   /* code panel */
-  --code-bg:       #0d0d0f;
-  --code-text:     #c8c8d4;
-  --code-muted:    #8b8b99;
+  --code-bg:       #0d0d0f;   /* V — .module-code background */
+  --code-text:     #c8c8d4;   /* V */
+  --code-comment:  #7a7a7a;   /* N — was #444, 1.99:1 (§4) */
 }
 ```
 
-### Design intent
+### Design intent (unchanged in spirit, now literally Tal's)
 
-This is the workshop at night: near-black with a barely-cool cast, tools put
-away in labeled drawers (`--surface` cards on hairline `--border` seams),
-light only where a hand is working. Precision is the default register —
-the structure neutrals stay so quiet that the four accents, rationed to
-badges, labels, and the single glow, read as deliberate marks by a person
-rather than as a color scheme. That is the brief's sentence made literal: the
-precision is the workshop; the sparse warm-orange and violet marks are the
-person visibly living in it. The anti-test holds because the discipline
-itself is the signature — six-accent dashboards ship everywhere; a
-four-accent budget where every placement is justified does not.
-
-### What changed from ancestor ADR 0004, and why (measured, not taste)
-
-| Ancestor value | Measured problem | Evolved to |
-|---|---|---|
-| `--muted: #6b6b78` | **3.70:1** on bg, **3.50:1** on surface — fails AA (4.5:1), yet the prototype used it for 13px body copy | `#8b8b99` → 5.78 / 5.47 |
-| `--accent-2: #7c6af7` | **4.34:1** on surface-2 (hover), 4.61:1 on surface — fails AA on raised surfaces | `#8878f8` → 5.03 / 5.33 |
-| Six accents | No AA failure — a restraint failure; two accents had no nameable role on portfolio surfaces | Four accents |
-| bg/surface/border/text | Sound; proven in Tal's own work | Kept (border nudged `#222228` → `#24242b`, imperceptible, for parity with the new `--border-strong` step) |
-
-### Alternatives considered (honest record for the superseding ADR)
-
-1. **Keep ADR 0004 verbatim.** Rejected on measurement: two shipped-failing AA
-   pairs (table above). A design-system builder's site cannot ship a muted
-   text color at 3.70:1.
-2. **Warm-tinted dark base ("Warm Noir" revisited).** Rejected — the original
-   round already found the amber cast forced, and it additionally narrows the
-   Map reveal: the hidden switch's payoff depends on the default being
-   cool-neutral so the warm theme lands as a genuine temperature change.
-3. **Fully achromatic dark (default-gray `#111113` family, no cast).**
-   Rejected — reads as stock dashboard chrome; fails the anti-test ("could
-   ship on any competent developer's portfolio unchanged"). The faint cool
-   cast is what keeps it a night workshop instead of a template.
-
----
+The workshop at night: near-black with a barely-cool cast, cards as labeled
+drawers on hairline seams, six category inks rationed to badges, dots, and
+labels. The register is Tal's own committed work — the anti-test is passed by
+provenance: this is not a template because it is literally the author's hand.
 
 ## 3. Theme 2 — warm editorial (hidden behind the Map switch)
 
+Source: `tooling-deepdive.html` `:root` plus its in-rule literals.
+
 ```css
 /* Placeholder attribute value — deliberately mundane; final naming in
-   tokens-reference.md. See "Hidden-theme discipline". */
+   tokens-reference.md under the hidden-theme discipline (§9). */
 [data-theme="warm"] {
   /* structure */
-  --bg:            #f5f2eb;
-  --surface:       #fffdf8;
-  --surface-2:     #f0ede4;
-  --border:        #ddd8cc;
-  --border-strong: #b8b0a0;
+  --bg:            #f5f2eb;   /* V */
+  --surface:       #fffdf8;   /* V */
+  --surface-2:     #f0ede4;   /* V — the prototype's --surface2 */
+  --surface-inset: #f0ede4;   /* V — the prototype's own collapse: flow
+                                 diagrams and inline chips share surface2 */
+  --chip-bg:       #f0ede4;   /* V — same collapse (inline code bg) */
+  --border:        #ddd8cc;   /* V */
+  --border-strong: #b8b0a0;   /* D — no warm ancestor; chosen to match the
+                                 dark theme's border-strong contrast step
+                                 (≈1.9:1 vs bg). Non-text, no AA claim. */
 
   /* text */
-  --text-strong:   #0f0d0a;
-  --text:          #1a1814;
-  --muted:         #6b6255;
+  --text-strong:   #2c2820;   /* V — the prototype's --ink heading color */
+  --text:          #1a1814;   /* V */
+  --muted:         #746a5b;   /* N — was #7a7060, 4.16 on surface-2 (§4) */
+  --subtle:        #706b61;   /* N — was #b0a898, ~2:1 everywhere (§4);
+                                 see the tier note below */
 
-  /* accents — never backgrounds */
-  --accent-1:      #b23222;
-  --accent-2:      #4a235a;
-  --accent-3:      #1e6641;
-  --accent-4:      #7d4e00;
+  /* six accents — same roles, printer's-ink temperature */
+  --accent-1:      #c0392b;   /* V — deep red */
+  --accent-2:      #1a5276;   /* V — navy */
+  --accent-3:      #1e6641;   /* V — forest */
+  --accent-4:      #7d4e00;   /* V — ochre */
+  --accent-5:      #4a235a;   /* V — plum */
+  --accent-6:      #0e4d6b;   /* V — teal */
 
-  /* accent-derived chip fills — badge use only (see §5) */
-  --badge-1:       #f6e5de;   /* = color-mix(in srgb, var(--accent-1) 12%, var(--surface)) */
-  --badge-2:       #e9e3e5;
-  --badge-3:       #e4ebe2;
-  --badge-4:       #efe8da;
+  /* accent-derived tint fills — the prototype's static l1–l6, verbatim */
+  --badge-1:       #fdecea;   /* V */
+  --badge-2:       #e8f0f8;   /* V */
+  --badge-3:       #e8f5ee;   /* V */
+  --badge-4:       #fef9e7;   /* V */
+  --badge-5:       #f5eef8;   /* V */
+  --badge-6:       #e8f4f8;   /* V */
 
-  /* glow is a dark-room phenomenon; in daylight it simply is not there */
-  --glow:          transparent;
-  --focus:         var(--accent-2);
+  /* focus */
+  --focus:         var(--accent-2);   /* D — 7.48:1 on bg, far past the 3:1 UI target */
 
-  /* code panel — stays ink-dark in the warm theme (see §6) */
-  --code-bg:       #2c2820;
-  --code-text:     #e8e4d8;
-  --code-muted:    #a89f8f;
+  /* code panel — ink-dark in the warm theme, the prototype's own move */
+  --code-bg:       #2c2820;   /* V — pre background (--ink) */
+  --code-text:     #e8e4d8;   /* V */
+  --code-comment:  #938e85;   /* N — was #6b6458, 2.51:1 (§4) */
 }
 ```
 
-### Design intent
+### The `--subtle` tier — an honest consequence, flagged
 
-Same workshop, shutters open: cream paper (`--bg`), near-white sheets laid on
-it (`--surface` — the "raised = toward the light source" rule mirrored from
-the dark theme), ink-dark text, and accents that are the same four roles
-re-mixed as printer's inks — burnt red, plum, forest, ochre. This is the
-editorial deep-dive register from Tal's own second prototype: the temperature
-of long-form reading, which is exactly what the hidden theme exists for. The
-person is visible here in the print-shop warmth; the precision survives in
-the unchanged grid, roster, and accent budget. One system, two temperatures —
-a visitor who finds the switch should recognize every element instantly while
-feeling the room change.
+The warm prototype has a third text tier (`--subtle #b0a898`, used for
+9–10px uppercase labels). The checkpoint decision keeps the token; AA does
+not negotiate on 10px text. The minimal passing value (`#706b61`) lands
+almost on top of fixed `--muted` (`#746a5b`) — **the AA floor collapses the
+color distinction between the two tiers.** The roster keeps both tokens
+(prototype-exact structure, and the dark theme may diverge them later without
+a roster change), but hierarchy between muted and subtle text is carried by
+what already distinguishes them in the prototype — size, tracking, and
+uppercase — not by lightness. Recorded so nobody later "fixes" the
+near-duplicate back to a failing value.
 
-### What changed from ancestor ADR 0005 / the warm prototype, and why
+The dark theme has no third tier (the dark prototype never had one);
+`--subtle` in the dark theme aliases `--muted` (D, by parity rule §7.7).
 
-| Ancestor value | Measured problem | Evolved to |
-|---|---|---|
-| `--muted: #9c8e78` (ADR 0005) | **2.90:1** on its own bg — fails AA badly | `#6b6255` → 5.36 on bg |
-| Prototype `--muted: #7a7060` | **4.35:1** on bg — still fails | same fix |
-| Prototype `--subtle: #b0a898` (used for 9–10px eyebrow labels) | far below AA; a third text tier invites failing text | **tier dropped** — eyebrows/labels use `--muted` |
-| Accent `#9c6b3a` (ADR 0005 primary) | **4.15:1** on its own bg — fails AA | role refilled by `#b23222` |
-| Prototype deep red `#c0392b` | 4.86:1 on bg (passes) but **4.46:1** on its own 12% badge tint — fails the badge pair | darkened to `#b23222` → 5.57 on bg, 5.10 on badge |
-| Three accents (ADR 0005) | Breaks token parity with the dark theme (four roles) | Four accents, roles mirrored |
-| Prototype surfaces `#f5f2eb` / `#fffdf8` / `#f0ede4` / borders | Sound; Tal's most refined warm iteration | Kept verbatim |
+## 4. The six nudges — complete record
 
-### Alternatives considered
+Method: straight-line sRGB interpolation from the failing value toward white
+(dark theme) or black (warm theme), in steps of 0.25%, stopped at the first
+candidate where **every pair that color actually renders on** clears 4.5:1.
+Computed with `scripts/contrast.ts` (exit-1-on-AA-fail), not estimated.
 
-1. **ADR 0005 verbatim (parchment `#f7f3ec` / `#ede6d8`, bronze accents).**
-   Rejected on measurement: primary accent 4.15:1 and muted 2.90:1 on its own
-   background — both AA failures — and its three-accent set breaks role parity
-   with the dark theme. Its parchment-darker-than-cards surface order was also
-   superseded by Tal's own later prototype, which raised cards *above* the
-   page (near-white on cream) — the more editorial and the parity-consistent
-   choice ("raised = toward the light source" in both themes).
-2. **"Blood & Parchment" (high-drama warm).** Rejected pre-workshop as too
-   dramatic; still true and now sharper: the warm theme is the long-form
-   reading register — drama fights sustained readability, which is this
-   theme's entire job.
-3. **Pure-white editorial (`#ffffff` base).** Rejected — discards the warmth
-   that is the whole point of the temperature flip, and white-plus-serif is
-   the most template-shaped reading surface on the web (fails the anti-test).
+| # | Token | Prototype value | Worst measured failure | Nudged to | Worst pair after |
+|---|---|---|---|---|---|
+| 1 | dark `--muted` | `#6b6b78` | 3.16 on `--chip-bg` (3.70 on bg) | `#85858f` | 4.54 on `--chip-bg` |
+| 2 | dark `--accent-2` | `#7c6af7` | 4.07 on own badge tint; 4.43 on hover | `#8676f8` | 4.51 on regenerated `--badge-2` |
+| 3 | dark `--code-comment` | `#444444` | 1.99 on code-bg | `#7a7a7a` | 4.52 |
+| 4 | warm `--muted` | `#7a7060` | 4.16 on `--surface-2` (4.35 on bg) | `#746a5b` | 4.54 on `--surface-2` |
+| 5 | warm `--subtle` | `#b0a898` | 2.02 on `--surface-2` | `#706b61` | 4.52 on `--surface-2` |
+| 6 | warm `--code-comment` | `#6b6458` | 2.51 on code-bg | `#938e85` | 4.50 |
 
----
+Notes:
+- Nudge 2 cascades: `--badge-2` is regenerated from the nudged accent
+  (12% over `--surface` → `#222032`). The dark code keyword color, which the
+  prototype set to the same violet, is aliased to `--accent-2` rather than
+  keeping two violets one step apart (§6).
+- Every other color in both prototypes passes verbatim — including all
+  six accents in both temperatures, all warm l-tint pairs, and all four
+  callout-box body-text colors. Measured proof in §5.
+- Several post-nudge margins are deliberately thin (4.50–4.54): "minimal"
+  was the checkpoint rule, so these sit just past the line. The CI check
+  (§10) must use full-precision WCAG math, not rounded values.
 
-## 4. WCAG AA contrast — every text/background pair, measured
+## 5. WCAG AA — every text/background pair, measured
 
-Method: WCAG 2.x relative luminance and contrast ratio, computed from the hex
-values above (sRGB linearization, L = 0.2126R + 0.7152G + 0.0722B, ratio =
-(L₁+0.05)/(L₂+0.05)), rounded to 2 decimals. Targets: **4.5:1** normal text,
-**3:1** large text (≥24px / ≥18.66px bold) and UI indicators. Every pair
-intended for normal text below meets 4.5:1 — nothing in this spec relies on
-the large-text concession. Phase 2 CI should re-verify these pairs
-mechanically (natural fit with the from-scratch CI/CD showcase, ADR 0012).
+Method: WCAG 2.x relative luminance, computed by `scripts/contrast.ts` from
+the exact hexes in this file. Targets: **4.5:1** normal text, **3:1** UI
+indicators. No pair below relies on the large-text concession.
 
-### 4.1 Dark theme
+### 5.1 Dark theme
 
-| Foreground | Background | Ratio | Target | Result |
-|---|---|---|---|---|
-| `--text` #e8e8ec | `--bg` #0d0d0f | 15.89 | 4.5 | pass |
-| `--text` | `--surface` #141417 | 15.05 | 4.5 | pass |
-| `--text` | `--surface-2` #1a1a1f | 14.19 | 4.5 | pass |
-| `--text-strong` #ffffff | `--bg` | 19.42 | 4.5 | pass |
-| `--text-strong` | `--surface` | 18.39 | 4.5 | pass |
-| `--text-strong` | `--surface-2` | 17.34 | 4.5 | pass |
-| `--muted` #8b8b99 | `--bg` | 5.78 | 4.5 | pass |
-| `--muted` | `--surface` | 5.47 | 4.5 | pass |
-| `--muted` | `--surface-2` | 5.16 | 4.5 | pass |
-| `--accent-1` #ff6b35 | `--bg` | 6.85 | 4.5 | pass |
-| `--accent-1` | `--surface` | 6.49 | 4.5 | pass |
-| `--accent-1` | `--surface-2` | 6.11 | 4.5 | pass |
-| `--accent-1` | `--badge-1` #301e1b | 5.58 | 4.5 | pass |
-| `--accent-2` #8878f8 | `--bg` | 5.63 | 4.5 | pass |
-| `--accent-2` | `--surface` | 5.33 | 4.5 | pass |
-| `--accent-2` | `--surface-2` | 5.03 | 4.5 | pass |
-| `--accent-2` | `--badge-2` #222032 | 4.61 | 4.5 | pass (thinnest margin in the system — noted) |
-| `--accent-3` #2fc98e | `--bg` | 9.12 | 4.5 | pass |
-| `--accent-3` | `--surface` | 8.64 | 4.5 | pass |
-| `--accent-3` | `--surface-2` | 8.14 | 4.5 | pass |
-| `--accent-3` | `--badge-3` #172a25 | 7.08 | 4.5 | pass |
-| `--accent-4` #f5c542 | `--bg` | 11.97 | 4.5 | pass |
-| `--accent-4` | `--surface` | 11.34 | 4.5 | pass |
-| `--accent-4` | `--surface-2` | 10.69 | 4.5 | pass |
-| `--accent-4` | `--badge-4` #2f291c | 8.90 | 4.5 | pass |
-| `--code-text` #c8c8d4 | `--code-bg` #0d0d0f | 11.71 | 4.5 | pass |
-| `--code-muted` #8b8b99 | `--code-bg` | 5.78 | 4.5 | pass |
-| `--focus` (= `--accent-2`) | `--bg` | 5.63 | 3.0 (UI) | pass |
-| `--focus` | `--surface` | 5.33 | 3.0 (UI) | pass |
+| Foreground | Background | Ratio | Result |
+|---|---|---|---|
+| `--text` #e8e8ec | `--bg` #0d0d0f | 15.89 | pass |
+| `--text` | `--surface` #141417 | 15.05 | pass |
+| `--text` | `--surface-2` #18181d | 14.47 | pass |
+| `--text` | `--surface-inset` #111114 | 15.42 | pass |
+| `--text-strong` #ffffff | `--bg` | 19.42 | pass |
+| `--text-strong` | `--surface` | 18.39 | pass |
+| `--text-strong` | `--surface-2` | 17.69 | pass |
+| `--muted` #85858f | `--bg` | 5.32 | pass |
+| `--muted` | `--surface` | 5.03 | pass |
+| `--muted` | `--surface-2` | 4.84 | pass |
+| `--muted` | `--chip-bg` #1e1e24 | 4.54 | pass (thin — §4) |
+| `--muted` | `--surface-inset` | 5.16 | pass |
+| `--accent-1` #ff6b35 | `--surface` | 6.48 | pass |
+| `--accent-1` | `--surface-2` | 6.24 | pass |
+| `--accent-1` | `--badge-1` #301e1b | 5.58 | pass |
+| `--accent-2` #8676f8 | `--bg` | 5.51 | pass |
+| `--accent-2` | `--surface` | 5.22 | pass |
+| `--accent-2` | `--surface-2` | 5.02 | pass |
+| `--accent-2` | `--badge-2` #222032 | 4.51 | pass (thinnest in system — §4) |
+| `--accent-3` #2fc98e | `--surface` | 8.64 | pass |
+| `--accent-3` | `--surface-2` | 8.31 | pass |
+| `--accent-3` | `--badge-3` #172a25 | 7.08 | pass |
+| `--accent-3` | `--code-bg` (code strings) | 9.12 | pass |
+| `--accent-4` #f5c542 | `--surface` | 11.34 | pass |
+| `--accent-4` | `--surface-2` | 10.91 | pass |
+| `--accent-4` | `--badge-4` #2f291c | 8.90 | pass |
+| `--accent-5` #e06fe8 | `--surface` | 6.66 | pass |
+| `--accent-5` | `--surface-2` | 6.41 | pass |
+| `--accent-5` | `--badge-5` #2c1f30 | 5.65 | pass |
+| `--accent-6` #3fc9d4 | `--surface` | 9.21 | pass |
+| `--accent-6` | `--surface-2` | 8.86 | pass |
+| `--accent-6` | `--badge-6` #192a2e | 7.45 | pass |
+| `--code-text` #c8c8d4 | `--code-bg` #0d0d0f | 11.71 | pass |
+| `--code-comment` #7a7a7a | `--code-bg` | 4.52 | pass |
+| `--focus` (= `--accent-2`) | `--bg` | 5.51 | pass (3:1 UI target) |
+| `--focus` | `--surface` | 5.22 | pass (3:1 UI target) |
 
-Informative (non-text, no AA text claim): `--border` vs `--bg` 1.26, vs
-`--surface` 1.19; `--border-strong` vs `--bg` 1.87, vs `--surface` 1.77.
-See §5 border rule.
+Informative (non-text, no AA claim): `--border` #222228 vs `--bg` ≈1.3;
+`--border-strong` #444444 vs `--bg` ≈2.6. See §7 rule 5.
 
-### 4.2 Warm theme
+### 5.2 Warm theme
 
-| Foreground | Background | Ratio | Target | Result |
-|---|---|---|---|---|
-| `--text` #1a1814 | `--bg` #f5f2eb | 15.86 | 4.5 | pass |
-| `--text` | `--surface` #fffdf8 | 17.44 | 4.5 | pass |
-| `--text` | `--surface-2` #f0ede4 | 15.14 | 4.5 | pass |
-| `--text-strong` #0f0d0a | `--bg` | 17.36 | 4.5 | pass |
-| `--text-strong` | `--surface` | 19.09 | 4.5 | pass |
-| `--text-strong` | `--surface-2` | 16.58 | 4.5 | pass |
-| `--muted` #6b6255 | `--bg` | 5.36 | 4.5 | pass |
-| `--muted` | `--surface` | 5.90 | 4.5 | pass |
-| `--muted` | `--surface-2` | 5.12 | 4.5 | pass |
-| `--accent-1` #b23222 | `--bg` | 5.57 | 4.5 | pass |
-| `--accent-1` | `--surface` | 6.13 | 4.5 | pass |
-| `--accent-1` | `--surface-2` | 5.32 | 4.5 | pass |
-| `--accent-1` | `--badge-1` #f6e5de | 5.10 | 4.5 | pass |
-| `--accent-2` #4a235a | `--bg` | 11.19 | 4.5 | pass |
-| `--accent-2` | `--surface` | 12.30 | 4.5 | pass |
-| `--accent-2` | `--surface-2` | 10.68 | 4.5 | pass |
-| `--accent-2` | `--badge-2` #e9e3e5 | 9.88 | 4.5 | pass |
-| `--accent-3` #1e6641 | `--bg` | 6.19 | 4.5 | pass |
-| `--accent-3` | `--surface` | 6.81 | 4.5 | pass |
-| `--accent-3` | `--surface-2` | 5.92 | 4.5 | pass |
-| `--accent-3` | `--badge-3` #e4ebe2 | 5.70 | 4.5 | pass |
-| `--accent-4` #7d4e00 | `--bg` | 6.34 | 4.5 | pass |
-| `--accent-4` | `--surface` | 6.97 | 4.5 | pass |
-| `--accent-4` | `--surface-2` | 6.06 | 4.5 | pass |
-| `--accent-4` | `--badge-4` #efe8da | 5.81 | 4.5 | pass |
-| `--code-text` #e8e4d8 | `--code-bg` #2c2820 | 11.54 | 4.5 | pass |
-| `--code-muted` #a89f8f | `--code-bg` | 5.60 | 4.5 | pass |
-| `--focus` (= `--accent-2`) | `--bg` | 11.19 | 3.0 (UI) | pass |
-| `--focus` | `--surface` | 12.30 | 3.0 (UI) | pass |
+| Foreground | Background | Ratio | Result |
+|---|---|---|---|
+| `--text` #1a1814 | `--bg` #f5f2eb | 15.85 | pass |
+| `--text` | `--surface` #fffdf8 | 17.44 | pass |
+| `--text` | `--surface-2` #f0ede4 | 15.14 | pass |
+| `--text-strong` #2c2820 | `--bg` | 13.12 | pass |
+| `--text-strong` | `--surface` | 14.43 | pass |
+| `--text-strong` | `--surface-2` | 12.53 | pass |
+| `--muted` #746a5b | `--bg` | 4.75 | pass |
+| `--muted` | `--surface` | 5.22 | pass |
+| `--muted` | `--surface-2` | 4.54 | pass (thin — §4) |
+| `--subtle` #706b61 | `--bg` | 4.74 | pass |
+| `--subtle` | `--surface` | 5.21 | pass |
+| `--subtle` | `--surface-2` | 4.52 | pass (thin — §4) |
+| `--accent-1` #c0392b | `--bg` | 4.86 | pass |
+| `--accent-1` | `--surface-2` | 4.65 | pass |
+| `--accent-1` | `--badge-1` #fdecea | 4.76 | pass |
+| `--accent-2` #1a5276 | `--bg` | 7.48 | pass |
+| `--accent-2` | `--surface-2` | 7.14 | pass |
+| `--accent-2` | `--badge-2` #e8f0f8 | 7.26 | pass |
+| `--accent-3` #1e6641 | `--bg` | 6.19 | pass |
+| `--accent-3` | `--surface-2` | 5.92 | pass |
+| `--accent-3` | `--badge-3` #e8f5ee | 6.18 | pass |
+| `--accent-4` #7d4e00 | `--bg` | 6.34 | pass |
+| `--accent-4` | `--surface-2` | 6.06 | pass |
+| `--accent-4` | `--badge-4` #fef9e7 | 6.73 | pass |
+| `--accent-5` #4a235a | `--bg` | 11.19 | pass |
+| `--accent-5` | `--surface-2` | 10.68 | pass |
+| `--accent-5` | `--badge-5` #f5eef8 | 11.00 | pass |
+| `--accent-6` #0e4d6b | `--bg` | 8.19 | pass |
+| `--accent-6` | `--surface-2` | 7.82 | pass |
+| `--accent-6` | `--badge-6` #e8f4f8 | 8.17 | pass |
+| box body `#2a4060` (info) | `--badge-2` | 9.12 | pass |
+| box body `#4a3800` (warn) | `--badge-4` | 10.73 | pass |
+| box body `#1a4428` (tip) | `--badge-3` | 9.85 | pass |
+| box body `#5a1a14` (danger) | `--badge-1` | 11.53 | pass |
+| `--code-text` #e8e4d8 | `--code-bg` #2c2820 | 11.54 | pass |
+| `--code-comment` #938e85 | `--code-bg` | 4.50 | pass (thin — §4) |
+| `--focus` (= `--accent-2`) | `--bg` | 7.48 | pass (3:1 UI target) |
 
-Informative (non-text): `--border` vs `--bg` 1.27, vs `--surface` 1.40;
-`--border-strong` vs `--bg` 1.93, vs `--surface` 2.12.
-
----
-
-## 5. Usage rules (binding on all M2 component specs)
-
-1. **Accents are never backgrounds.** Preserved principle from 0004/0005,
-   restated as law. No accent fills a surface, section, button, or hero.
-2. **Accent placement budget:** badges, labels, and exactly one glow element
-   per theme, site-wide. Nothing else. Links are *not* accent-colored — links
-   use `--text` with an underline treatment (specified in the interaction
-   deliverable); the palette deliberately provides no `--link` token so the
-   restraint cannot erode by default.
-3. **Badge recipe:** chip fill = `--badge-N` (defined as the 12%
-   accent-over-surface mix; resolved hexes above are the normative values,
-   `color-mix()` is the derivation), foreground = `--accent-N`. Badge tints
-   are the *only* sanctioned accent-derived fills, confined to inline chip
-   size — this is the ancestor prototypes' own pattern under ADR 0004's
-   "accents only on badges, labels, one glow." If Tal reads even this as
-   violating rule 1's spirit, the fallback is outline badges (accent text +
-   accent border on `--surface`) — every accent-on-surface pair is verified
-   above, so the fallback is pre-cleared. (Open Question 1.)
-4. **The glow:** `--glow` derives from `--accent-2` and may appear on exactly
-   one element. In the warm theme `--glow` resolves to `transparent` — a glow
-   is a dark-room phenomenon (Open Question 2 covers placement and this
-   behavior).
-5. **Borders are never the sole affordance.** Hairline `--border` /
-   `--border-strong` ratios are below 3:1 by design (they always co-occur
-   with a surface-color step and/or text). Any control whose boundary must be
-   perceived on its own (form inputs, toggles) pairs its border with a
-   surface change and receives a `--focus` outline ≥2px on focus — `--focus`
-   meets the 3:1 UI-indicator target in both themes (tables above).
-6. **Muted is the floor.** No text may be rendered in any color with a lower
-   ratio than `--muted` on its actual background. There is no "subtle" third
-   tier; the warm prototype's `--subtle` is deliberately not carried forward.
-7. **Theme parity:** any new token must be added to both themes in the same
-   role, with its pairs measured, before use. A token existing in one theme
-   only is a spec violation (and a hint that the second theme exists — see
-   below).
-
----
+Informative (non-text): `--border` #ddd8cc vs `--bg` ≈1.3; `--border-strong`
+#b8b0a0 vs `--bg` ≈1.9. The four callout box border colors (`#b8cfe8`,
+`#e8d89a`, `#a8d8b8`, `#e8b8b4`) are decorative-structural borders on their
+own tint fills — non-text, and each box also carries an AA-passing title and
+body (rows above).
 
 ## 6. Code panels and syntax colors
 
-Code panels are **ink-dark in both themes**: `--code-bg` is `#0d0d0f` (dark
-theme) and `#2c2820` (warm theme — the warm prototype's own inverted code
-blocks). This is a standard editorial convention (dark code blocks on light
-pages hint at nothing) and it means one shared syntax palette can pass AA on
-both code backgrounds.
+Code panels are ink-dark in **both** temperatures — dark `#0d0d0f` panels,
+warm `#2c2820` panels (the warm prototype's own inverted-pre move). One
+syntax roster serves both archetypes; per-theme values below. The binding
+constraint: **every syntax color measures ≥4.5:1 on its theme's
+`--code-bg`.**
 
-Final syntax token naming (`--code-kw` etc.) belongs to `tokens-reference.md`.
-The binding constraint set here: **every syntax color must measure ≥4.5:1 on
-`--code-bg` in both themes.** Pre-verified candidate set, from the warm
-prototype's own syntax colors:
-
-| Candidate | On #0d0d0f (dark) | On #2c2820 (warm) | Result |
+| Token | Dark value (on #0d0d0f) | Warm value (on #2c2820) | Provenance |
 |---|---|---|---|
-| #d4a857 (keywords) | 8.82 | 6.66 | pass both |
-| #7ec87e (strings) | 9.66 | 7.30 | pass both |
-| #87b3d4 (types) | 8.72 | 6.59 | pass both |
-| #c99fd0 (properties) | 8.65 | 6.53 | pass both |
-| `--code-muted` (comments) | 5.78 | 5.60 | pass both |
+| `--code-kw` (also bool) | `var(--accent-2)` #8676f8 → 5.51 | #d4a857 → 6.66 | dark: prototype kw was the same violet as accent-2; aliased post-nudge rather than keeping two violets one step apart. warm: V |
+| `--code-str` | `var(--accent-3)` #2fc98e → 9.12 | #7ec87e → 7.30 | dark: V (prototype used accent-3 exactly). warm: V |
+| `--code-ty` | #87b3d4 → 8.72 | #87b3d4 → 6.59 | dark: D (adopted from warm set — dark prototype had no type token). warm: V |
+| `--code-prop` | #c99fd0 → 8.65 | #c99fd0 → 6.53 | dark: D (same adoption). warm: V |
+| `--code-num` | #e08060 → 6.87 | #e08060 → 5.19 | dark: D (same adoption). warm: V |
+| `--code-comment` | #7a7a7a → 4.52 | #938e85 → 4.50 | both: N (§4 — both prototypes rendered comments at ~2:1; comments are text and get no exemption) |
 
-Note the honest correction: both prototypes rendered code comments at ~2:1
-(`#444` on near-black; `#6b6458` on ink). `--code-muted` fixes this; comments
-are text and get no exemption.
+The three adopted dark values (ty/prop/num) are the warm prototype's own
+syntax colors, which measure comfortably on the dark panel — no invented
+hues. Final custom-property naming belongs to `tokens-reference.md`.
 
----
+## 7. Usage rules (binding on all M2 component specs)
 
-## 7. RTL / Hebrew interaction (ADR 0011)
+1. **Saturated accents are never backgrounds.** Preserved principle from
+   0004/0005, restated as law: no `--accent-N` fills a surface, section,
+   button, or hero.
+2. **Accent-derived tints are sanctioned in exactly the two prototype
+   patterns:** chip-scale badge fills (`--badge-N` behind `--accent-N` text)
+   and callout-box fills in the warm temperature (the l-tint boxes with
+   their AA-passing title/body inks). No third tint pattern without a new
+   scoped decision.
+3. **Callout idiom is per-temperature, structure shared.** Same box, radius,
+   and accent-edge structure in both temperatures; the dark temperature
+   fills with `--surface-inset` + accent `border-inline-start` (its
+   prototype's `.note` idiom), the warm temperature fills with `--badge-N`
+   tints (its prototype's `.box` idiom). This is the recorded resolution of
+   the archetype × temperature cross-product for callouts.
+4. **Accent placement budget:** badges, category dots, labels, callout
+   edges/titles, syntax highlighting. Links are not accent-colored — links
+   use `--text` with an underline treatment (interaction spec); there is
+   deliberately no `--link` token. Any glow is the hero's question
+   (`hero-and-illustration.md`) — **neither prototype contains one**, so the
+   palette defines no `--glow` token; if the hero resolution keeps ADR
+   0007's glow, that spec must derive it from `--accent-2` and it remains
+   the only glow site-wide.
+5. **Borders are never the sole affordance.** Hairline ratios are below 3:1
+   by design; any control whose boundary must be perceived on its own pairs
+   its border with a surface step and receives a `--focus` outline ≥2px on
+   focus (`--focus` meets 3:1 in both themes, §5).
+6. **The muted floor.** No text renders below its theme's worst `--muted`
+   ratio on the same background. `--subtle` exists at the same floor (§3
+   tier note) — it is a size/tracking register, not a lower-contrast one.
+7. **Theme parity:** every token has a value in both temperatures (aliases
+   count), measured before use. A token in one theme only is a spec
+   violation and a hidden-theme leak (§9).
 
-Color tokens are direction-agnostic; **the palette itself has no RTL
-interaction** — stated explicitly, as required. Two adjacent flags for the
-layout and component specs:
+## 8. RTL / Hebrew interaction (ADR 0011)
 
-1. **Accent edges must be logical.** The prototypes' callout pattern uses a
-   3px accent edge on the *left* (`border-left`). Any component consuming an
-   accent token on a directional edge must specify it as
-   `border-inline-start` (or equivalent logical property) so the accent edge
-   sits on the reading-start side under `dir="rtl"`. The token is innocent;
-   the property binding is where RTL can silently break.
-2. **Glow/shadow geometry:** the single glow must be symmetric (no
-   directional offset), so it renders identically in RTL. Specified here so
-   the interaction spec inherits it as a constraint.
+Color tokens are direction-agnostic; the palette itself has no RTL
+interaction — stated explicitly. Two binding flags for downstream specs:
 
-Contrast ratios are script-independent; Hebrew text obeys the same pair
-tables. (Whether Hebrew companion faces need a weight/size adjustment to hold
-perceived density is a typography-deliverable question, not a palette one.)
+1. **Accent edges must be logical.** Both prototypes hang accent edges on
+   `border-left` (dark `.note`/`.blN`, warm `.nav-link`). Every component
+   consuming an accent or structural edge must bind it with
+   `border-inline-start` so it sits on the reading-start side under
+   `dir="rtl"`.
+2. **Shadow/glow geometry must be symmetric** (no directional offset), so
+   any future glow renders identically in RTL.
 
----
+Contrast ratios are script-independent; Hebrew text obeys the same tables.
+Whether Hebrew companion faces need weight/size compensation is
+`typography-spec.md`'s question.
 
-## 8. Hidden-theme discipline (ADR 0002)
+## 9. Hidden-theme discipline (ADR 0002)
 
 - The shipped stylesheet necessarily contains both token blocks; ADR 0002
-  accepts this. What is forbidden is *acknowledgment*: no toggle UI, no
-  tooltip, no copy, no docs page, no `aria` announcement of a second theme.
-- **Shipped identifiers stay mundane.** The attribute value here is the
-  placeholder `data-theme="warm"` — a deliberately boring name. No shipped
-  selector, token, comment, or asset may use `jekyll`, `hyde`, `map`,
-  `marauder`, `mischief`, or any other pointer at the mechanism or its
-  source. Final attribute naming is fixed in `tokens-reference.md` under this
-  rule.
-- The 600ms transition and the incantation mechanism are ADR 0002's and
-  untouched by this spec; the palette's only obligation is that every token
-  has a value in both themes so the transition is total (§5 rule 7).
+  accepts this. Forbidden is *acknowledgment*: no toggle UI, no copy, no
+  docs, no `aria` announcement of a second theme.
+- Shipped identifiers stay mundane: `data-theme="warm"` here is a
+  placeholder; no shipped selector, token, comment, or asset may use
+  `jekyll`, `hyde`, `map`, `marauder`, `mischief`, or any pointer at the
+  mechanism. Final naming is fixed in `tokens-reference.md` under this rule.
+- The 600ms transition and incantation mechanism are ADR 0002's and
+  untouched; the palette's obligation is total coverage (§7 rule 7) so the
+  transition never half-applies.
 
----
+## 10. Verification methodology
 
-## 9. Verification methodology
+Every ratio in this file was produced by `scripts/contrast.ts` (WCAG 2.x
+luminance, full precision, exit 1 on any AA failure), run against the pair
+lists derived from the prototypes' actual CSS — every foreground/background
+combination the two files really render, not a curated subset. The verbatim
+prototype values were measured first (which is what isolated the six
+failures in §4 — exactly the families Tal's checkpoint recorded); the nudged
+values were then re-verified in the same run shape. Phase 2 CI should encode
+§5's pair tables as a mechanical gate (natural fit with the from-scratch
+CI/CD showcase, ADR 0012); because §4's margins are thin by design, the gate
+must compare at full precision, not two-decimal rounding.
 
-Ratios were computed directly from the hex values in this document using the
-WCAG 2.x definition (sRGB channel linearization with the 0.03928/12.92
-threshold, luminance weights 0.2126/0.7152/0.0722), not copied from prior
-docs — which is how the ancestor failures in §2/§3 were caught. Spot-checked
-against known reference values (e.g. #c0392b vs white = 5.44). Badge fills
-were blended in gamma sRGB (matching `color-mix(in srgb, …)`) before
-measurement. Rounding is to 2 decimals; the one pair within 0.15 of its
-threshold (dark `--accent-2` on `--badge-2`, 4.61) is called out rather than
-hidden. Phase 2 should encode these pairs as a CI check so regressions are
-mechanical, not archaeological.
+## Checkpoint state
 
----
-
-## Open questions for Tal's checkpoint
-
-Five genuine taste calls. Everything above ships as specified unless one of
-these flips it; every alternative named here is already AA-verified.
-
-1. **Badge construction.** Tinted chips (`--badge-N` fills, your prototypes'
-   own pattern) vs outline-only badges (accent text + accent border, no
-   fill). The tint is technically an accent-derived background at chip scale —
-   sanctioned by 0004's ancestor language, but does it violate the *spirit*
-   of "accents never backgrounds" for you?
-2. **The glow.** Two sub-calls: (a) placement — the ancestor put it on the
-   `://` of the mark, which sits close to ADR 0001's "mark unaltered and
-   unthemed"; is the mark's glow identity or theming? (b) warm behavior —
-   spec'd as `transparent` (glow as dark-room phenomenon). Does the Map
-   reveal gain or lose from the glow going out in daylight?
-3. **Warm primary accent.** Burnt red `#b23222` (from your deep-dive
-   prototype's red, darkened for AA) vs the bronze/sienna family of ADR 0005
-   (`#9c6b3a` fails AA; would need darkening to roughly `#7f5527` to
-   qualify). Red is more editorial-print; bronze is warmer and closer to the
-   dark theme's orange. This is pure taste — both can be made to pass.
-4. **Accent count 6 → 4.** Magenta and cyan are gone. If a future page wants
-   the prototype's six-way category coding, the options are: force categories
-   into the four roles, or admit a scoped extension by explicit decision.
-   Comfortable with the trim as the site-wide budget?
-5. **Warm code panels stay dark.** Inverted ink panels (your prototype's
-   move) let one syntax palette serve both themes and read as print
-   convention. The alternative — light code panels in the warm theme — needs
-   its own light-background syntax set and loses the shared-panel elegance.
-   Confirm the inverted direction?
+The palette checkpoint is **resolved** — this file implements Tal's recorded
+decision and contains no open taste questions. Remaining open items for this
+mission live elsewhere: hero/glow (ADR 0007) and illustration (ADR 0008) in
+`hero-and-illustration.md` (second checkpoint), typography Hebrew companions
+in `typography-spec.md`.
