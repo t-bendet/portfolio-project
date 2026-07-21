@@ -86,6 +86,17 @@ defers.
   `<collection>:<id>` key, which is what M3 meant by "articles referenced by
   stable content `id` so comments tables can arrive later without reshaping
   anything."
+- **Scope of "never the URL path" (decision rule 3): it binds
+  collection-backed pages.** Static pages — `/`, `/about/`, `/colophon/`,
+  `/contact/`, the two 404s — have no collection entry and are identified in
+  view events by their route path. That is safe for them specifically
+  because the static route set is small, enumerated in `sitemap.md` §1, and
+  changes only by an explicit sitemap decision; content entries are numerous
+  and renameable, which is precisely why the rule exists for them. **View
+  events fire on every public page, not only content pages**, because a
+  write is a fire-and-forget beacon that creates no rendering dependency —
+  and because ADR 0020's per-referrer aggregation is worth most at the
+  site's entry point.
 - `trailingSlash` must be configured to one form and enforced, because both
   the feed and the analytics key path-adjacent surfaces would otherwise
   admit two spellings of one page. The non-canonical spelling must redirect,

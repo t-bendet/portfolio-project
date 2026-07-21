@@ -133,7 +133,7 @@ different voice on the same page.
 | **Degraded — API down** | fetch fails | no count, no reactions, no trace of either (§5) |
 | **Degraded — no JS** | scripts blocked | the whole translation reads, credit included; no count, no reactions |
 | **Draft** | `draft: true` | no route in production |
-| **Error** | bad `id` | never generated → `/404`, which is English (see §6) |
+| **Error** | bad `id` | never generated → `/he/404`, the Hebrew RTL error page (see §6) |
 
 ## 4. Empty states
 
@@ -191,13 +191,15 @@ one click from returning to Hebrew (nav item 2, plus the footer's persistent
 Hebrew link — `navigation-spec.md` §4.1, invariant R-3). Two honest
 consequences:
 
-- **A mistyped Hebrew URL lands on the English `/404`.** `sitemap.md` §1
-  authorizes exactly one 404 route and M4 does not invent a second one; the
-  Hebrew return path on that page is the footer link (see `not-found.md` §5
-  and `navigation-spec.md` §7.3, where the apparent conflict is resolved).
-  Recorded as a known, bounded rough edge rather than hidden: a Hebrew reader
-  who mistypes gets an English recovery page with a Hebrew way back in its
-  footer.
+- **A mistyped Hebrew URL lands on `/he/404`, a Hebrew RTL error page**
+  (`sitemap.md` §11b, ADR 0022). This brief originally recorded the opposite
+  — that only one English 404 existed and M4 would not invent a second —
+  which was correct when written; the route was added afterwards, on the
+  reasoning that the Hebrew subtree is its own front door and an English
+  error page breaks that at the worst moment. Corrected here rather than
+  deleted, so the change is legible. Composition and exclusions are governed
+  by `not-found.md`; its serving mechanism (a Caddy `handle_errors` matcher
+  on the `/he/*` prefix) is an owed scaffold-time verification.
 - **No hreflang, no canonical to the original.** The English counterpart is
   not on this site and a Hebrew translation is not a duplicate of an English
   article; declaring either would assert a false equivalence and could remove

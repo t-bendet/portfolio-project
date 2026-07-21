@@ -26,7 +26,7 @@ which `lang` attribute — not the specific word.
 
 ## 1. The chrome model
 
-Three regions, identical in structure on all eleven public routes, in this
+Three regions, identical in structure on all twelve public routes, in this
 DOM order:
 
 | # | Region | Contents | Landmark |
@@ -150,10 +150,20 @@ challenged rather than inherited.
   most one per document. Child routes (`/writing/[id]/`,
   `/he/writing/[id]/`, `/projects/[id]/`) mark their section's item visually
   and with `aria-current="true"`, not `"page"`.
-- **`/colophon/` and `/404` have no owning nav item.** On `/colophon/` the
-  footer's colophon link carries `aria-current="page"` instead. On `/404` no
-  chrome link is current — correct, because the page the visitor asked for
-  does not exist.
+- **`/colophon/`, `/404` and `/he/404` have no owning nav item.** On
+  `/colophon/` the footer's colophon link carries `aria-current="page"`
+  instead. On either 404 no chrome link is current — correct, because the
+  page the visitor asked for does not exist.
+- **The duplicated-link case, resolved.** `/he/writing/` is linked twice on
+  every page: as nav item 2 *and* as the footer's persistent Hebrew link
+  (§4.1, invariant R-3). On `/he/writing/` itself, an exact-URL-match rule
+  applied naively marks **both**, breaking test N-4. **The nav item wins:**
+  `aria-current="page"` goes on the nav occurrence only, and the footer
+  occurrence carries no current-state attribute. The rule generalizes —
+  *when one URL appears in more than one chrome region, the primary nav
+  occurrence is the one marked; footer duplicates never are* — which also
+  keeps `/colophon/` correct, since there the footer link is the **only**
+  occurrence and therefore the primary one.
 - Visual treatment is M2's `nav-link` idiom (accent edge bound with
   `border-inline-start`, `palette-spec.md` §8.1). The current state must not
   be carried by color alone.
@@ -221,10 +231,14 @@ and repeating it in the eyebrow would be redundant.
 | `/colophon/` | `T://bendet · colophon` | en |
 | `/contact/` | `T://bendet · contact` | en |
 | `/404` | `T://bendet · 404` | en |
+| `/he/404` | `T://bendet · 404` | **he** — segment renders under the Hebrew stack (no `text-transform`, `letter-spacing: normal`), inside `dir="rtl"`. The digits are an LTR run; the mark segment is unchanged and untranslated. |
 
 **Test:** the set of distinct segments equals {home, writing, תרגומים,
 projects, about, colophon, contact, 404} — eight, forever, until a route is
 added. A ninth segment means someone gave a leaf page its own label.
+`/404` and `/he/404` deliberately **share** the `404` segment: it is the
+same section in two locales, and giving the Hebrew one its own segment
+would break the rule above for no gain.
 
 `404` as a segment is the protocol register doing its own job — a status code
 in a namespace label. It is not a joke, not a wink, and carries no hint of
@@ -269,6 +283,7 @@ The `<title>` is not the eyebrow, but it carries the same unaltered mark.
 | Entry page | `<entry title> · T://bendet` — Hebrew title verbatim for translations |
 | Static page | `about · T://bendet` |
 | `/404` | `404 · T://bendet` |
+| `/he/404` | `404 · T://bendet` — Hebrew page copy, but the title string carries no translatable words |
 
 - Meta description comes from the entry's `description` field, which
   `content-model.md` §3.1 already makes required and dual-purpose. Static
@@ -390,6 +405,7 @@ feature → zero matches.
 | `/projects/[id]/` | repo/live URLs; `/projects/` | header + end matter |
 | `/about/` | the CV PDF; `/contact/` | page body |
 | `/404` | `/writing/`, `/` | page body (nothing else — `sitemap.md` §2 row 11) |
+| `/he/404` | `/he/writing/`, `/` | page body (same constraint, Hebrew targets first — `sitemap.md` §11b) |
 | `/he/` | `/he/writing/` | redirect |
 
 ### 7.2 Invariants (testable)

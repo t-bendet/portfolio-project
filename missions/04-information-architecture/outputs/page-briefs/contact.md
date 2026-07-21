@@ -138,6 +138,9 @@ removing a route is a decision, not a content-volume fluctuation.
   rejects.
 - **A PGP key / security.txt block.** Nothing here warrants it; it would be
   costume.
-- **Social links beyond the three.** The three are the ones `about-tal.md`
-  records. A wall of icons for accounts nobody posts to is worse than three
-  live links.
+- **Social links beyond the ones on file.** `about-tal.md` records exactly
+  **two**: `github.com/t-bendet` and `linkedin.com/in/tal-bendet`. The email
+  address is **not** in the research file — it must be confirmed by Tal
+  before this page ships, and is flagged here rather than assumed. A wall of
+  icons for accounts nobody posts to is worse than a short list of live
+  links.

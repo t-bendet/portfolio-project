@@ -1,6 +1,6 @@
 ---
 id: 0022
-title: Site structure — eleven public routes, archetype differentiation, one global theme
+title: Site structure — twelve public routes, archetype differentiation, one global theme
 status: active
 date: 2026-07-21
 decided-by: tal

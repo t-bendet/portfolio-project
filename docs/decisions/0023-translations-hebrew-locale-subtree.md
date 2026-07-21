@@ -92,6 +92,22 @@ the section exists to build.
 - The grant is that author's, for his posts. It covers no one else, which is
   why `rights` exists: the first non-KCD translation cannot silently inherit
   terms that do not cover it.
+- **This ADR narrows ADR 0019 on hreflang, and the divergence is recorded
+  here rather than left for a reader to discover.** ADR 0019's Decision says
+  "hreflang via @astrojs/sitemap"; decision 4 above says no hreflang
+  alternates are emitted. Both are `active` and they instruct opposite
+  markup, so the relationship is stated explicitly: **0019 chose the
+  mechanism, 0023 finds it has nothing valid to declare.** That option pairs
+  *translations of the same page*, and this site has no such pairs — a
+  Hebrew article here translates a **third-party** English article that
+  lives on someone else's domain, not a page on this site. Emitting an
+  alternate would assert a false equivalence to search engines. This is a
+  factual correction to an implementation note, not a reversal of 0019's
+  framework or i18n decisions, so 0019 is **not** superseded and its status
+  is untouched. If the case in the previous consequence ever lands — Tal's
+  own article published in both languages — that pair *would* be a valid
+  hreflang pair, and 0019's mechanism becomes usable for exactly those
+  entries.
 
 ## Alternatives rejected
 

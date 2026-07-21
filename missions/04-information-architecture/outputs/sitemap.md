@@ -67,11 +67,11 @@ does not collide with ADR 0002. Every row in §2 carries an archetype.
 |---|---|---|---|---|
 | 1 | `/` | static page | overview | mark (home) |
 | 2 | `/writing/` | static index | overview | yes |
-| 3 | `/writing/[slug]/` | static, per entry | deep-dive | no (child) |
+| 3 | `/writing/[id]/` | static, per entry | deep-dive | no (child) |
 | 4 | `/he/writing/` | static index (RTL) | overview | yes — see §3 |
-| 5 | `/he/writing/[slug]/` | static, per entry (RTL) | deep-dive | no (child) |
+| 5 | `/he/writing/[id]/` | static, per entry (RTL) | deep-dive | no (child) |
 | 6 | `/projects/` | static index | overview | yes |
-| 7 | `/projects/[slug]/` | static, per entry, **optional** | deep-dive | no (child) |
+| 7 | `/projects/[id]/` | static, per entry, **optional** | deep-dive | no (child) |
 | 8 | `/about/` | static page | deep-dive | yes |
 | 9 | `/colophon/` | static page | deep-dive | footer only |
 | 10 | `/contact/` | static page | minimal (see §2) | yes |
@@ -85,18 +85,33 @@ does not collide with ADR 0002. Every row in §2 carries an archetype.
 
 Trailing slashes are shown as the canonical form; the exact
 `trailingSlash` config is a Phase 2 setting, but it must be consistent —
-one form, enforced, because both the RSS feed and the analytics `path` key
-(ADR 0020) use the URL as an identifier and two spellings of the same page
-would split its counts.
+one form, enforced. The RSS feed uses absolute URLs, and view events carry
+the request path as an *attribute* (ADR 0020), so two spellings of one page
+would produce two link targets and two path values for the same content.
+**The analytics key itself is not a path** — it is `<collection>:<id>`
+(`content-model.md` §2, ADR 0024), chosen precisely so that presentation
+decisions like this one cannot split a page's history. The non-canonical
+spelling must redirect, never reach the 404.
 
 ---
 
 ## 2. Every route
 
-Theme behavior is identical for rows 1–11 and stated once here rather than
+Theme behavior is identical for rows 1–11b and stated once here rather than
 repeated: **renders in the visitor's active temperature (dark by default);
 the route never pins, forces, or restores a temperature.** Deviations would
 be violations, and there are none.
+
+**On the "minimal" archetype in §1.** M2 defines exactly two archetypes
+(`palette-spec.md` §1). "Minimal" is **an M4 addition, not an M2 one**, and
+it is named here rather than smuggled in: it is a short editorial column
+without the deep-dive's sidebar, used by `/contact/` and the two 404s —
+pages with too little content to carry either archetype at full strength.
+It introduces no new tokens, no new patterns, and no new composition rules;
+it is a *reduction* of the deep-dive archetype, which is why it does not
+reopen M2. If Phase 2 finds it needs anything the two archetypes do not
+already provide, that is a design decision and belongs to a new ADR, not to
+this label.
 
 ### 1. `/` — home
 
@@ -111,7 +126,11 @@ be violations, and there are none.
   line pointing at `/about`.
 - **Carries the portrait?** **No** — ADR 0018 is explicit: About + favicon
   only, and the hero is the mark's register, not the person's.
-- **Dynamic layer:** none. The home page must not depend on the API.
+- **Dynamic layer:** a view-event beacon only — no reads, nothing rendered
+  from the API. The home page must not *depend* on the API, which a
+  fire-and-forget write does not create; and as the site's actual entry
+  point it is where ADR 0020's per-referrer aggregation is worth most
+  (`content-model.md` §6).
 
 ### 2. `/writing/` — original articles (English)
 
@@ -124,7 +143,7 @@ be violations, and there are none.
   enhancement, degrade to absence (ADR 0019). No reactions on the index.
 - **Cross-link:** persistent pointer to the Hebrew translations (§3).
 
-### 3. `/writing/[slug]/` — an original article
+### 3. `/writing/[id]/` — an original article
 
 - **Purpose:** read the article.
 - **Archetype:** deep-dive editorial.
@@ -145,7 +164,7 @@ be violations, and there are none.
 - **Dynamic layer:** same as `/writing/`.
 - **Scope honesty:** the `he` locale covers **this section only**. See §3.
 
-### 5. `/he/writing/[slug]/` — a translated article (Hebrew, RTL)
+### 5. `/he/writing/[id]/` — a translated article (Hebrew, RTL)
 
 - **Purpose:** read the translation.
 - **Archetype:** deep-dive editorial, `dir="rtl"`.
@@ -166,7 +185,7 @@ be violations, and there are none.
   already two real projects) but specified anyway.
 - **Dynamic layer:** none.
 
-### 7. `/projects/[slug]/` — a project case study — **OPTIONAL PER PROJECT**
+### 7. `/projects/[id]/` — a project case study — **OPTIONAL PER PROJECT**
 
 - **Purpose:** depth where depth genuinely exists.
 - **Honest constraint:** with two projects, mandatory detail pages would
@@ -362,8 +381,8 @@ Four candidates, honestly:
 | | Shape | Verdict |
 |---|---|---|
 | **A** | Tabs on `/writing/` (ADR 0010 as written) | Rejected |
-| **B** | Path subsection: `/writing/translations/[slug]/` | Rejected |
-| **C** | Locale subtree: `/he/writing/[slug]/` | **DECIDED** |
+| **B** | Path subsection: `/writing/translations/[id]/` | Rejected |
+| **C** | Locale subtree: `/he/writing/[id]/` | **DECIDED** |
 | **D** | One merged list, per-entry `dir` only | Rejected |
 
 **Why A is rejected.** Tabs need JS to switch, or they are two pages wearing

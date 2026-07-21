@@ -25,7 +25,7 @@ verification-report Q6 and is not inherited from memory.
 
 Three collections, file-based, typed at build time. Every public page in
 `sitemap.md` is either a static page with no collection behind it (`/`,
-`/about/`, `/colophon/`, `/contact/`, `/404`) or a view over one of these
+`/about/`, `/colophon/`, `/contact/`, `/404`, `/he/404`) or a view over one of these
 three.
 
 | Collection | Holds | Locale | Routes it generates |
@@ -260,7 +260,7 @@ These follow from active ADRs and are not checkpoint questions:
 - **Renders `<html lang="he" dir="rtl">`** (ADR 0011, ADR 0010 preserved
   requirement). Mechanism in §5.
 - **Credits the original article and its author** (same). Placement and
-  prominence are OPEN 2.1.
+  prominence are decided in §4.3.
 - **Code blocks stay `dir="ltr"`** inside the RTL page
   (typography-spec §7.1) — code is notation, not prose.
 - **The `T://bendet` mark is never translated or transliterated** in the
@@ -350,8 +350,8 @@ translator's note is editorial apparatus in a translation — the opposite
 case, and one where labelling is the honest act rather than the
 disqualifying one.
 
-If allowed, it ships as a named MDX component (available only inside
-`translations`), so the boundary is enforced by import, not by discipline.
+It ships as a named MDX component available only inside `translations`, so
+the boundary is enforced by import, not by discipline.
 
 ### 4.5 Tal's own articles in both languages — DECIDED: designed for, not built
 
@@ -497,10 +497,14 @@ M3 already scoped this stage; M4 fixes what it checks, so it is not
 invented in Phase 2:
 
 1. A translated-article fixture route renders `html[lang="he"][dir="rtl"]`.
-2. The **credit is present and precedes the article body** — the original
-   author's name and a link to `original.url` both appear, and both appear
-   *before* the first element of the article content, not merely somewhere
-   on the page.
+2. The **credit is present, complete, and precedes the article body.** All
+   three parts, because the grant's condition has two halves and position is
+   a third requirement on top of them:
+   a. the block **states that this is a translation** — the condition's
+      first half, and the part a name-and-link check silently omits;
+   b. the original author's name and a link to `original.url` both appear;
+   c. all of the above appear *before* the first element of the article
+      content, not merely somewhere on the page.
 3. Every `pre`/`code` on that page resolves to `dir="ltr"`.
 4. RTL screenshot baseline comparison.
 5. **No horizontal overflow** at the standard viewport widths — the single
@@ -529,13 +533,42 @@ credit in the item description.
 
 Where the API meets content, and the invariant that governs it.
 
+**Reads and writes are governed by different rules, and conflating them is
+a mistake this section originally made.** A *read* returns something the
+page must then display, so it can tempt a layout into reserving space. A
+*write* is a fire-and-forget beacon: nothing is rendered from it, nothing
+waits for it, and its failure is invisible by construction. Only reads are
+constrained by the invariant below.
+
 | Surface | Reads | Writes | Degrades to |
 |---|---|---|---|
 | `/writing/[id]/` | view count, reactions | view event, reaction | absence |
 | `/he/writing/[id]/` | view count, reactions | view event, reaction | absence |
 | `/projects/[id]/` | — | view event | absence |
-| `/writing/`, `/he/writing/` | view counts (optional) | — | absence |
-| everything else | — | — | — |
+| `/writing/`, `/he/writing/` | view counts (optional) | view event | absence |
+| `/`, `/projects/`, `/about/`, `/colophon/`, `/contact/` | — | view event | absence |
+| `/404`, `/he/404` | — | view event | absence |
+
+**View events fire on every public page.** An earlier draft of this model
+restricted them to entry pages on the stated ground that "the home page must
+not depend on the API" — which confuses the two rules above. A beacon
+creates no dependency: the page is already rendered, static, and complete.
+
+The cost of the earlier restriction was concrete rather than theoretical.
+ADR 0020 puts **per-referrer** aggregation in the admin dashboard, and the
+home page is the site's actual entry point — the surface where referrer data
+is most of the value. Collecting nothing there would have left the dashboard
+blind to how people arrive. The 404s are included for the same reason
+inverted: a spike of 404s with a referrer is how a broken inbound link
+announces itself, and it is the only signal that would ever report one.
+
+**Identifying a page in a view event.** Collection-backed pages carry the
+`<collection>:<id>` key from §2. Static pages have no collection entry, so
+they are identified by their route path — which is acceptable *for them
+specifically* because the static route set is small, enumerated in
+`sitemap.md` §1, and changes only by an explicit sitemap decision. This does
+not weaken §2 rule 3: content entries are numerous and renameable, which is
+exactly why they are never path-keyed.
 
 **The invariant, restated from ADR 0019 because it constrains composition:
 no layout may reserve space that only the API can fill.** A count that
