@@ -1,11 +1,11 @@
 ---
 id: 0005
 title: Jekyll warm editorial palette
-status: reopened
+status: superseded
 date: 2026-07-20
 decided-by: pre-workshop
 reopened-by: mission-2
-superseded-by: null
+superseded-by: 0015
 ---
 
 ## Decision (as originally made)

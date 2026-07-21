@@ -3,21 +3,25 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 5 · proposed: 1 · reopened: 8
+Summary: active: 9 · proposed: 1 · reopened: 3 · superseded: 5
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
 | [0001](./0001-identity-tbendet-protocol.md) | Identity mark is the T://bendet personal protocol | `active` |  |
 | [0002](./0002-marauders-map-easter-egg.md) | Jekyll/Hyde duality shipped as the hidden Marauder's Map easter egg | `active` |  |
 | [0003](./0003-framework-astro-6.md) | Framework is Astro 6 | `reopened` | reopened by mission-3 |
-| [0004](./0004-hyde-dark-palette.md) | Hyde default dark palette | `reopened` | reopened by mission-2 |
-| [0005](./0005-jekyll-warm-palette.md) | Jekyll warm editorial palette | `reopened` | reopened by mission-2 |
-| [0006](./0006-typography-system.md) | Typography system (DM Mono / Fraunces / IBM Plex Mono) | `reopened` | reopened by mission-2 |
-| [0007](./0007-hero-terminal-animation.md) | Hero is a terminal window with the T://bendet typing animation | `reopened` | reopened by mission-2 |
-| [0008](./0008-personal-illustration-brand.md) | Hand-drawn personal illustration as brand element and favicon | `reopened` | reopened by mission-2 |
+| [0004](./0004-hyde-dark-palette.md) | Hyde default dark palette | `superseded` | superseded by 0015 |
+| [0005](./0005-jekyll-warm-palette.md) | Jekyll warm editorial palette | `superseded` | superseded by 0015 |
+| [0006](./0006-typography-system.md) | Typography system (DM Mono / Fraunces / IBM Plex Mono) | `superseded` | superseded by 0016 |
+| [0007](./0007-hero-terminal-animation.md) | Hero is a terminal window with the T://bendet typing animation | `superseded` | superseded by 0017 |
+| [0008](./0008-personal-illustration-brand.md) | Hand-drawn personal illustration as brand element and favicon | `superseded` | superseded by 0018 |
 | [0009](./0009-site-structure-five-routes.md) | Site structure — five routes with per-route theme assignment | `reopened` | reopened by mission-4 |
 | [0010](./0010-writing-section-tabs.md) | Writing section — original and translated posts as tabs | `reopened` | reopened by mission-4 |
 | [0011](./0011-rtl-hebrew-support.md) | RTL/Hebrew rendering is a hard design and IA constraint | `active` |  |
 | [0012](./0012-showcase-tech-constraints.md) | The portfolio must genuinely showcase SQL, Docker, from-scratch CI/CD, and cloud deployment | `active` |  |
 | [0013](./0013-repo-topology.md) | Repository topology — workshop and app together or separate | `proposed` |  |
 | [0014](./0014-mythology-subordinate-naming-register.md) | Greek mythology enters only as a bounded naming register over real infrastructure | `active` |  |
+| [0015](./0015-prototype-exact-palette.md) | Palette is prototype-exact — two temperatures, six accents, minimal AA nudges | `active` |  |
+| [0016](./0016-prototype-typography-hebrew-companions.md) | Typography is prototype-exact (Syne+DM Mono / Fraunces+IBM Plex Mono) with verified Hebrew companions | `active` |  |
+| [0017](./0017-hero-bare-protocol-resolution.md) | Hero is the bare protocol resolution — typing animation kept, terminal window dropped | `active` |  |
+| [0018](./0018-portrait-about-favicon-confirmed.md) | Portrait confirmed at About + favicon, unframed and never mythologized; ink treatment deferred to digitization | `active` |  |
