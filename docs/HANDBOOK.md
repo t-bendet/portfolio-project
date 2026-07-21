@@ -13,7 +13,7 @@ Two things, in sequence:
 
 1. **Right now: a decision workshop.** A mission-driven process that produces a
    complete, adversarially-reviewed blueprint for the portfolio — identity,
-   design system, architecture, IA, dev workflow — *before any app code exists*.
+   design system, architecture, IA, dev workflow — _before any app code exists_.
 2. **Later: the portfolio itself.** `app/` gets created at the start of
    Phase 2, per whatever Mission 3 decided. Whether it stays in this repo is
    itself an open decision (ADR 0013).
@@ -35,20 +35,20 @@ flowchart LR
     M6 -->|NO-GO| FIX["fixes routed back\nto owning missions"] --> M6
 ```
 
-Strictly sequential — your decision. Each arrow is a *mechanical* gate, not a
+Strictly sequential — your decision. Each arrow is a _mechanical_ gate, not a
 convention (see §6).
 
 ---
 
 ## 2. The five building blocks
 
-| Block | Lives in | What it is | Mutable? |
-|---|---|---|---|
-| **ADRs** | `docs/decisions/` | The single source of truth for every decision — status in frontmatter, never moved, never deleted | Status flips only; new conclusions = new files |
-| **Missions** | `.claude/skills/m*/` + `missions/0N-*/` | Procedure (skill) + workspace (STATUS, outputs) — function vs call site | Skill: rarely. Workspace: constantly |
-| **Skills** | `.claude/skills/` | Reusable capabilities and the 6 mission procedures | Only M5 may modify `.claude/` |
-| **Agents** | `.claude/agents/` | Role definitions: 5 specialists + 1 adversarial reviewer | Same |
-| **Hooks + scripts** | `.claude/settings.json` → `scripts/` | Mechanical enforcement: TypeScript, zero deps, Node native type-stripping | Same |
+| Block               | Lives in                                | What it is                                                                                        | Mutable?                                       |
+| ------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| **ADRs**            | `docs/decisions/`                       | The single source of truth for every decision — status in frontmatter, never moved, never deleted | Status flips only; new conclusions = new files |
+| **Missions**        | `.claude/skills/m*/` + `missions/0N-*/` | Procedure (skill) + workspace (STATUS, outputs) — function vs call site                           | Skill: rarely. Workspace: constantly           |
+| **Skills**          | `.claude/skills/`                       | Reusable capabilities and the 6 mission procedures                                                | Only M5 may modify `.claude/`                  |
+| **Agents**          | `.claude/agents/`                       | Role definitions: 5 specialists + 1 adversarial reviewer                                          | Same                                           |
+| **Hooks + scripts** | `.claude/settings.json` → `scripts/`    | Mechanical enforcement: TypeScript, zero deps, Node native type-stripping                         | Same                                           |
 
 ### Who reads and writes what
 
@@ -184,14 +184,14 @@ Key protections baked into that loop:
 
 ### What each mission owns
 
-| Mission | Decides | ADR license | Notable rules |
-|---|---|---|---|
-| M1 Identity | Identity thesis; mythology reconciliation (spine / layer / rejected); fate of 0002 | 0001, 0002 | Checkpoint 0: asks you for mythology input if notes absent; no colors/fonts/routes |
-| M2 Design System | Palettes, typography, tokens, motion; hero concept (0007) and illustration role (0008) | 0004–0008 | M1 outputs are law; Hebrew font coverage verified, not assumed |
-| M3 Architecture | Stack (0003 re-run from first principles); dynamic boundary for SQL/Docker/CI-CD/cloud; repo topology (0013) | 0003, 0013 + new | **Must not read M2 outputs** — architecture isn't decided by mood; paper only, no scaffolding |
-| M4 Information Arch | Routes, content model, translated-articles placement (0010), theme-model inconsistency in 0009 | 0009, 0010 + new | RTL behavior specified precisely |
-| M5 AI Workflow | Phase 2 workflow, hooks, worktree call, plugin packaging | workflow ADRs | The only mission allowed to modify `.claude/` |
-| M6 Blueprint Gate | GO / NO-GO for Phase 2 | flags only, flips via you | Security + performance skills in **design mode**; its own outputs get red-teamed by a second reviewer instance |
+| Mission             | Decides                                                                                                      | ADR license               | Notable rules                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| M1 Identity         | Identity thesis; mythology reconciliation (spine / layer / rejected); fate of 0002                           | 0001, 0002                | Checkpoint 0: asks you for mythology input if notes absent; no colors/fonts/routes                             |
+| M2 Design System    | Palettes, typography, tokens, motion; hero concept (0007) and illustration role (0008)                       | 0004–0008                 | M1 outputs are law; Hebrew font coverage verified, not assumed                                                 |
+| M3 Architecture     | Stack (0003 re-run from first principles); dynamic boundary for SQL/Docker/CI-CD/cloud; repo topology (0013) | 0003, 0013 + new          | **Must not read M2 outputs** — architecture isn't decided by mood; paper only, no scaffolding                  |
+| M4 Information Arch | Routes, content model, translated-articles placement (0010), theme-model inconsistency in 0009               | 0009, 0010 + new          | RTL behavior specified precisely                                                                               |
+| M5 AI Workflow      | Phase 2 workflow, hooks, worktree call, plugin packaging                                                     | workflow ADRs             | The only mission allowed to modify `.claude/`                                                                  |
+| M6 Blueprint Gate   | GO / NO-GO for Phase 2                                                                                       | flags only, flips via you | Security + performance skills in **design mode**; its own outputs get red-teamed by a second reviewer instance |
 
 ---
 
@@ -199,19 +199,19 @@ Key protections baked into that loop:
 
 **Capability skills** (reusable; travel in the future `portfolio-workshop` plugin):
 
-| Skill | One-liner |
-|---|---|
-| `adr-keeper` | ADR format, lifecycle, and the never-edit/never-delete rules |
-| `tech-eval` | First-principles evaluation: requirements before candidates, incumbent included, versions verified by search, honest tradeoffs |
-| `design-tokens` | How palettes/type ship as semantic CSS variables; restraint rules; RTL checks |
-| `brand-voice` | Identity invariants; the anti-theme-soup rule for new symbolic layers |
-| `prompt-craft` | The mission-prompt template (patterns adapted from prompt-master: start/target state, stop conditions, scope, memory block) |
-| `mission-protocol` | The run sequence in §4; gate, loop cap, closure rules |
-| `security-review` | Dual-mode: design (threat-model the blueprint, M6) / code (Phase 2 CI) |
-| `performance-review` | Dual-mode: design (budgets with numbers, M6) / code (CI enforcement) |
+| Skill                | One-liner                                                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `adr-keeper`         | ADR format, lifecycle, and the never-edit/never-delete rules                                                                   |
+| `tech-eval`          | First-principles evaluation: requirements before candidates, incumbent included, versions verified by search, honest tradeoffs |
+| `design-tokens`      | How palettes/type ship as semantic CSS variables; restraint rules; RTL checks                                                  |
+| `brand-voice`        | Identity invariants; the anti-theme-soup rule for new symbolic layers                                                          |
+| `prompt-craft`       | The mission-prompt template (patterns adapted from prompt-master: start/target state, stop conditions, scope, memory block)    |
+| `mission-protocol`   | The run sequence in §4; gate, loop cap, closure rules                                                                          |
+| `security-review`    | Dual-mode: design (threat-model the blueprint, M6) / code (Phase 2 CI)                                                         |
+| `performance-review` | Dual-mode: design (budgets with numbers, M6) / code (CI enforcement)                                                           |
 
 **Mission skills**: `m1-identity` … `m6-blueprint-gate`, each with
-`disable-model-invocation: true` — they run only when *you* type the slash
+`disable-model-invocation: true` — they run only when _you_ type the slash
 command; Claude can never auto-trigger a mission mid-conversation.
 
 **Agents**: `brand-strategist` (M1), `design-systems` (M2), `tech-architect`
@@ -225,8 +225,11 @@ improvise from missing context), plus a `tools:` allowlist scoped to its job.
 
 There is a second agent species: **workers** — self-contained mechanical
 procedures with an embedded Workflow, a fixed Output format, and a pinned
-cheaper model. First worker: `docs-explorer` (parallel documentation and
-version lookup, used by tech-eval / M3). Judgment agents stay thin because
+cheaper model. Workers: `docs-explorer` (parallel documentation and
+version lookup, used by tech-eval / M3) and `design-verifier` (font facts,
+Hebrew coverage, licensing — used by M2; contrast math is not a model task and
+belongs to `scripts/contrast.ts`, which exits 1 on AA failure so Phase 2 CI
+can gate on it). Judgment agents stay thin because
 their methods live in skills; workers are rich because the procedure is
 theirs alone. `validate-workshop.ts` holds each species to its own contract.
 
@@ -263,7 +266,7 @@ What each blocks, in plain words:
 
 - **protect-reference** — nobody edits your prototypes or inspiration. Ever.
 - **mission-gate** — no mission produces outputs while its dependency chain
-  isn't *genuinely* closed. The rubber-stamp loophole is dead: a STATUS flip
+  isn't _genuinely_ closed. The rubber-stamp loophole is dead: a STATUS flip
   without the reviewer's APPROVED verdict file does not count.
 - **decision-guard** — malformed ADRs bounce back with the reason; INDEX.md
   can't be hand-edited; every valid ADR write auto-regenerates the index.
@@ -343,6 +346,6 @@ to M2 per your call). Bio + CV + prototypes in place. Hooks tested: reference
 writes blocked, gate blocks M2 while M1 is open, closed-without-verdict
 correctly rejected, validation and reindex green.
 
-Next action, in order: *(optional)* `docs/research/greek-mythology-notes.md`
+Next action, in order: _(optional)_ `docs/research/greek-mythology-notes.md`
 → `git init` + commit → `/m1`. If you skip the notes, Mission 1's Checkpoint 0
 will ask you before exploring — that's by design.

@@ -1,8 +1,8 @@
 {
   "skills": "adr-keeper,brand-voice,design-tokens,m1-identity,m2-design-system,m3-architecture,m4-information-arch,m5-ai-workflow,m6-blueprint-gate,mission-protocol,performance-review,prompt-craft,security-review,tech-eval",
-  "agents": "brand-strategist.md,design-systems.md,docs-explorer.md,ia-planner.md,red-team-reviewer.md,tech-architect.md,workflow-engineer.md",
+  "agents": "brand-strategist.md,design-systems.md,design-verifier.md,docs-explorer.md,ia-planner.md,red-team-reviewer.md,tech-architect.md,workflow-engineer.md",
   "hooks": "decision-guard.ts,docs-sync-check.ts,inject-project-state.ts,mission-gate.ts,protect-reference.ts,protect-workshop.ts",
-  "scripts": "reindex-decisions.ts,sync-docs.ts,validate-adr.ts,validate-workshop.ts",
+  "scripts": "contrast.ts,reindex-decisions.ts,sync-docs.ts,validate-adr.ts,validate-workshop.ts",
   "settings": "0a94b0a18b898d00",
   "missionPlan": "6efe97b897ea46d1"
 }
