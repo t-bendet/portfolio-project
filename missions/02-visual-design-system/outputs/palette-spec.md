@@ -193,7 +193,8 @@ The dark theme has no third tier (the dark prototype never had one);
 ## 4. The six nudges — complete record
 
 Method: straight-line sRGB interpolation from the failing value toward white
-(dark theme) or black (warm theme), in steps of 0.25%, stopped at the first
+(colors sitting on dark backgrounds — nudges 1–3 and 6) or black (colors on
+light backgrounds — nudges 4–5), in steps of 0.25%, stopped at the first
 candidate where **every pair that color actually renders on** clears 4.5:1.
 Computed with `scripts/contrast.ts` (exit-1-on-AA-fail), not estimated.
 
@@ -246,7 +247,7 @@ indicators. No pair below relies on the large-text concession.
 | `--accent-2` #8676f8 | `--bg` | 5.51 | pass |
 | `--accent-2` | `--surface` | 5.22 | pass |
 | `--accent-2` | `--surface-2` | 5.02 | pass |
-| `--accent-2` | `--badge-2` #222032 | 4.51 | pass (thinnest in system — §4) |
+| `--accent-2` | `--badge-2` #222032 | 4.51 | pass (thin — §4) |
 | `--accent-3` #2fc98e | `--surface` | 8.64 | pass |
 | `--accent-3` | `--surface-2` | 8.31 | pass |
 | `--accent-3` | `--badge-3` #172a25 | 7.08 | pass |
@@ -307,7 +308,7 @@ Informative (non-text, no AA claim): `--border` #222228 vs `--bg` ≈1.3;
 | box body `#1a4428` (tip) | `--badge-3` | 9.85 | pass |
 | box body `#5a1a14` (danger) | `--badge-1` | 11.53 | pass |
 | `--code-text` #e8e4d8 | `--code-bg` #2c2820 | 11.54 | pass |
-| `--code-comment` #938e85 | `--code-bg` | 4.50 | pass (thin — §4) |
+| `--code-comment` #938e85 | `--code-bg` | 4.50 | pass (thinnest in system — §4) |
 | `--focus` (= `--accent-2`) | `--bg` | 7.48 | pass (3:1 UI target) |
 
 Informative (non-text): `--border` #ddd8cc vs `--bg` ≈1.3; `--border-strong`

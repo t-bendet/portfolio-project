@@ -132,10 +132,10 @@ values assume 16px root.
 | `--leading-display` | 1.05 | h1, both prototypes |
 | `--leading-tight` | 1.5 | dense rows/cells |
 | `--leading-body` | 1.6 (dark) / 1.75 (warm) | each prototype's own body rhythm — theme-varying |
-| `--leading-code` | 1.7–1.8 | per prototype |
+| `--leading-code` | 1.7 (dark) / 1.8 (warm) | each prototype's own value — theme-varying |
 | `--track-display` | -0.03em (dark) / -0.02em (warm) | h1 |
 | `--track-eyebrow` | 0.2em | eyebrows (Latin only — §6) |
-| `--track-label` | 0.08–0.15em | badges/labels/section caps (Latin only) |
+| `--track-label` | 0.1em | default label tracking (Latin only); components keep their prototype-exact literals (0.08–0.15em) as component CSS, not new tokens |
 
 ### Weight map
 

@@ -1,9 +1,9 @@
 ---
 mission: m2
-status: in-progress
+status: closed
 depends-on: m1
 opened: 2026-07-21
-closed: null
+closed: 2026-07-21
 revision-cycles: 0
 ---
 
@@ -11,12 +11,65 @@ revision-cycles: 0
 
 ## Handoff notes
 
-(filled at closure: what was decided, which ADRs were written/flipped,
-what the next mission must know)
+**Verdict: APPROVED, cycle 1** (outputs/review-verdict.md). Three
+non-blocking editorial corrections from the verdict were applied post-approval
+(nudge-direction wording, thinnest-margin label, lint-scoping note, two
+range-valued type tokens pinned); no substantive change.
+
+**Decided (all via Tal's two in-mission checkpoints):**
+- Palette + structure are PROTOTYPE-EXACT from Tal's two committed
+  prototypes, six accents per theme, warm l1–l6 tints kept; exactly six
+  minimal AA nudges (ADR **0015**, supersedes 0004+0005). The two
+  prototypes are page ARCHETYPES (overview card-grid / deep-dive
+  editorial), each rendering in both temperatures.
+- Typography prototype-exact: Syne+DM Mono (dark), Fraunces+IBM Plex Mono
+  (warm); Hebrew companions web-verified: Heebo (dark), Frank Ruhl Libre +
+  IBM Plex Sans Hebrew (warm), via unicode-range stacks. No Hebrew
+  monospace exists — recorded asymmetry (ADR **0016**, supersedes 0006;
+  also corrects 0006's "DM Mono for everything" misrecord).
+- Hero = bare protocol resolution: typing sequence kept, terminal window
+  dropped; completion glow from **--accent-3** (Tal's call), dark-only,
+  static — the single glow site-wide (ADR **0017**, supersedes 0007).
+- Portrait: About + favicon confirmed, unframed, never mythologized; ink
+  treatment deferred to digitization (ADR **0018**, supersedes 0008).
+- ADR 0014's lapidary license is formally UNEXERCISED anywhere — declined
+  for base system (0016) and for the hero (0017). Zero gestures is final.
+
+**What Mission 3 must know:** framework-agnostic by construction — tokens
+are plain CSS custom properties; theme switching is data-theme per ADR 0002
+with a no-flash inline-script requirement; font pipeline is mixed
+variable/static, self-hosted, latin+hebrew subsets; Phase 2 CI owes the
+contrast gate (scripts/contrast.ts over palette-spec §5 pairs, full
+precision), token-parity check, and banned-vocabulary lint (whole-token
+matching) — natural ADR 0012 showcase material.
+
+**What Mission 4 must know:** About page must reserve the
+bio-beside-portrait slot (no other route carries the portrait); every page
+carries the eyebrow pattern; code blocks always LTR; accent edges bind via
+border-inline-start; per-archetype composition rules live in palette-spec
+§1 / §7.3.
+
+**Claude Design project** ("T://bendet — M2 design exploration",
+113fe4fa-4a62-4aeb-a217-d550e8f4035e): trimmed to hero-only
+(04-hero-exploration-brief.md pushed; stale 3-direction briefs deleted
+remotely; rendered direction-* folders left untouched — made in Design, not
+ours to delete). Hero was then decided at checkpoint without renders; the
+brief remains if Tal ever wants visual confirmation.
 
 ## Inputs actually read
 
-(recorded at closure: exact paths + ADR ids/statuses as of mission start)
+- missions/01-product-brand-identity/outputs/design-brief-for-m2.md (LAW)
+- assets/reference/prototypes/build-tools-overview.html +
+  tooling-deepdive.html (complete CSS extraction — normative ancestors)
+- docs/decisions/: 0001 active, 0002 active (mechanism law), 0004/0005/0006
+  reopened (input), 0007/0008 reopened (resolved here), 0011 active (hard
+  check), 0012 active, 0014 active
+- .claude/skills/: mission-protocol, design-tokens, adr-keeper,
+  m2-design-system
+- scripts/contrast.ts (all AA arithmetic), scripts/validate-adr.ts,
+  scripts/reindex-decisions.ts
+- design-verifier agent report (google/fonts METADATA.pb-sourced Hebrew
+  coverage facts, 2026-07-21)
 
 ## ADR statuses observed at mission start (2026-07-21)
 

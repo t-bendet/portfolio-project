@@ -32,7 +32,9 @@ Phase 2 work under whatever Mission 3 decides.
 No shipped selector, custom property, attribute value, storage key, comment,
 or asset name may contain: `jekyll`, `hyde`, `map`, `marauder`, `mischief`,
 `solemnly`, `managed`, `secret`, `hidden`, `easter`. Mundane names only.
-(This list is checkable by grep and should become a Phase 2 CI lint.)
+(Phase 2 CI lint: match whole identifier tokens, not substrings — standard
+platform identifiers like the `[hidden]` attribute or `sourceMappingURL`
+are not violations; the rule targets names this project authors.)
 
 ## 2. Theme switching model (implements ADR 0002 — unchanged)
 
