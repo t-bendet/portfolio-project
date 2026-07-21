@@ -1,11 +1,11 @@
 ---
 id: 0009
 title: Site structure — five routes with per-route theme assignment
-status: reopened
+status: superseded
 date: 2026-07-20
 decided-by: pre-workshop
 reopened-by: mission-4
-superseded-by: null
+superseded-by: 0022
 ---
 
 ## Decision (as originally made)

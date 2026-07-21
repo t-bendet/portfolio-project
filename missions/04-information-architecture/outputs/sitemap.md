@@ -76,6 +76,7 @@ does not collide with ADR 0002. Every row in §2 carries an archetype.
 | 9 | `/colophon/` | static page | deep-dive | footer only |
 | 10 | `/contact/` | static page | minimal (see §2) | yes |
 | 11 | `/404` | static page | minimal | no |
+| 11b | `/he/404` | static page (RTL) | minimal | no |
 | 12 | `/rss.xml`, `/he/rss.xml` | feed (non-page) | — | footer |
 | 13 | `/sitemap-index.xml` | generated | — | no |
 | 14 | `/he/` | redirect → `/he/writing/` | — | no |
@@ -271,6 +272,32 @@ be violations, and there are none.
   features. It **must not.** No hint, no label, no nudge toward the
   incantation (ADR 0002, symbol map banned #7). It points to `/writing/` and
   `/` and nothing else.
+
+### 11b. `/he/404` — the Hebrew error page
+
+**Added 2026-07-21, after checkpoint 1**, on a gap the `ia-planner` correctly
+declined to invent while writing the page briefs: v1 of this document
+enumerated one 404, so a Hebrew reader who mistyped a `/he/writing/` URL got
+an English error page.
+
+- **Why it ships:** checkpoint 1 decided the Hebrew subtree is *its own front
+  door*, not a section inside the English site. A front door whose error page
+  speaks a different language breaks that decision at precisely the moment
+  the visitor is already disoriented. The footer's Hebrew link makes the
+  English 404 *recoverable*, which is not the same as *coherent*.
+- **Scope:** it is the same minimal composition as `/404`, in Hebrew, RTL,
+  pointing at `/he/writing/` and `/`. Every exclusion binding on `/404`
+  binds here identically — above all, no hint of a second theme.
+- **Mechanism, flagged not asserted:** a static build emits one conventional
+  `404.html`; serving a different error page for the `/he/*` prefix is a
+  `handle_errors` matcher in the Caddyfile (`architecture-decision.md` §4
+  already has Caddy routing `/api/*` and `/admin/*`). **Owed verification at
+  scaffold time**, per M3's discipline of flagging rather than assuming.
+- **Honest cost:** this puts one piece of *page* routing in Caddy config,
+  which the static core otherwise does not need — page serving is
+  file-system-shaped everywhere else. Accepted as small and local, but it is
+  a real seam between the two layers and is recorded as one rather than
+  presented as free.
 
 ### 12. `/rss.xml` and `/he/rss.xml`
 

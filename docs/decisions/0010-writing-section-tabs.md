@@ -1,11 +1,11 @@
 ---
 id: 0010
 title: Writing section — original and translated posts as tabs
-status: reopened
+status: superseded
 date: 2026-07-20
 decided-by: pre-workshop
 reopened-by: mission-4
-superseded-by: null
+superseded-by: 0023
 ---
 
 ## Decision (as originally made)
