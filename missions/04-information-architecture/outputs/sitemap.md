@@ -127,8 +127,8 @@ be violations, and there are none.
 
 - **Purpose:** read the article.
 - **Archetype:** deep-dive editorial.
-- **`lang`/`dir`:** `en` / `ltr`, from the entry's own frontmatter, not from
-  the route (see `content-model.md`).
+- **`lang`/`dir`:** `en` / `ltr`, **from the locale, not from frontmatter**
+  — one source of truth for direction (`content-model.md` §5).
 - **Dynamic layer:** view event POST on load; view count + reactions
   rendered by progressive enhancement (ADR 0020). Both degrade to absence.
 - **Feed:** included in `/rss.xml`.
