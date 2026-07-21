@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 4 · proposed: 1 · reopened: 8
+Summary: active: 5 · proposed: 1 · reopened: 8
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
@@ -20,3 +20,4 @@ Summary: active: 4 · proposed: 1 · reopened: 8
 | [0011](./0011-rtl-hebrew-support.md) | RTL/Hebrew rendering is a hard design and IA constraint | `active` |  |
 | [0012](./0012-showcase-tech-constraints.md) | The portfolio must genuinely showcase SQL, Docker, from-scratch CI/CD, and cloud deployment | `active` |  |
 | [0013](./0013-repo-topology.md) | Repository topology — workshop and app together or separate | `proposed` |  |
+| [0014](./0014-mythology-subordinate-naming-register.md) | Greek mythology enters only as a bounded naming register over real infrastructure | `active` |  |
