@@ -4,7 +4,8 @@ Date: 2026-07-21
 Status: plan on paper. Per CLAUDE.md, `app/` must not exist before Phase 2;
 the mission-gate hook enforces this. First act of Phase 2 (after M6 closes)
 is executing this plan under the M5-designed workflow. Written for the
-monorepo topology (repo-topology-decision.md, pending Tal); §7 notes the
+monorepo topology (repo-topology-decision.md; confirmed by Tal 2026-07-21,
+ADR 0013 `active`); §7 notes the
 delta if Tal chooses separate-repo.
 
 Command syntax below was verified against docs.astro.build

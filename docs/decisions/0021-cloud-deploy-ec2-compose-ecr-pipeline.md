@@ -39,10 +39,11 @@ missions/03-technology-architecture/outputs/verification-report.md
   sub-second resume, Q33) is the named escape hatch if instance memory
   forces the DB off-box; not primary, because operating the database is
   part of what ADR 0012 demonstrates.
-- **Budget:** ≈ $6.63/mo known, ≈ $10–11/mo pessimistic pending one
-  unverified item — AWS public-IPv4 billing was not covered by the
-  verification report and must be confirmed at scaffold time
-  (phase2-scaffold-plan.md §0.3). Either way inside the $15 ceiling.
+- **Budget:** ≈ $6.63/mo verified. One item is unquantified pending
+  verification: AWS public-IPv4 billing was not covered by the verification
+  report, and no dollar figure is asserted for it here — it must be confirmed
+  at scaffold time (phase2-scaffold-plan.md §0.3), and the G6 $15 ceiling
+  must be re-checked with it included before any resource is provisioned.
 
 ## Consequences
 

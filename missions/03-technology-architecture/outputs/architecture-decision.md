@@ -5,8 +5,9 @@ Status: DECIDED by Tal at checkpoint 2 (stack locked: C1, Astro 7.x, with the
 dynamic-layer scope amendment below). This document is the full architecture
 record behind ADRs 0019–0021. Factual claims cite `verification-report.md`
 ("Qn", checked 2026-07-21) or the follow-up fetch noted inline. Repo topology
-is NOT decided here — see `repo-topology-decision.md` (recommended, pending
-Tal per CLAUDE.md's escalation list).
+is NOT decided here — see `repo-topology-decision.md`. *(Addendum 2026-07-21:
+Tal confirmed the monorepo recommendation at the escalation checkpoint; ADR
+0013 is now `active`.)*
 
 ---
 

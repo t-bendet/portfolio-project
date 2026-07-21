@@ -1,9 +1,12 @@
 # Repo Topology — Mission 3 resolution of ADR 0013's question
 
 Date: 2026-07-21
-Status: **RECOMMENDED, PENDING TAL.** CLAUDE.md lists repo topology changes
-under escalate-to-Tal; ADR 0013 therefore stays untouched (`proposed`) until
-Tal confirms. The ADR write happens only after his sign-off.
+Status: **RECOMMENDED, PENDING TAL** (as written). CLAUDE.md lists repo
+topology changes under escalate-to-Tal; ADR 0013 therefore stayed untouched
+(`proposed`) until Tal confirmed.
+*(Addendum 2026-07-21: Tal CONFIRMED the monorepo recommendation at the
+escalation checkpoint later the same day; ADR 0013 is now `active` with the
+consequences below recorded in it. This document is the analysis record.)*
 
 ## The question (ADR 0013)
 
