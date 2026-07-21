@@ -1,11 +1,11 @@
 ---
 id: 0008
 title: Hand-drawn personal illustration as brand element and favicon
-status: reopened
+status: superseded
 date: 2026-07-20
 decided-by: pre-workshop
 reopened-by: mission-2
-superseded-by: null
+superseded-by: 0018
 ---
 
 ## Decision

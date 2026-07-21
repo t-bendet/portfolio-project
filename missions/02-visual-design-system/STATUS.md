@@ -80,9 +80,13 @@ what the next mission must know)
   reserved to hero. Stale 3-direction exploration package trimmed to
   hero-only (04-hero-exploration-brief.md).
 
-- **AWAITING CHECKPOINT 2 (hero + illustration):**
-  outputs/hero-and-illustration.md is checkpoint material — recommendation
-  is B (bare protocol resolution, no window chrome) + B1 (dark-only
-  completion glow) and confirming 0008's About+favicon placement with
-  tightened treatment rules. ADRs 0007/0008 flip only after Tal reacts.
-  Review loop runs after that.
+- **CHECKPOINT 2 RESOLVED (2026-07-21, Tal, in-session):** hero = B (bare
+  protocol resolution, no window chrome); completion glow KEPT but moved by
+  Tal to `--accent-3` (green, terminal lineage), dark-only, static;
+  portrait placement/treatment confirmed (About + favicon, unframed, never
+  mythologized), ink-vs-original call deferred to digitization. Lapidary
+  license formally unexercised anywhere (declined base system in 0016,
+  declined hero at checkpoint). hero-and-illustration.md hardened; ADR 0017
+  supersedes 0007, ADR 0018 supersedes 0008; glow cross-references updated
+  in palette-spec §7.4, motion-and-texture T5, tokens-reference §3.3.
+  Contract items 1–5 complete → red-team review loop.

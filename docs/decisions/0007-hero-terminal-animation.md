@@ -1,11 +1,11 @@
 ---
 id: 0007
 title: Hero is a terminal window with the T://bendet typing animation
-status: reopened
+status: superseded
 date: 2026-07-20
 decided-by: pre-workshop
 reopened-by: mission-2
-superseded-by: null
+superseded-by: 0017
 ---
 
 ## Decision

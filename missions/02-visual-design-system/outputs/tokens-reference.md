@@ -100,6 +100,10 @@ Six stable roles, inherited from the prototypes' own category coding:
 `--focus`: `var(--accent-2)` in both themes (≥3:1 UI target verified in
 palette-spec §5).
 
+`--glow`: `color-mix(in srgb, var(--accent-3) 35%, transparent)` dark ·
+`transparent` warm. Exactly one consumer site-wide (the hero mark's `://`
+at completion — `hero-and-illustration.md`); decided at checkpoint 2.
+
 ### 3.4 Color — code panels
 
 | Token | Dark | Warm |

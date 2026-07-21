@@ -356,11 +356,13 @@ hues. Final custom-property naming belongs to `tokens-reference.md`.
 4. **Accent placement budget:** badges, category dots, labels, callout
    edges/titles, syntax highlighting. Links are not accent-colored — links
    use `--text` with an underline treatment (interaction spec); there is
-   deliberately no `--link` token. Any glow is the hero's question
-   (`hero-and-illustration.md`) — **neither prototype contains one**, so the
-   palette defines no `--glow` token; if the hero resolution keeps ADR
-   0007's glow, that spec must derive it from `--accent-2` and it remains
-   the only glow site-wide.
+   deliberately no `--link` token. The glow was resolved at checkpoint 2
+   (Tal, 2026-07-21): neither prototype contains one, and exactly one exists
+   site-wide — the hero mark's completion glow, derived from `--accent-3`,
+   dark theme only (`--glow` resolves to `transparent` in warm). Definition
+   in `hero-and-illustration.md`; registry row in `tokens-reference.md`
+   §3.3. The glowed `://` characters render in `--accent-3`, whose pairs
+   are AA-measured in §5 (9.12 dark bg / 6.19 warm bg).
 5. **Borders are never the sole affordance.** Hairline ratios are below 3:1
    by design; any control whose boundary must be perceived on its own pairs
    its border with a surface step and receives a `--focus` outline ≥2px on

@@ -51,7 +51,7 @@ enough to need one).
 | T2 | Shadowless elevation | Elevation = surface color step + hairline border. `box-shadow` is **banned** in both themes | Neither prototype casts a single shadow; flat color steps are the system's depth model. This is the anti-test working: template sites reach for shadow stacks |
 | T3 | Accent-derived tints | `--badge-N` chip fills and warm callout fills only (palette-spec §7.2) | Already law in the palette; listed so texture has no second door for tints |
 | T4 | Themed scrollbar | 6px thumb in `--border`, transparent track | Warm prototype's own detail; quiet-craft register, findable not labeled |
-| T5 | The glow | **Not in the system.** Neither prototype has one; the ancestor glow belonged to the hero mark (ADRs 0004/0007) | Reserved: if the hero checkpoint keeps it, it derives from `--accent-2`, appears on exactly one element site-wide, is symmetric (RTL-safe, palette-spec §8), static (no pulse/breathe), and its warm-theme behavior is decided there. Until then the token does not exist |
+| T5 | The glow | **One, resolved at checkpoint 2 (Tal, 2026-07-21):** the hero mark's `://` completion glow, `--glow: color-mix(in srgb, var(--accent-3) 35%, transparent)`, dark theme only (`transparent` in warm — a glow is a dark-room phenomenon) | Appears once at the hero animation's completion, then holds static (no pulse/breathe); symmetric (RTL-safe, palette-spec §8); exactly one element site-wide. Full spec in `hero-and-illustration.md` |
 
 **Banned by this spec** (violations of "restraint over decoration" with no
 prototype ancestry): gradients, background noise/grain, glassmorphism/blur,
