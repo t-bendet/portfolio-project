@@ -3,13 +3,13 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 9 · proposed: 1 · reopened: 3 · superseded: 5
+Summary: active: 13 · reopened: 2 · superseded: 6
 
 | ID | Title | Status | Note |
 |----|-------|--------|------|
 | [0001](./0001-identity-tbendet-protocol.md) | Identity mark is the T://bendet personal protocol | `active` |  |
 | [0002](./0002-marauders-map-easter-egg.md) | Jekyll/Hyde duality shipped as the hidden Marauder's Map easter egg | `active` |  |
-| [0003](./0003-framework-astro-6.md) | Framework is Astro 6 | `reopened` | reopened by mission-3 |
+| [0003](./0003-framework-astro-6.md) | Framework is Astro 6 | `superseded` | superseded by 0019 |
 | [0004](./0004-hyde-dark-palette.md) | Hyde default dark palette | `superseded` | superseded by 0015 |
 | [0005](./0005-jekyll-warm-palette.md) | Jekyll warm editorial palette | `superseded` | superseded by 0015 |
 | [0006](./0006-typography-system.md) | Typography system (DM Mono / Fraunces / IBM Plex Mono) | `superseded` | superseded by 0016 |
@@ -19,9 +19,12 @@ Summary: active: 9 · proposed: 1 · reopened: 3 · superseded: 5
 | [0010](./0010-writing-section-tabs.md) | Writing section — original and translated posts as tabs | `reopened` | reopened by mission-4 |
 | [0011](./0011-rtl-hebrew-support.md) | RTL/Hebrew rendering is a hard design and IA constraint | `active` |  |
 | [0012](./0012-showcase-tech-constraints.md) | The portfolio must genuinely showcase SQL, Docker, from-scratch CI/CD, and cloud deployment | `active` |  |
-| [0013](./0013-repo-topology.md) | Repository topology — workshop and app together or separate | `proposed` |  |
+| [0013](./0013-repo-topology.md) | Repository topology — workshop and app live in one monorepo | `active` |  |
 | [0014](./0014-mythology-subordinate-naming-register.md) | Greek mythology enters only as a bounded naming register over real infrastructure | `active` |  |
 | [0015](./0015-prototype-exact-palette.md) | Palette is prototype-exact — two temperatures, six accents, minimal AA nudges | `active` |  |
 | [0016](./0016-prototype-typography-hebrew-companions.md) | Typography is prototype-exact (Syne+DM Mono / Fraunces+IBM Plex Mono) with verified Hebrew companions | `active` |  |
 | [0017](./0017-hero-bare-protocol-resolution.md) | Hero is the bare protocol resolution — typing animation kept, terminal window dropped | `active` |  |
 | [0018](./0018-portrait-about-favicon-confirmed.md) | Portrait confirmed at About + favicon, unframed and never mythologized; ink treatment deferred to digitization | `active` |  |
+| [0019](./0019-framework-astro7-static-core-plus-api.md) | Framework is Astro 7.x — static core plus hand-built API and containerized Postgres | `active` |  |
+| [0020](./0020-dynamic-layer-scope-analytics-reactions-admin.md) | Dynamic layer scope — first-party analytics, reactions, private admin dashboard; comments deferred but designed for | `active` |  |
+| [0021](./0021-cloud-deploy-ec2-compose-ecr-pipeline.md) | Cloud and deploy — EC2 t4g.micro with Docker Compose, ECR via OIDC, Route 53, Caddy TLS, hand-written GitHub Actions pipeline | `active` |  |

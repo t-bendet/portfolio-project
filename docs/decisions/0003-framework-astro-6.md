@@ -1,11 +1,11 @@
 ---
 id: 0003
 title: Framework is Astro 6
-status: reopened
+status: superseded
 date: 2026-07-20
 decided-by: pre-workshop
 reopened-by: mission-3
-superseded-by: null
+superseded-by: 0019
 ---
 
 ## Context
