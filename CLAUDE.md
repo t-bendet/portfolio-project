@@ -40,7 +40,11 @@ not be created until Phase 2 (see `missions/00-mission-plan.md`).
    and IA decisions. (ADR 0011)
 5. **Decisions are recorded, never overwritten.** New conclusions = new ADRs;
    old ADRs get status flips (`superseded`, with a pointer), never edits to their
-   reasoning and never deletion.
+   reasoning and never deletion. A new ADR that corrects only *one clause* of an
+   older one is a **narrowing**, not a supersession: the older ADR stays
+   `active` and gains `narrowed-by`, the newer gets `narrows`, and both sides
+   are required (ADR 0027). Relational frontmatter is metadata and is written
+   post-hoc; reasoning is what is never edited.
 
 ## Operating rules
 
@@ -56,10 +60,20 @@ not be created until Phase 2 (see `missions/00-mission-plan.md`).
   including ones we've already chosen.
 - TypeScript everywhere in `scripts/`: erasable syntax only (no `enum`,
   no `namespace`) — Node ≥ 24 runs these files directly.
-- `.claude/` and `scripts/` are hook-protected: agent sessions may modify them
-  only while Mission 5 is in-progress (`settings.json`: never — escalate).
+- `.claude/` and `scripts/` are hook-protected. Two regimes (ADR 0028):
+  - **Through Mission 6:** agent sessions may modify them only while Mission 5
+    is in-progress.
+  - **Once Mission 6 closes:** sessions may edit `.claude/skills/**` and
+    `.claude/agents/**` — instructions, which fail soft and which
+    `validate-workshop.ts` lints — but never `scripts/hooks/**`,
+    `scripts/*.ts`, or the settings files, which are the enforcement layer and
+    fail *open and silently* when broken. **You may edit what the enforcement
+    layer checks; you may not edit the checker.**
+  - `.claude/settings.json` and `settings.local.json`: never, in any phase —
+    escalate.
   Structural rules for skills/agents are linted by
-  `node scripts/validate-workshop.ts`.
+  `node scripts/validate-workshop.ts`; the hooks themselves by
+  `node scripts/test-machinery.ts`.
 
 ## Escalate to Tal (do not decide unilaterally)
 

@@ -1,6 +1,6 @@
 ---
 name: tech-architect
-description: Stack evaluation, system boundaries, infrastructure shape. Lead agent for Mission 3.
+description: RETIRED at Phase 2 open (ADR 0025) — its question is answered by ADRs 0019-0021 and Mission 3's outputs, which are the durable output. Do not select for build work; a stack question that genuinely reopens is a new ADR and Tal's call. Kept for provenance. Was: stack evaluation, system boundaries, infrastructure shape; lead agent for Mission 3.
 skills: tech-eval, adr-keeper, mission-protocol
 tools: Read, Grep, Glob, Write, WebSearch, WebFetch
 ---

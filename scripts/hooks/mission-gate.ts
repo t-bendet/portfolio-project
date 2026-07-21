@@ -1,8 +1,18 @@
-// PreToolUse hook (Write|Edit): blocks writes into missions/0N-*/outputs/
-// unless every dependency mission is genuinely closed.
+// PreToolUse hook (Write|Edit): guards writes into missions/0N-*/outputs/,
+// in both directions.
 //
-// "Genuinely closed" = STATUS.md says `closed` AND outputs/review-verdict.md
-// exists containing verdict APPROVED. Flipping STATUS.md alone unlocks nothing.
+// FORWARD: no mission produces outputs until every dependency is genuinely
+// closed. "Genuinely closed" = STATUS.md says `closed` AND
+// outputs/review-verdict.md exists containing verdict APPROVED. Flipping
+// STATUS.md alone unlocks nothing.
+//
+// BACKWARD (ADR 0028): a CLOSED mission's outputs are frozen. The project
+// already states this in prose — M4's handoff notes say its ADRs "freeze at
+// closure; further changes need a new ADR" — but nothing enforced it for the
+// deliverables. In Phase 2 those deliverables become the specs the build is
+// measured against, and a spec that can be quietly edited to match the
+// implementation is not a spec. That is the most natural way for drift to
+// resolve itself invisibly, so it is now mechanical.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -84,6 +94,21 @@ if (!dir) process.exit(0);
 const { frontmatter } = parseFrontmatter(
   readFileSync(join(dir, 'STATUS.md'), 'utf8'),
 );
+
+// BACKWARD gate: this mission is closed, so its outputs are frozen.
+// A mission still in-progress may rewrite its own outputs freely — that is
+// what revision cycles are.
+if (frontmatter['status'] === 'closed') {
+  console.error(
+    `MISSION GATE BLOCKED write to ${filePath}\n` +
+      `  - mission "${frontmatter['mission'] ?? dir}" is closed; its outputs are frozen (ADR 0028)\n` +
+      'Closed deliverables are the specs Phase 2 is measured against. If one is wrong, that is\n' +
+      'a new ADR or a note in the current work item — not an edit to a closed mission\'s output.\n' +
+      'Reopening genuinely (status flip + a new review cycle) is Tal\'s call.',
+  );
+  process.exit(2);
+}
+
 const deps = (frontmatter['depends-on'] ?? '')
   .split(',')
   .map((s) => s.trim())

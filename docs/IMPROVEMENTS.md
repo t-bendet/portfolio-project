@@ -5,6 +5,35 @@ Tal while working, once real mission experience confirms or corrects them.
 Ranked by leverage. Items 1–5 come from the scaffolding session (2026-07-20);
 items 6–7 were added 2026-07-21.
 
+## Status after Mission 5 (2026-07-22)
+
+Mission 5 held the only license to modify `.claude/` and `scripts/`, so it was
+the last chance to act on the machinery items before Phase 2.
+
+| # | Outcome |
+|---|---|
+| 1 | **Partially done.** A three-session scope cap per Phase 2 work item is in ADR 0025, not as per-mission timeboxes. Mission 6 is deliberately exempt (Tal) |
+| 2 | **Done.** `scripts/test-machinery.ts` — 36 assertions across all six hooks, phase-aware, CI's first job. Covers the rubber-stamp case this item named. ADR 0028 |
+| 3 | **Done, with the caveat kept.** `context: fork` was verified real (2026-07-22) and the `review-work` skill carries it. The behavioural refuse-if-you-can-see-the-conversation rule **stays as a backstop** until the one behaviour test this item asks for actually runs |
+| 4 | **Not done.** Friction logs were never added to the six mission contracts, and five missions have now closed without one. This is why several M5 decisions rest on argument rather than evidence — see the note below |
+| 5 | **Not done.** No `story-capture.md` exists; four missions' worth of texture is already only in git history |
+| 6 | **Decided, not fully executed.** ADR 0029: boundary specified at 0.1, not published; `brand-voice` reclassified out; role-name leakage parameterised in four skills; the domain-assumption class deliberately left alone. `plugin-spec.md` §4 |
+| 7 | **Done.** `sync-docs.ts` binds diagrams by `%% id:` instead of array position. ADR 0028 |
+
+**The gap worth naming: item 4 never happened, and it was the cheapest thing
+on this list.** Its stated purpose was that "Mission 5 is supposed to design
+the Phase 2 workflow from exactly this evidence." Mission 5 designed it
+without that evidence, from argument and from what the review logs happened to
+record. Where ADR 0025 refuses new machinery "until real friction demands it",
+there is now no mechanism that would ever produce the demand. **Phase 2 work
+items should carry the three-bullet friction note this item describes** — the
+PR description is the obvious home, and it costs nothing.
+
+**Items 2, 3 and 7 are now closed and can be struck.** The bar in
+"Deliberately rejected" stands unchanged: the enforcement layer is done, and
+ADR 0028 added no new hooks — every Phase 2 change landed in `scripts/`,
+requiring zero `settings.json` escalations.
+
 ---
 
 ## 1. Timebox every mission — protect the project from its own process ⭐

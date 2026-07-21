@@ -1,6 +1,6 @@
 ---
 name: brand-strategist
-description: Identity, naming, symbolic systems, and voice. Lead agent for Mission 1.
+description: RETIRED at Phase 2 open (ADR 0025) — its question is answered by ADRs 0001, 0002 and 0014, which are the durable output. Do not select for build work; read those ADRs and the brand-voice skill instead. Kept for provenance. Was: identity, naming, symbolic systems, and voice; lead agent for Mission 1.
 skills: brand-voice, adr-keeper, mission-protocol
 tools: Read, Grep, Glob, Write, WebSearch, WebFetch
 ---

@@ -17,6 +17,14 @@ interface Row {
   note: string;
 }
 
+function list(value: string | undefined): string[] {
+  if (!value || value === 'null') return [];
+  return value
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 function main(): void {
   const rows: Row[] = [];
 
@@ -24,12 +32,26 @@ function main(): void {
     if (!FILENAME_RE.test(file)) continue;
     const raw = readFileSync(join(DECISIONS_DIR, file), 'utf8');
     const { frontmatter } = parseFrontmatter(raw);
-    const note =
-      frontmatter['status'] === 'reopened'
-        ? `reopened by ${frontmatter['reopened-by'] ?? '?'}`
-        : frontmatter['status'] === 'superseded'
-          ? `superseded by ${frontmatter['superseded-by'] ?? '?'}`
-          : '';
+
+    // Notes compose: a status note AND a narrowing note can both apply.
+    // ADR 0027 — an `active` ADR whose clause is corrected by a later `active`
+    // ADR previously produced NO note at all, so the relationship was invisible
+    // to anyone reading the index (which every session receives verbatim from
+    // inject-project-state.ts). That invisibility is the whole defect.
+    const notes: string[] = [];
+    if (frontmatter['status'] === 'reopened') {
+      notes.push(`reopened by ${frontmatter['reopened-by'] ?? '?'}`);
+    } else if (frontmatter['status'] === 'superseded') {
+      notes.push(`superseded by ${frontmatter['superseded-by'] ?? '?'}`);
+    }
+    const narrowedBy = list(frontmatter['narrowed-by']);
+    const narrows = list(frontmatter['narrows']);
+    if (narrowedBy.length > 0) {
+      notes.push(`**narrowed by ${narrowedBy.join(', ')}** — read together`);
+    }
+    if (narrows.length > 0) notes.push(`narrows ${narrows.join(', ')}`);
+
+    const note = notes.join(' · ');
     rows.push({
       id: frontmatter['id'] ?? '????',
       title: frontmatter['title'] ?? '(untitled)',
@@ -53,6 +75,10 @@ function main(): void {
     '`node scripts/reindex-decisions.ts`. On merge conflict: regenerate.',
     '',
     `Summary: ${summary || 'no ADRs yet'}`,
+    '',
+    '**"narrowed by NNNN"** means this ADR is still `active` and still binding,',
+    'but a later ADR corrects one of its clauses. Acting on this ADR alone will',
+    'produce the wrong result. Read both. (ADR 0027)',
     '',
     '| ID | Title | Status | Note |',
     '|----|-------|--------|------|',

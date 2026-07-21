@@ -1,6 +1,6 @@
 ---
 name: design-verifier
-description: Design verification worker. Verifies font facts (Hebrew/glyph coverage, licensing, weights/axes, subsetting) and assembles token-verification tables. Use during design-system work whenever candidate fonts or palettes need factual verification. Batches all candidates in parallel.
+description: RETIRED at Phase 2 open (ADR 0025) — the font facts it existed to verify were verified once and recorded in typography-spec.md; re-verifying settled facts is how closed questions get reopened by accident. Do not select for build work; use docs-explorer for genuinely new lookups. Kept for provenance. Was: a design verification worker for font facts (Hebrew/glyph coverage, licensing, weights/axes, subsetting) and token-verification tables.
 tools: WebFetch, WebSearch
 model: sonnet
 effort: high

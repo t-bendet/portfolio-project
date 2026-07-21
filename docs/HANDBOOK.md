@@ -24,6 +24,7 @@ gates, hooks, and agents demonstrate engineering process in public.
 ### The three phases
 
 ```mermaid
+%% id: phases-and-missions
 flowchart LR
     P0["Phase 0\nBootstrap\n(DONE)"] --> M1["/m1\nIdentity"]
     M1 --> M2["/m2\nDesign System"]
@@ -46,13 +47,14 @@ convention (see §6).
 | ------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | **ADRs**            | `docs/decisions/`                       | The single source of truth for every decision — status in frontmatter, never moved, never deleted | Status flips only; new conclusions = new files |
 | **Missions**        | `.claude/skills/m*/` + `missions/0N-*/` | Procedure (skill) + workspace (STATUS, outputs) — function vs call site                           | Skill: rarely. Workspace: constantly           |
-| **Skills**          | `.claude/skills/`                       | Reusable capabilities and the 6 mission procedures                                                | Only M5 may modify `.claude/`                  |
+| **Skills**          | `.claude/skills/`                       | Reusable capabilities and the 6 mission procedures                                                | M5 only; then sessions again once M6 closes (ADR 0028) |
 | **Agents**          | `.claude/agents/`                       | Role definitions: 5 specialists + 1 adversarial reviewer                                          | Same                                           |
-| **Hooks + scripts** | `.claude/settings.json` → `scripts/`    | Mechanical enforcement: TypeScript, zero deps, Node native type-stripping                         | Same                                           |
+| **Hooks + scripts** | `.claude/settings.json` → `scripts/`    | Mechanical enforcement: TypeScript, zero deps, Node native type-stripping                         | M5 only, then **never** — you may edit what the enforcement layer checks, not the checker |
 
 ### Who reads and writes what
 
 ```mermaid
+%% id: file-relations
 flowchart TB
     subgraph CONFIG[".claude/ — loaded as configuration"]
         CM["CLAUDE.md\n(auto-loaded constitution)"]
@@ -72,6 +74,7 @@ flowchart TB
         V["validate-adr.ts"]
         W["validate-workshop.ts"]
         R["reindex-decisions.ts"]
+        T["test-machinery.ts"]
         LIB["lib/frontmatter.ts"]
     end
 
@@ -95,6 +98,7 @@ flowchart TB
     W -->|lints| SK & AG
     H2 -->|reads| ST
     H2 -->|checks verdict in| OUT
+    T -->|drives every hook,\nasserts exit codes| ENFORCE
     H3 -->|runs| V --> LIB
     H3 -->|runs| R -->|writes| IDX
     R -->|reads frontmatter| ADR
@@ -115,6 +119,7 @@ frontmatter field**. Files never move, never get deleted, never have their
 reasoning edited after the fact.
 
 ```mermaid
+%% id: adr-lifecycle
 stateDiagram-v2
     [*] --> proposed : question raised,\nowner assigned
     proposed --> active : decided
@@ -138,6 +143,15 @@ Rules that matter in practice:
   hand-edit; on merge conflict, regenerate.
 - Frontmatter is **flat** `key: value` only — this constraint is what lets the
   validator stay dependency-free.
+- **Partial narrowing** (ADR 0027): when a new ADR corrects one *clause* of an
+  older one that otherwise still stands, neither `superseded` nor `reopened`
+  fits. The newer gets `narrows: NNNN`, the older gets `narrowed-by: NNNN` and
+  stays `active`. Both sides are required — `validate-adr.ts` (full-repo mode)
+  fails on a one-directional relation. It shows up in the `Note` column, which
+  every session receives. Live: 0023 narrows 0019, 0024 narrows 0020.
+- Relational frontmatter (`superseded-by`, `reopened-by`, `narrowed-by`) is
+  metadata and **is** written into old ADRs after the fact. Their *reasoning*
+  is what never gets edited.
 
 Snapshot at Phase 0 close (live truth: `INDEX.md`, regenerated on every ADR
 write): **4 active** (0001 identity mark, 0002 easter-egg mechanism,
@@ -156,6 +170,7 @@ manifest → output contract → scope boundaries → stop conditions → checkp
 The run, end to end:
 
 ```mermaid
+%% id: mission-run
 flowchart TB
     START(["Tal invokes /mN"]) --> GATE{"Gate check:\nall depends-on missions\ngenuinely closed?"}
     GATE -->|no| REFUSE["refuse + report\nwhat's blocking"]
@@ -197,18 +212,27 @@ Key protections baked into that loop:
 
 ## 5. The skills catalog
 
-**Capability skills** (reusable; travel in the future `portfolio-workshop` plugin):
+**Capability skills.** Eight of these are the reusable set specified for the
+`portfolio-workshop` plugin — **specified at 0.1, deliberately not published**
+(ADR 0029, `plugin-spec.md`). Still eight, but a *different* eight than this
+section once promised: `brand-voice` was reclassified *out* (it is a project
+brand book, not a method) and `review-work` joined. `publish-translation` stays
+too — it encodes one named author's licence terms. The escalation-target proper
+noun was parameterised in four of them; the harder leakage — baked-in domain
+assumptions that read as calibration guidance — was deliberately left alone.
 
 | Skill                | One-liner                                                                                                                      |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `adr-keeper`         | ADR format, lifecycle, and the never-edit/never-delete rules                                                                   |
 | `tech-eval`          | First-principles evaluation: requirements before candidates, incumbent included, versions verified by search, honest tradeoffs |
 | `design-tokens`      | How palettes/type ship as semantic CSS variables; restraint rules; RTL checks                                                  |
-| `brand-voice`        | Identity invariants; the anti-theme-soup rule for new symbolic layers                                                          |
+| `brand-voice`        | Identity invariants; the anti-theme-soup rule for new symbolic layers — **project artifact, does not travel** (ADR 0029)      |
 | `prompt-craft`       | The mission-prompt template (patterns adapted from prompt-master: start/target state, stop conditions, scope, memory block)    |
 | `mission-protocol`   | The run sequence in §4; gate, loop cap, closure rules                                                                          |
 | `security-review`    | Dual-mode: design (threat-model the blueprint, M6) / code (Phase 2 CI)                                                         |
 | `performance-review` | Dual-mode: design (budgets with numbers, M6) / code (CI enforcement)                                                           |
+| `review-work`        | Phase 2 adversarial review of a work item; carries `context: fork`, so reviewer isolation is mechanical rather than promised   |
+| `publish-translation`| Publish-time licence checklist for a Hebrew translation, incl. the upstream back-link PR — **project artifact, does not travel** |
 
 **Mission skills**: `m1-identity` … `m6-blueprint-gate`, each with
 `disable-model-invocation: true` — they run only when _you_ type the slash
@@ -216,7 +240,13 @@ command; Claude can never auto-trigger a mission mid-conversation.
 
 **Agents**: `brand-strategist` (M1), `design-systems` (M2), `tech-architect`
 (M3), `ia-planner` (M4), `workflow-engineer` (M5), `red-team-reviewer`
-(every closure + leads M6). Agents are deliberately thin on procedure — steps
+(every closure + leads M6). **All five mission specialists plus
+`design-verifier` retire when Phase 2 opens** (ADR 0025): their questions are
+answered and the ADRs are the durable output. Retirement is a note in the
+agent's `description`, not deletion — the file stays for provenance, exactly
+as ADRs do, and a description reading "RETIRED — see ADR 00NN" keeps it from
+being selected. `red-team-reviewer` and `docs-explorer` carry forward.
+Agents are deliberately thin on procedure — steps
 live in skills, one copy each. What every agent DOES carry: a `skills:`
 frontmatter preload (its methods arrive in-context automatically) and an
 Operating contract (what its delegation prompt must include, and an order to
@@ -243,6 +273,7 @@ step, no dependencies; `enum`/`namespace` forbidden because stripping can't
 erase them).
 
 ```mermaid
+%% id: hooks-enforcement
 sequenceDiagram
     participant C as Claude (any session)
     participant Pre as PreToolUse hooks
@@ -253,8 +284,8 @@ sequenceDiagram
 
     C->>Pre: Write/Edit request
     Pre->>Pre: protect-reference.ts\npath under assets/reference/? -> BLOCK (exit 2)
-    Pre->>Pre: mission-gate.ts\npath in missions/0N-*/outputs/?\ncheck each depends-on:\nSTATUS closed AND\nreview-verdict.md APPROVED\nelse BLOCK (exit 2)
-    Pre->>Pre: protect-workshop.ts\npath under .claude/ or scripts/?\nallowed only while M5 in-progress\nsettings.json: never\nelse BLOCK (exit 2)
+    Pre->>Pre: mission-gate.ts\npath in missions/0N-*/outputs/?\nthis mission closed? -> BLOCK (frozen)\ncheck each depends-on:\nSTATUS closed AND\nreview-verdict.md APPROVED\nelse BLOCK (exit 2)
+    Pre->>Pre: protect-workshop.ts\npath under .claude/ or scripts/?\nM5 in-progress -> allow all\nafter M6 closes -> skills/agents only\nsettings.json: never\nelse BLOCK (exit 2)
     Pre-->>FS: allowed -> write happens
     FS->>Post: decision-guard.ts\npath under docs/decisions/?
     Post->>Post: INDEX.md edit? -> BLOCK\nADR? -> validate-adr.ts\ninvalid -> exit 2 (Claude must fix)
@@ -267,7 +298,11 @@ What each blocks, in plain words:
 - **protect-reference** — nobody edits your prototypes or inspiration. Ever.
 - **mission-gate** — no mission produces outputs while its dependency chain
   isn't _genuinely_ closed. The rubber-stamp loophole is dead: a STATUS flip
-  without the reviewer's APPROVED verdict file does not count.
+  without the reviewer's APPROVED verdict file does not count. It now also
+  guards the other direction: **a closed mission's outputs are frozen** (ADR
+  0028). Those deliverables are the specs Phase 2 is measured against, and a
+  spec that can be quietly edited to match the code is not a spec. A wrong
+  closed deliverable is a new ADR, not an edit.
 - **decision-guard** — malformed ADRs bounce back with the reason; INDEX.md
   can't be hand-edited; every valid ADR write auto-regenerates the index.
 - **inject-project-state** — every fresh session starts already knowing the
@@ -290,6 +325,34 @@ What each blocks, in plain words:
   best-practices (skill frontmatter, mission template sections, agent
   Operating contracts + skill preloads) are linted by
   `node scripts/validate-workshop.ts`.
+  **Once M6 closes the rule splits** (ADR 0028): sessions may edit
+  `.claude/skills/**` and `.claude/agents/**` — instructions, which fail soft
+  and which `validate-workshop.ts` checks — but never `scripts/hooks/**`,
+  `scripts/*.ts` or `settings.json`, which are the enforcement layer and fail
+  **open and silently** when broken. _You may edit what the enforcement layer
+  checks; you may not edit the checker._ Without this split the machinery
+  would freeze permanently the moment M5 closed, since no mission is
+  in-progress after that.
+
+Two more scripts, not hooks, back this up:
+
+- **test-machinery.ts** — the smoke suite the enforcement layer never had
+  (`IMPROVEMENTS.md` #2). 36 assertions driving all six hooks exactly as a
+  session does (JSON on stdin) and asserting exit codes — including the
+  rubber-stamp case (closed **without** a verdict) and ADR 0027's
+  one-directional narrowing. Cases that can't exist in the real repo run
+  against throwaway fixture mission trees, which is how both sides of the
+  post-M6 unfreeze get tested before M6 closes. Phase-aware, so it survives
+  phase transitions instead of going red on them. **CI's first job** — a repo
+  whose enforcement is broken shouldn't spend runner minutes on anything else.
+  It is a smoke suite, not a proof: it catches a hook that stopped blocking,
+  not one that blocks the wrong thing in a case nobody listed.
+- **sync-docs.ts** now binds diagrams **by declared id** (`%% id: name` as the
+  first line of each mermaid block), not by array position
+  (`IMPROVEMENTS.md` #7). The old positional binding had a silent failure:
+  reorder two handbook sections, run the `ack` the tool itself recommends, and
+  it writes the wrong diagram into the wrong filename — permanently, with the
+  check still passing.
 
 ---
 
@@ -306,8 +369,11 @@ the mission stops and hands you the objections verbatim — you arbitrate.
 license (an ADR flip it doesn't own, an identity conflict, a budget change).
 Decide, answer in chat, the mission continues.
 
-**Branching:** branch per mission, merge on close. If `INDEX.md` conflicts on
-merge: `node scripts/reindex-decisions.ts`, commit, done — never hand-merge it.
+**Branching:** branch per mission, merge on close, never delete the branch.
+In Phase 2: `<track>/<slug>` branches through PRs, squash-merged (ADR 0026).
+**Worktrees: decided — not used by default.** The test is "does this task run
+the app?"; if yes, same working tree. If `INDEX.md` conflicts on merge:
+`node scripts/reindex-decisions.ts`, commit, done — never hand-merge it.
 
 **Adding source material anytime:** notes → `docs/research/` · your own
 artifacts → `assets/reference/prototypes/` · third-party → `inspiration/`
@@ -316,8 +382,9 @@ artifacts → `assets/reference/prototypes/` · third-party → `inspiration/`
 **Useful commands:**
 
 ```bash
-node scripts/validate-adr.ts            # validate all ADRs
-node scripts/validate-adr.ts <path>     # validate one
+node scripts/test-machinery.ts          # smoke-test every hook (CI's first job)
+node scripts/validate-adr.ts            # all ADRs + narrowing reciprocity
+node scripts/validate-adr.ts <path>     # validate one (shape only)
 node scripts/reindex-decisions.ts       # regenerate INDEX.md
 node scripts/hooks/inject-project-state.ts  # preview what sessions see
 node scripts/validate-workshop.ts       # lint skills + agents structure
