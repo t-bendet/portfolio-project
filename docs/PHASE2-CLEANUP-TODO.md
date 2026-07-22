@@ -1,57 +1,49 @@
 # Phase 2 Cleanup — TODO
 
-From the 2026-07-22 workshop audit. These land **after M6 closes** (Phase 2
-open), when `protect-workshop` unlocks `.claude/skills/**` and
-`.claude/agents/**` for sessions. Items touching `scripts/` or
-`settings.json` stay blocked for agent sessions in every phase (ADR 0028) —
-those are marked **[Tal, by hand]**.
+From the 2026-07-22 workshop audit. **Resolved and executed 2026-07-22** as
+the `infra/workshop-cleanup` work item (review class Standard), after gate
+condition G-1: coherence finding C1 flagged that §A/§B contradicted active
+ADRs 0025/0028. Tal arbitrated at the Phase 2 open checkpoint; the decisions
+now live in **ADRs 0030–0032**, which is what made this list executable:
 
-Run as one `infra/workshop-cleanup` work item, review class Standard.
-Nothing here changes any decision — it removes weight the decisions no
-longer need.
+- **ADR 0030** (narrows 0025) — retirement = deletion; provenance = git
+  history + `docs/EVOLUTION.md`.
+- **ADR 0031** (narrows 0022, 0028) — docs-sync machinery retires; colophon
+  re-scoped to a static road-to-production page generated at first deploy;
+  the fingerprint staleness check abandoned (also resolves gate finding C6).
+- **ADR 0032** (narrows 0028) — protect-workshop static rule; species lint
+  dropped; parameter headers stripped.
 
 ## A. Deletions
 
-- [ ] **[Tal, by hand]** Delete `scripts/sync-docs.ts` and
+- [x] **[Tal, by hand]** Delete `scripts/sync-docs.ts` and
       `scripts/hooks/docs-sync-check.ts`; remove the docs-sync-check entry
       from `.claude/settings.json` (PostToolUse). Diagrams live only in
-      `docs/HANDBOOK.md` from now on.
-- [ ] Delete `docs/diagrams/` and `docs/.docs-fingerprint.json` (extraction
-      targets of the deleted machinery).
-- [ ] Delete the five retired agent files: `brand-strategist.md`,
-      `design-systems.md`, `design-verifier.md`, `ia-planner.md`,
-      `tech-architect.md`, and (now also retired) `workflow-engineer.md`.
-      Git history keeps the provenance; add a one-line note to the handbook
-      (§5) saying retirement = deletion, provenance = git. Their
-      descriptions currently cost context in every session.
-- [ ] **[Tal, by hand]** After the agent deletions, update
-      `scripts/test-machinery.ts` if any assertion references a deleted
-      file path (it probes `red-team-reviewer.md` — keep that one).
+      `docs/HANDBOOK.md` from now on. *(ADR 0031)*
+- [x] Delete `docs/diagrams/` and `docs/.docs-fingerprint.json`.
+- [x] Delete the six retired agent files (`brand-strategist`,
+      `design-systems`, `design-verifier`, `ia-planner`, `tech-architect`,
+      `workflow-engineer`). Provenance: git history + `docs/EVOLUTION.md`;
+      handbook §5 updated. *(ADR 0030)*
+- [x] **[Tal, by hand]** `scripts/test-machinery.ts` updated — docs-sync
+      assertions removed; `red-team-reviewer.md` probe kept.
 
 ## B. Simplifications
 
-- [ ] Strip the "**Project parameters** (ADR 0029) — escalation target: Tal"
-      header blocks from `mission-protocol`, `adr-keeper`, `review-work`,
-      `prompt-craft`, and `tech-eval` skills. The plugin was deliberately not
-      published; parameterizing for a consumer that doesn't exist is
-      overhead. (If the plugin ever ships, re-parameterize then — see
-      `docs/NEXT-ITERATION-HANDOFF.md` §2.)
-- [ ] **[Tal, by hand, optional]** Simplify `scripts/hooks/protect-workshop.ts`
-      to the static Phase 2 rule (M5/M6 regimes are dead once M6 closes):
-      block `scripts/**` and settings always; allow `.claude/skills/**` and
-      `.claude/agents/**` always. Then trim the matching phase-table cases
-      from `test-machinery.ts`. Low urgency — the current logic is correct,
-      just carries dead branches.
-- [ ] **[Tal, by hand, optional]** In `scripts/validate-workshop.ts`, drop
-      the judgment/worker species contract (Operating contract / Workflow /
-      Output format / pinned-model checks). Keep: SKILL.md exists, name
-      matches folder, description present, mission skills carry
-      `disable-model-invocation: true`.
-- [ ] Update `docs/HANDBOOK.md` to match: remove §6's docs-sync-check bullet
-      and the sync-docs paragraph, remove the mermaid-extraction claim,
-      update the agents list in §5, update the hook count. (With
-      docs-sync-check deleted, no ack is needed — HANDBOOK edits are plain
-      edits.)
+- [x] Strip the "Project parameters (ADR 0029)" header blocks. Four skills
+      carried it (`mission-protocol`, `adr-keeper`, `review-work`,
+      `prompt-craft`); the TODO's original list also named `tech-eval`,
+      which never had one (coherence C5). *(ADR 0032)*
+- [x] **[Tal, by hand]** `scripts/hooks/protect-workshop.ts` simplified to
+      the static Phase 2 rule; phase-table cases trimmed from
+      `test-machinery.ts`. *(ADR 0032)*
+- [x] **[Tal, by hand]** `scripts/validate-workshop.ts`: species contract
+      and mission template-section checks dropped; keeps SKILL.md exists,
+      name matches folder, description present, mission skills carry
+      `disable-model-invocation: true`. *(ADR 0032)*
+- [x] `docs/HANDBOOK.md` updated to match: docs-sync bullet and sync-docs
+      paragraph removed, mermaid-extraction claim removed, agents list §5
+      rewritten, hook count now five.
 
 ## C. Keep — decided, do not revisit
 
@@ -85,9 +77,9 @@ gate system into theater.
 
 - [ ] Phase 2 work items carry the three-bullet friction note in the PR
       description (IMPROVEMENTS.md #4 — the mechanism that never happened).
-- [ ] Start `docs/research/story-capture.md` on the first Phase 2 work item
-      (IMPROVEMENTS.md #5) — the workshop-to-build transition is itself
-      writing material.
-- [ ] After cleanup: `node scripts/test-machinery.ts &&
+      → First instance: this work item's PR.
+- [x] Start `docs/research/story-capture.md` on the first Phase 2 work item
+      (IMPROVEMENTS.md #5) — started with this cleanup.
+- [x] After cleanup: `node scripts/test-machinery.ts &&
       node scripts/validate-workshop.ts && node scripts/validate-adr.ts`
-      all green before merging the cleanup PR.
+      all green before merging the cleanup PR. *(25 · 0 · 2 skips)*

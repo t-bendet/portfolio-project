@@ -5,9 +5,6 @@ description: The template and rules for writing mission prompts and any high-sta
 
 # Prompt Craft
 
-**Project parameters** (ADR 0029) — `escalation target: Tal`. The proper noun
-below is this binding, not part of the method; packaging substitutes it.
-
 ## Mission prompt template (every mission skill follows this)
 1. **Role** — which specialist agent(s), what expertise register
 2. **Memory block** — carry-forward: closed ADR ids + one-line summaries,

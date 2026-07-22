@@ -36,10 +36,6 @@
           {
             "type": "command",
             "command": "node scripts/hooks/decision-guard.ts"
-          },
-          {
-            "type": "command",
-            "command": "node scripts/hooks/docs-sync-check.ts"
           }
         ]
       }

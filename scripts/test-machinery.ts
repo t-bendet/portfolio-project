@@ -5,23 +5,18 @@
 // WHY THIS EXISTS: every hook was verified by hand in the Phase 0 session
 // (piped JSON, checked exit codes) and none of it was reproducible from the
 // repo. Enforcement that breaks does not break loudly — it fails OPEN and
-// silently, so nothing notices. Mission 5 changed the semantics of two hooks,
-// which is precisely when a suite like this stops being optional.
+// silently, so nothing notices.
 //
 // Hooks are driven exactly as a Claude Code session drives them: JSON on
 // stdin, assert the exit code. 0 = allowed, 2 = blocked.
 //
-// PHASE AWARENESS: several rules legitimately depend on where the project is
-// (ADR 0028). The suite detects the phase once and asserts the row that
-// applies, rather than hardcoding expectations that would rot at the next
-// phase boundary. Cases whose preconditions do not currently hold report SKIP
-// instead of failing — a suite that goes red on a correct phase transition is
-// a suite that gets disabled.
+// ADR 0032 removed the phase table: protect-workshop now enforces one static
+// rule, so the suite asserts that rule directly instead of detecting a phase.
+// ADR 0031 retired the docs-sync machinery; its assertions went with it.
 //
 // HONEST LIMITATION: these are smoke tests of exit codes, not proofs. They
 // catch a hook that stopped blocking; they do not catch a hook that blocks the
-// wrong thing in a case nobody listed here. The phase table also mirrors the
-// implementation's own logic, so a shared misunderstanding would pass.
+// wrong thing in a case nobody listed here.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -36,8 +31,6 @@ import {
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseFrontmatter } from './lib/frontmatter.ts';
-
-type Phase = 'm5-open' | 'workshop' | 'phase2';
 
 let passed = 0;
 let failed = 0;
@@ -118,14 +111,7 @@ function missionDir(dirPrefix: string): string | null {
   return dir ? join('missions', dir) : null;
 }
 
-function detectPhase(): Phase {
-  if (missionStatus('05-') === 'in-progress') return 'm5-open';
-  if (missionStatus('06-') === 'closed') return 'phase2';
-  return 'workshop';
-}
-
-const phase = detectPhase();
-console.log(`machinery smoke suite — detected phase: ${phase}\n`);
+console.log('machinery smoke suite\n');
 
 // ---------------------------------------------------------------- reference
 console.log('protect-reference');
@@ -234,9 +220,8 @@ console.log('\nmission-gate');
 }
 
 // ---------------------------------------------------------- protect-workshop
-console.log('\nprotect-workshop');
+console.log('\nprotect-workshop (static Phase 2 rule — ADR 0032)');
 {
-  // settings.json is blocked in EVERY phase, with no exception.
   check(
     'blocks .claude/settings.json (always)',
     runHook('protect-workshop', '.claude/settings.json'),
@@ -247,89 +232,45 @@ console.log('\nprotect-workshop');
     runHook('protect-workshop', '.claude/settings.local.json'),
     2,
   );
-
-  // The enforcement layer itself: writable only during M5.
-  const enforcementExpected = phase === 'm5-open' ? 0 : 2;
   check(
-    `scripts/hooks/** during "${phase}"`,
+    'blocks scripts/hooks/** (always)',
     runHook('protect-workshop', 'scripts/hooks/mission-gate.ts'),
-    enforcementExpected,
+    2,
   );
   check(
-    `scripts/*.ts during "${phase}"`,
+    'blocks scripts/*.ts (always)',
     runHook('protect-workshop', 'scripts/validate-adr.ts'),
-    enforcementExpected,
+    2,
   );
-
-  // Instruction surfaces: writable during M5, and again once Phase 2 opens.
-  const instructionExpected = phase === 'workshop' ? 2 : 0;
   check(
-    `.claude/skills/** during "${phase}"`,
+    'allows .claude/skills/** (always)',
     runHook('protect-workshop', '.claude/skills/adr-keeper/SKILL.md'),
-    instructionExpected,
+    0,
   );
   check(
-    `.claude/agents/** during "${phase}"`,
+    'allows .claude/agents/** (always)',
     runHook('protect-workshop', '.claude/agents/red-team-reviewer.md'),
-    instructionExpected,
+    0,
   );
-
+  check(
+    'blocks other .claude/ paths (block-and-escalate default)',
+    runHook('protect-workshop', '.claude/some-new-surface.json'),
+    2,
+  );
   check(
     'ignores non-machinery paths',
     runHook('protect-workshop', 'docs/HANDBOOK.md'),
     0,
   );
-
-  // The OTHER two phases, against fixture trees — otherwise the Phase 2 split
-  // (ADR 0028) is only ever exercised once Phase 2 arrives, which is exactly
-  // when a mistake in it stops being cheap. Directory names must match the
-  // paths the hook reads.
-  const phase2 = fixtureTree([
-    { dir: '05-ai-dev-workflow', status: 'closed' },
-    { dir: '06-blueprint-gate', status: 'closed' },
-  ]);
-  try {
-    check('phase2: .claude/skills/** allowed', runHook('protect-workshop', '.claude/skills/adr-keeper/SKILL.md', phase2), 0);
-    check('phase2: .claude/agents/** allowed', runHook('protect-workshop', '.claude/agents/red-team-reviewer.md', phase2), 0);
-    check('phase2: scripts/hooks/** still blocked', runHook('protect-workshop', 'scripts/hooks/mission-gate.ts', phase2), 2);
-    check('phase2: scripts/*.ts still blocked', runHook('protect-workshop', 'scripts/validate-adr.ts', phase2), 2);
-    check('phase2: settings.json still blocked', runHook('protect-workshop', '.claude/settings.json', phase2), 2);
-  } finally {
-    rmSync(phase2, { recursive: true, force: true });
-  }
-
-  // M6 in-progress must NOT be able to edit the machinery it is auditing.
-  const auditing = fixtureTree([
-    { dir: '05-ai-dev-workflow', status: 'closed' },
-    { dir: '06-blueprint-gate', status: 'in-progress' },
-  ]);
-  try {
-    check('M6 auditing: skills blocked', runHook('protect-workshop', '.claude/skills/adr-keeper/SKILL.md', auditing), 2);
-    check('M6 auditing: scripts blocked', runHook('protect-workshop', 'scripts/validate-adr.ts', auditing), 2);
-  } finally {
-    rmSync(auditing, { recursive: true, force: true });
-  }
 }
 
-// ------------------------------------------------------- remaining two hooks
-console.log('\ndocs-sync-check + inject-project-state');
-{
-  check(
-    'docs-sync-check ignores non-machinery paths',
-    runHook('docs-sync-check', 'docs/research/notes.md'),
-    0,
-  );
-  check(
-    'docs-sync-check passes on a machinery path while docs are in sync',
-    runHook('docs-sync-check', 'scripts/validate-adr.ts'),
-    0,
-  );
-  check(
-    'inject-project-state runs clean',
-    runHook('inject-project-state', ''),
-    0,
-  );
-}
+// ------------------------------------------------------ inject-project-state
+console.log('\ninject-project-state');
+check(
+  'inject-project-state runs clean',
+  runHook('inject-project-state', ''),
+  0,
+);
 
 // --------------------------------------------------------- decision-guard
 console.log('\ndecision-guard');
@@ -415,7 +356,6 @@ console.log('\nvalidate-adr (incl. ADR 0027 narrowing graph)');
 // -------------------------------------------------------------- validators
 console.log('\nvalidators on a clean tree');
 check('validate-workshop.ts', runScript(['scripts/validate-workshop.ts']), 0);
-check('sync-docs.ts check', runScript(['scripts/sync-docs.ts', 'check']), 0);
 
 // ------------------------------------------------------------------ report
 console.log(`\n${passed} passed · ${failed} failed · ${skipped} skipped`);

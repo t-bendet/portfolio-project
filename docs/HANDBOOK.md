@@ -2,8 +2,8 @@
 
 Written for Tal. Everything in one place: what this repo is, how its parts
 relate, and how to operate it day to day. Diagrams are embedded as Mermaid
-(render in VS Code with a Mermaid extension, or on GitHub); standalone copies
-live in `docs/diagrams/`.
+(render in VS Code with a Mermaid extension, or on GitHub); this file is
+their only home (ADR 0031 retired the extraction machinery).
 
 ---
 
@@ -47,9 +47,9 @@ convention (see §6).
 | ------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | **ADRs**            | `docs/decisions/`                       | The single source of truth for every decision — status in frontmatter, never moved, never deleted | Status flips only; new conclusions = new files |
 | **Missions**        | `.claude/skills/m*/` + `missions/0N-*/` | Procedure (skill) + workspace (STATUS, outputs) — function vs call site                           | Skill: rarely. Workspace: constantly           |
-| **Skills**          | `.claude/skills/`                       | Reusable capabilities and the 6 mission procedures                                                | M5 only; then sessions again once M6 closes (ADR 0028) |
-| **Agents**          | `.claude/agents/`                       | Role definitions: 5 specialists + 1 adversarial reviewer                                          | Same                                           |
-| **Hooks + scripts** | `.claude/settings.json` → `scripts/`    | Mechanical enforcement: TypeScript, zero deps, Node native type-stripping                         | M5 only, then **never** — you may edit what the enforcement layer checks, not the checker |
+| **Skills**          | `.claude/skills/`                       | Reusable capabilities and the 6 mission procedures                                                | Sessions may edit (ADR 0028)                   |
+| **Agents**          | `.claude/agents/`                       | Role definitions: `red-team-reviewer` + `docs-explorer` (specialists deleted at Phase 2 open, ADR 0030 — provenance in `docs/EVOLUTION.md`) | Sessions may edit (ADR 0028)                   |
+| **Hooks + scripts** | `.claude/settings.json` → `scripts/`    | Mechanical enforcement: TypeScript, zero deps, Node native type-stripping                         | **Never** by sessions — you may edit what the enforcement layer checks, not the checker (ADRs 0028, 0032) |
 
 ### Who reads and writes what
 
@@ -58,8 +58,8 @@ convention (see §6).
 flowchart TB
     subgraph CONFIG[".claude/ — loaded as configuration"]
         CM["CLAUDE.md\n(auto-loaded constitution)"]
-        SK["skills/\n8 capability + 6 mission"]
-        AG["agents/\n6 judgment + 1 worker"]
+        SK["skills/\ncapability + 6 mission"]
+        AG["agents/\n1 judgment + 1 worker"]
         SET["settings.json"]
     end
 
@@ -69,8 +69,6 @@ flowchart TB
         H3["hooks/decision-guard.ts"]
         H4["hooks/inject-project-state.ts"]
         H5["hooks/protect-workshop.ts"]
-        H6["hooks/docs-sync-check.ts"]
-        SY["sync-docs.ts"]
         V["validate-adr.ts"]
         W["validate-workshop.ts"]
         R["reindex-decisions.ts"]
@@ -92,8 +90,7 @@ flowchart TB
 
     REF["assets/reference/\nprototypes (committed)\ninspiration (gitignored)"]
 
-    SET --> H1 & H2 & H3 & H4 & H5 & H6
-    H6 -->|runs| SY -->|extracts .mmd +\nfingerprints machinery| ENFORCE
+    SET --> H1 & H2 & H3 & H4 & H5
     H5 -->|guards writes to| SK & AG & SET
     W -->|lints| SK & AG
     H2 -->|reads| ST
@@ -217,9 +214,10 @@ Key protections baked into that loop:
 (ADR 0029, `plugin-spec.md`). Still eight, but a *different* eight than this
 section once promised: `brand-voice` was reclassified *out* (it is a project
 brand book, not a method) and `review-work` joined. `publish-translation` stays
-too — it encodes one named author's licence terms. The escalation-target proper
-noun was parameterised in four of them; the harder leakage — baked-in domain
-assumptions that read as calibration guidance — was deliberately left alone.
+too — it encodes one named author's licence terms. The escalation-target
+parameter headers were stripped at Phase 2 open (ADR 0032): parameterizing for
+a consumer that doesn't exist is overhead; re-add them if the plugin ever
+ships.
 
 | Skill                | One-liner                                                                                                                      |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -238,36 +236,21 @@ assumptions that read as calibration guidance — was deliberately left alone.
 `disable-model-invocation: true` — they run only when _you_ type the slash
 command; Claude can never auto-trigger a mission mid-conversation.
 
-**Agents**: `brand-strategist` (M1), `design-systems` (M2), `tech-architect`
-(M3), `ia-planner` (M4), `workflow-engineer` (M5), `red-team-reviewer`
-(every closure + leads M6). **All five mission specialists plus
-`design-verifier` retire when Phase 2 opens** (ADR 0025): their questions are
-answered and the ADRs are the durable output. Retirement is a note in the
-agent's `description`, not deletion — the file stays for provenance, exactly
-as ADRs do, and a description reading "RETIRED — see ADR 00NN" keeps it from
-being selected. `red-team-reviewer` and `docs-explorer` carry forward.
-Agents are deliberately thin on procedure — steps
-live in skills, one copy each. What every agent DOES carry: a `skills:`
-frontmatter preload (its methods arrive in-context automatically) and an
-Operating contract (what its delegation prompt must include, and an order to
-refuse loudly if underspecified — subagents run isolated and must never
-improvise from missing context), plus a `tools:` allowlist scoped to its job.
-
-There is a second agent species: **workers** — self-contained mechanical
-procedures with an embedded Workflow, a fixed Output format, and a pinned
-cheaper model. Workers: `docs-explorer` (parallel documentation and
-version lookup, used by tech-eval / M3) and `design-verifier` (font facts,
-Hebrew coverage, licensing — used by M2; contrast math is not a model task and
-belongs to `scripts/contrast.ts`, which exits 1 on AA failure so Phase 2 CI
-can gate on it). Judgment agents stay thin because
-their methods live in skills; workers are rich because the procedure is
-theirs alone. `validate-workshop.ts` holds each species to its own contract.
+**Agents**: two remain — `red-team-reviewer` (judgment: adversarial review,
+always fresh context, methods preloaded via `skills:`) and `docs-explorer`
+(worker: parallel documentation and version lookup, self-contained Workflow +
+Output format, pinned cheaper model). **The six Phase 1 specialists were
+deleted at Phase 2 open** (ADR 0030, narrowing 0025): retirement = deletion;
+provenance = git history + `docs/EVOLUTION.md`, which records what each was
+and which ADRs are its durable output. No new agents (ADR 0025 decision 6).
+Contrast math is not a model task and belongs to `scripts/contrast.ts`, which
+exits 1 on AA failure so Phase 2 CI can gate on it.
 
 ---
 
 ## 6. The enforcement layer
 
-Instructions can be ignored under context pressure; hooks can't. Six hooks,
+Instructions can be ignored under context pressure; hooks can't. Five hooks,
 all TypeScript run directly by Node (≥24 guaranteed; type-stripping — no build
 step, no dependencies; `enum`/`namespace` forbidden because stripping can't
 erase them).
@@ -285,12 +268,11 @@ sequenceDiagram
     C->>Pre: Write/Edit request
     Pre->>Pre: protect-reference.ts\npath under assets/reference/? -> BLOCK (exit 2)
     Pre->>Pre: mission-gate.ts\npath in missions/0N-*/outputs/?\nthis mission closed? -> BLOCK (frozen)\ncheck each depends-on:\nSTATUS closed AND\nreview-verdict.md APPROVED\nelse BLOCK (exit 2)
-    Pre->>Pre: protect-workshop.ts\npath under .claude/ or scripts/?\nM5 in-progress -> allow all\nafter M6 closes -> skills/agents only\nsettings.json: never\nelse BLOCK (exit 2)
+    Pre->>Pre: protect-workshop.ts\npath under .claude/ or scripts/?\nskills/agents -> allow\nscripts + settings.json -> BLOCK (exit 2)
     Pre-->>FS: allowed -> write happens
     FS->>Post: decision-guard.ts\npath under docs/decisions/?
     Post->>Post: INDEX.md edit? -> BLOCK\nADR? -> validate-adr.ts\ninvalid -> exit 2 (Claude must fix)
     Post->>FS: valid -> reindex-decisions.ts\nregenerates INDEX.md
-    Post->>Post: docs-sync-check.ts\nmachinery surface touched?\nfingerprint stale -> exit 2\n(update docs, then ack)
 ```
 
 What each blocks, in plain words:
@@ -307,52 +289,30 @@ What each blocks, in plain words:
   can't be hand-edited; every valid ADR write auto-regenerates the index.
 - **inject-project-state** — every fresh session starts already knowing the
   decision index and where every mission stands.
-- **docs-sync-check** — docs can't be linted for truth, but staleness can be
-  detected: a fingerprint of the documented surface (skills/agents/hooks/
-  scripts inventory + settings.json + mission plan) is recorded whenever docs
-  are confirmed current (`node scripts/sync-docs.ts ack`). Any machinery write
-  after that trips the check until docs are updated and re-acked. It also
-  mechanically verifies every `.mmd` file matches its handbook block — the
-  handbook is the single source; diagrams are extractions. **Definition of a
-  docs-triggering change:** add/remove/rename of any skill, agent, hook, or
-  script, or edits to `settings.json` / `00-mission-plan.md`. ADR flips,
-  mission outputs, and research notes are NOT docs-triggering — the handbook
-  points at live sources for state instead of snapshotting it.
-- **protect-workshop** — the machinery guards itself: agent sessions can't
-  modify `.claude/` or `scripts/` except during Mission 5 (its license), and
-  `settings.json` — which wires the hooks — never (escalate to Tal). You are
-  exempt: hooks bind Claude Code sessions, not your editor. Structural
-  best-practices (skill frontmatter, mission template sections, agent
-  Operating contracts + skill preloads) are linted by
-  `node scripts/validate-workshop.ts`.
-  **Once M6 closes the rule splits** (ADR 0028): sessions may edit
-  `.claude/skills/**` and `.claude/agents/**` — instructions, which fail soft
-  and which `validate-workshop.ts` checks — but never `scripts/hooks/**`,
+- **protect-workshop** — the machinery guards itself, one static rule
+  (ADR 0028, simplified by ADR 0032): sessions may edit `.claude/skills/**`
+  and `.claude/agents/**` — instructions, which fail soft and which
+  `node scripts/validate-workshop.ts` lints — but never `scripts/hooks/**`,
   `scripts/*.ts` or `settings.json`, which are the enforcement layer and fail
   **open and silently** when broken. _You may edit what the enforcement layer
-  checks; you may not edit the checker._ Without this split the machinery
-  would freeze permanently the moment M5 closed, since no mission is
-  in-progress after that.
+  checks; you may not edit the checker._ You are exempt: hooks bind Claude
+  Code sessions, not your editor.
+  (Docs staleness enforcement — the old `docs-sync-check` hook and its
+  `sync-docs.ts` fingerprint/extraction tool — retired at Phase 2 open,
+  ADR 0031. This handbook is now kept honest by reading, not by a hook.)
 
-Two more scripts, not hooks, back this up:
+One more script, not a hook, backs this up:
 
 - **test-machinery.ts** — the smoke suite the enforcement layer never had
-  (`IMPROVEMENTS.md` #2). 36 assertions driving all six hooks exactly as a
-  session does (JSON on stdin) and asserting exit codes — including the
-  rubber-stamp case (closed **without** a verdict) and ADR 0027's
-  one-directional narrowing. Cases that can't exist in the real repo run
-  against throwaway fixture mission trees, which is how both sides of the
-  post-M6 unfreeze get tested before M6 closes. Phase-aware, so it survives
-  phase transitions instead of going red on them. **CI's first job** — a repo
-  whose enforcement is broken shouldn't spend runner minutes on anything else.
-  It is a smoke suite, not a proof: it catches a hook that stopped blocking,
-  not one that blocks the wrong thing in a case nobody listed.
-- **sync-docs.ts** now binds diagrams **by declared id** (`%% id: name` as the
-  first line of each mermaid block), not by array position
-  (`IMPROVEMENTS.md` #7). The old positional binding had a silent failure:
-  reorder two handbook sections, run the `ack` the tool itself recommends, and
-  it writes the wrong diagram into the wrong filename — permanently, with the
-  check still passing.
+  (`IMPROVEMENTS.md` #2), driving all five hooks exactly as a session does
+  (JSON on stdin) and asserting exit codes — including the rubber-stamp case
+  (closed **without** a verdict) and ADR 0027's one-directional narrowing.
+  Cases that can't exist in the real repo run against throwaway fixture
+  mission trees. The phase table is gone with the phase regimes (ADR 0032):
+  protect-workshop's static rule is asserted directly. **CI's first job** — a
+  repo whose enforcement is broken shouldn't spend runner minutes on anything
+  else. It is a smoke suite, not a proof: it catches a hook that stopped
+  blocking, not one that blocks the wrong thing in a case nobody listed.
 
 ---
 
@@ -388,8 +348,6 @@ node scripts/validate-adr.ts <path>     # validate one (shape only)
 node scripts/reindex-decisions.ts       # regenerate INDEX.md
 node scripts/hooks/inject-project-state.ts  # preview what sessions see
 node scripts/validate-workshop.ts       # lint skills + agents structure
-node scripts/sync-docs.ts check         # are docs current vs machinery?
-node scripts/sync-docs.ts ack           # after updating docs: extract + record
 ```
 
 **Gotchas already learned so you don't relearn them:**

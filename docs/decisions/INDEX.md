@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 21 · superseded: 8
+Summary: active: 24 · superseded: 8
 
 **"narrowed by NNNN"** means this ADR is still `active` and still binding,
 but a later ADR corrects one of its clauses. Acting on this ADR alone will
@@ -32,11 +32,14 @@ produce the wrong result. Read both. (ADR 0027)
 | [0019](./0019-framework-astro7-static-core-plus-api.md) | Framework is Astro 7.x — static core plus hand-built API and containerized Postgres | `active` | **narrowed by 0023** — read together |
 | [0020](./0020-dynamic-layer-scope-analytics-reactions-admin.md) | Dynamic layer scope — first-party analytics, reactions, private admin dashboard; comments deferred but designed for | `active` | **narrowed by 0024** — read together |
 | [0021](./0021-cloud-deploy-ec2-compose-ecr-pipeline.md) | Cloud and deploy — EC2 t4g.micro with Docker Compose, ECR via OIDC, Route 53, Caddy TLS, hand-written GitHub Actions pipeline | `active` |  |
-| [0022](./0022-site-structure-routes-global-theme.md) | Site structure — twelve public routes, archetype differentiation, one global theme | `active` |  |
+| [0022](./0022-site-structure-routes-global-theme.md) | Site structure — twelve public routes, archetype differentiation, one global theme | `active` | **narrowed by 0031** — read together |
 | [0023](./0023-translations-hebrew-locale-subtree.md) | Translated articles live in a Hebrew locale subtree with compliance-bound attribution | `active` | narrows 0019 |
 | [0024](./0024-content-model-collections-and-analytics-key.md) | Content model — three typed collections and a namespaced analytics key contract | `active` | narrows 0020 |
-| [0025](./0025-phase2-development-workflow.md) | Phase 2 development workflow — tracks, risk-tiered review, and a retired agent roster | `active` |  |
+| [0025](./0025-phase2-development-workflow.md) | Phase 2 development workflow — tracks, risk-tiered review, and a retired agent roster | `active` | **narrowed by 0030** — read together |
 | [0026](./0026-worktrees-rejected-phase2-branch-model.md) | Worktrees rejected as the default; Phase 2 branch model is track-prefixed branches through PRs | `active` |  |
 | [0027](./0027-adr-partial-narrowing-relation.md) | The ADR lifecycle gains a partial-narrowing relation, threaded through the validator and the index | `active` |  |
-| [0028](./0028-phase2-enforcement-layer.md) | Phase 2 enforcement layer — edit what is checked, never the checker; closed missions freeze | `active` |  |
+| [0028](./0028-phase2-enforcement-layer.md) | Phase 2 enforcement layer — edit what is checked, never the checker; closed missions freeze | `active` | **narrowed by 0031, 0032** — read together |
 | [0029](./0029-workshop-packaging-boundary.md) | The workshop's export boundary is specified at version 0.1 but not published; brand-voice is reclassified as a project artifact | `active` |  |
+| [0030](./0030-retired-agents-deleted-provenance-in-git.md) | Retired agents are deleted; provenance moves to git history and an evolution log | `active` | narrows 0025 |
+| [0031](./0031-docs-sync-retires-colophon-static-at-production.md) | The docs-sync machinery retires; the colophon becomes a static road-to-production page generated at first deploy | `active` | narrows 0022, 0028 |
+| [0032](./0032-enforcement-simplification-and-parameter-headers.md) | Enforcement layer simplifies to the static Phase 2 rule; species lint and parameter headers are dropped | `active` | narrows 0028 |

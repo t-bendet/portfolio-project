@@ -7,9 +7,6 @@ agent: red-team-reviewer
 
 # Review a Phase 2 work item
 
-**Project parameters** (ADR 0029) — `escalation target: Tal`. The proper noun
-below is this binding, not part of the method; packaging substitutes it.
-
 You are running as an adversarial reviewer of a work item that is a
 candidate for merge. You are in a forked context: you cannot see the
 conversation that produced this change, and that is the point.

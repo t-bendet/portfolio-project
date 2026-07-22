@@ -3,6 +3,11 @@
 // .claude/ write, and runnable standalone:
 //   node scripts/validate-workshop.ts
 // Exit 0 = valid, exit 1 = problems (listed on stderr).
+//
+// ADR 0032 dropped the judgment/worker species contract and the mission
+// template-section checks; what remains is the structure that still has
+// consumers: a skill that exists, is named for its folder, describes itself
+// well enough to trigger, and — for mission skills — cannot be model-invoked.
 
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -11,24 +16,13 @@ import { parseFrontmatter } from './lib/frontmatter.ts';
 const SKILLS_DIR = '.claude/skills';
 const AGENTS_DIR = '.claude/agents';
 
-const MISSION_SKILL_SECTIONS = [
-  '## PROJECT PARAMETERS',
-  '## Memory block',
-  '## Starting state',
-  '## Input manifest',
-  '## Output contract',
-  '## Scope boundaries',
-  '## Checkpoints',
-  '## Stop conditions',
-];
-
 function checkSkill(dir: string): string[] {
   const problems: string[] = [];
   const path = join(SKILLS_DIR, dir, 'SKILL.md');
   if (!existsSync(path)) return [`${dir}: missing SKILL.md`];
 
   const raw = readFileSync(path, 'utf8');
-  const { frontmatter, body, errors } = parseFrontmatter(raw);
+  const { frontmatter, errors } = parseFrontmatter(raw);
   problems.push(...errors.map((e) => `${dir}: frontmatter ${e}`));
 
   if (!frontmatter['name']) problems.push(`${dir}: missing "name" in frontmatter`);
@@ -40,32 +34,18 @@ function checkSkill(dir: string): string[] {
   }
 
   const isMission = /^m\d-/.test(dir);
-  if (isMission) {
-    if (frontmatter['disable-model-invocation'] !== 'true') {
-      problems.push(
-        `${dir}: mission skill must set disable-model-invocation: true (missions run only when Tal invokes them)`,
-      );
-    }
-    for (const section of MISSION_SKILL_SECTIONS) {
-      if (!body.includes(section)) {
-        problems.push(`${dir}: missing required template section "${section}" (prompt-craft)`);
-      }
-    }
+  if (isMission && frontmatter['disable-model-invocation'] !== 'true') {
+    problems.push(
+      `${dir}: mission skill must set disable-model-invocation: true (missions run only when Tal invokes them)`,
+    );
   }
   return problems;
 }
 
-// Two agent species, each with its own structural contract:
-// - JUDGMENT agents: methods arrive via skills preload; must declare an
-//   Operating contract (delegation inputs + refuse-if-underspecified).
-// - WORKER agents: self-contained procedure; must embed a Workflow and an
-//   Output format, and pin a model (workers should not silently inherit
-//   an expensive model for mechanical tasks).
-// Every agent, either species, must restrict its tools.
 function checkAgent(file: string): string[] {
   const problems: string[] = [];
   const raw = readFileSync(join(AGENTS_DIR, file), 'utf8');
-  const { frontmatter, body, errors } = parseFrontmatter(raw);
+  const { frontmatter, errors } = parseFrontmatter(raw);
   problems.push(...errors.map((e) => `${file}: frontmatter ${e}`));
 
   if (!frontmatter['name']) problems.push(`${file}: missing "name"`);
@@ -74,25 +54,6 @@ function checkAgent(file: string): string[] {
     problems.push(
       `${file}: missing "tools" allowlist — unrestricted agents inherit everything, which defeats a constrained specialist`,
     );
-  }
-
-  const isJudgment = body.includes('## Operating contract');
-  const isWorker = body.includes('## Workflow');
-  if (!isJudgment && !isWorker) {
-    problems.push(
-      `${file}: must be one species or the other — judgment (## Operating contract + skills preload) or worker (## Workflow + ## Output format + pinned model)`,
-    );
-  }
-  if (isJudgment && !frontmatter['skills']) {
-    problems.push(`${file}: judgment agent missing "skills" preload — its methods must arrive in-context`);
-  }
-  if (isWorker && !isJudgment) {
-    if (!body.includes('## Output format')) {
-      problems.push(`${file}: worker agent missing "## Output format" section`);
-    }
-    if (!frontmatter['model'] || frontmatter['model'] === 'inherit') {
-      problems.push(`${file}: worker agent must pin a model (mechanical work should not inherit the mission's expensive model)`);
-    }
   }
   return problems;
 }

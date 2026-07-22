@@ -5,9 +5,6 @@ description: Format, lifecycle, and rules for Architecture Decision Records in d
 
 # ADR Keeper
 
-**Project parameters** (ADR 0029) — `escalation target: Tal`. The proper noun
-below is this binding, not part of the method; packaging substitutes it.
-
 ## Format (enforced by decision-guard hook)
 - Filename: `NNNN-kebab-title.md`, NNNN = zero-padded, next free number
 - Frontmatter: FLAT `key: value` only. No nesting, no arrays.

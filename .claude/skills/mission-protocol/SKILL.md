@@ -5,9 +5,6 @@ description: How any mission runs — gate check, input manifest, loop, review, 
 
 # Mission Protocol
 
-**Project parameters** (ADR 0029) — `escalation target: Tal`. The proper noun
-below is this binding, not part of the method; packaging substitutes it.
-
 ## Run sequence
 1. **Gate check.** Read this mission's STATUS.md `depends-on`. Every dependency
    must be genuinely closed: STATUS `closed` + outputs/review-verdict.md with
