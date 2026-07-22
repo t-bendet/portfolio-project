@@ -15,6 +15,9 @@
 // edits freely in his own editor (hooks bind Claude Code sessions, not
 // humans).
 
+import { realpathSync } from 'node:fs';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
+
 interface HookInput {
   tool_input?: { file_path?: string };
 }
@@ -34,13 +37,27 @@ try {
 }
 
 const filePath = input.tool_input?.file_path ?? '';
+
+// This hook guards THIS repo's machinery. Claude Code passes ABSOLUTE paths,
+// so a bare `/.claude/` segment match also caught the user-level ~/.claude/**
+// config — a different repo's `scripts/`, too. Resolve against the project
+// root first and ignore anything outside it; the protected surfaces are both
+// at the repo root, so match from `^` rather than at any segment.
+const projectRoot = realpathSync(
+  resolve(process.env.CLAUDE_PROJECT_DIR ?? process.cwd()),
+);
+const relPath = relative(projectRoot, resolve(projectRoot, filePath));
+if (relPath === '..' || relPath.startsWith(`..${sep}`) || isAbsolute(relPath)) {
+  process.exit(0);
+}
+
 const touchesMachinery =
-  /(^|\/)\.claude\//.test(filePath) || /(^|\/)scripts\//.test(filePath);
+  /^\.claude\//.test(relPath) || /^scripts\//.test(relPath);
 if (!touchesMachinery) process.exit(0);
 
 // settings.json (and settings.local.json, which grants permissions) are
 // extra-sensitive: they wire the hooks themselves. No exception, ever.
-if (/\.claude\/settings(\.local)?\.json$/.test(filePath)) {
+if (/^\.claude\/settings(\.local)?\.json$/.test(relPath)) {
   console.error(
     `BLOCKED: ${filePath} wires the enforcement hooks and may not be ` +
       'modified by an agent session, in any phase. Escalate to Tal — he can ' +
@@ -50,7 +67,7 @@ if (/\.claude\/settings(\.local)?\.json$/.test(filePath)) {
 }
 
 // Instruction surfaces: always session-editable.
-if (/(^|\/)\.claude\/(skills|agents)\//.test(filePath)) process.exit(0);
+if (/^\.claude\/(skills|agents)\//.test(relPath)) process.exit(0);
 
 console.error(
   `BLOCKED: ${filePath} is the enforcement layer (scripts/ or .claude/ ` +
