@@ -14,9 +14,9 @@ the last chance to act on the machinery items before Phase 2.
 |---|---|
 | 1 | **Partially done.** A three-session scope cap per Phase 2 work item is in ADR 0025, not as per-mission timeboxes. Mission 6 is deliberately exempt (Tal) |
 | 2 | **Done.** `scripts/test-machinery.ts` — 36 assertions across all six hooks, phase-aware, CI's first job. Covers the rubber-stamp case this item named. ADR 0028 |
-| 3 | **Done, with the caveat kept.** `context: fork` was verified real (2026-07-22) and the `review-work` skill carries it. The behavioural refuse-if-you-can-see-the-conversation rule **stays as a backstop** until the one behaviour test this item asks for actually runs |
-| 4 | **Not done.** Friction logs were never added to the six mission contracts, and five missions have now closed without one. This is why several M5 decisions rest on argument rather than evidence — see the note below |
-| 5 | **Not done.** No `story-capture.md` exists; four missions' worth of texture is already only in git history |
+| 3 | **Done.** Behaviour test ran 2026-07-22 (Phase 2 open): a canary string present only in the parent conversation was invisible to a `context: fork` + `agent: red-team-reviewer` probe; the fork received only skill body + CLAUDE.md + preloaded skills, and ran with the reviewer's exact tool allowlist. Isolation is mechanical; the refuse-if-context-visible rule stays as cheap redundancy (the probe also demonstrated it fires) |
+| 4 | **Started in Phase 2.** Never happened for the six missions (that evidence is gone — see the note below). First Phase 2 instance: the three-bullet friction note in the `infra/workshop-cleanup` squash-merge message (2026-07-22); carried in PR descriptions once a GitHub remote exists |
+| 5 | **Started.** `docs/research/story-capture.md` began with the first Phase 2 work item (2026-07-22); the four missions' texture remains only in git history |
 | 6 | **Decided, not fully executed.** ADR 0029: boundary specified at 0.1, not published; `brand-voice` reclassified out; role-name leakage parameterised in four skills; the domain-assumption class deliberately left alone. `plugin-spec.md` §4 |
 | 7 | **Done.** `sync-docs.ts` binds diagrams by `%% id:` instead of array position. ADR 0028 |
 
