@@ -236,3 +236,9 @@ gate verdict can be GO, because it is a standing contradiction between the
 decision record and a live instruction document. C2 and C3 are corrections
 this mission's remaining deliverables carry forward. C4–C7 are recorded and
 routed.
+
+**Checkpoint 1 disposition (Tal, 2026-07-22): C1 deferred to Phase 2 open.**
+Both documents stand as written; the contradiction is carried into
+`gate-verdict.md` as a **condition**: the `infra/workshop-cleanup` work item
+may not run until the conflict is resolved by new ADRs or by amending the
+TODO. The gate may be GO with that condition attached.
