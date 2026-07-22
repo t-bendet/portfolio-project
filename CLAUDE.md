@@ -65,18 +65,21 @@ not be created until Phase 2 (see `missions/00-mission-plan.md`).
   including ones we've already chosen.
 - TypeScript everywhere in `scripts/`: erasable syntax only (no `enum`,
   no `namespace`) — Node ≥ 24 runs these files directly.
-- `.claude/` and `scripts/` are hook-protected. Two regimes (ADR 0028):
-  - **Through Mission 6:** agent sessions may modify them only while Mission 5
-    is in-progress.
-  - **Once Mission 6 closes:** sessions may edit `.claude/skills/**` and
-    `.claude/agents/**` — instructions, which fail soft and which
-    `validate-workshop.ts` lints — but never `scripts/hooks/**`,
-    `scripts/*.ts`, or the settings files, which are the enforcement layer and
-    fail *open and silently* when broken. **You may edit what the enforcement
-    layer checks; you may not edit the checker.**
+- `.claude/` and `scripts/` are hook-protected (ADR 0028, narrowed by 0032, 0035):
+  - Sessions may edit `.claude/skills/**` and `.claude/agents/**` —
+    instructions, which fail soft and which `validate-workshop.ts` lints — but
+    never `scripts/hooks/**`, `scripts/*.ts`, or the settings files, which are
+    the enforcement layer and fail *open and silently* when broken. **You may
+    edit what the enforcement layer checks; you may not edit the checker.**
+  - **Authoring is editing** (ADR 0035). For the enforcement layer a session
+    may not produce the *content* in any form — not a patch, not a staged file
+    to `cp`, not a `sed`/`patch`/heredoc invocation, not the file's contents
+    written out in prose — even when Tal applies it by hand. The session
+    writes the specification, then verifies after Tal implements it. A hook
+    refusing a write is the signal to switch modes, not an obstacle.
   - `.claude/settings.json` and `settings.local.json`: never, in any phase —
     escalate.
-  Structural rules for skills/agents are linted by
+- Structural rules for skills/agents are linted by
   `node scripts/validate-workshop.ts`; the hooks themselves by
   `node scripts/test-machinery.ts`.
 
