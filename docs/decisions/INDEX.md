@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 24 · superseded: 8
+Summary: active: 25 · superseded: 8
 
 **"narrowed by NNNN"** means this ADR is still `active` and still binding,
 but a later ADR corrects one of its clauses. Acting on this ADR alone will
@@ -31,7 +31,7 @@ produce the wrong result. Read both. (ADR 0027)
 | [0018](./0018-portrait-about-favicon-confirmed.md) | Portrait confirmed at About + favicon, unframed and never mythologized; ink treatment deferred to digitization | `active` |  |
 | [0019](./0019-framework-astro7-static-core-plus-api.md) | Framework is Astro 7.x — static core plus hand-built API and containerized Postgres | `active` | **narrowed by 0023** — read together |
 | [0020](./0020-dynamic-layer-scope-analytics-reactions-admin.md) | Dynamic layer scope — first-party analytics, reactions, private admin dashboard; comments deferred but designed for | `active` | **narrowed by 0024** — read together |
-| [0021](./0021-cloud-deploy-ec2-compose-ecr-pipeline.md) | Cloud and deploy — EC2 t4g.micro with Docker Compose, ECR via OIDC, Route 53, Caddy TLS, hand-written GitHub Actions pipeline | `active` |  |
+| [0021](./0021-cloud-deploy-ec2-compose-ecr-pipeline.md) | Cloud and deploy — EC2 t4g.micro with Docker Compose, ECR via OIDC, Route 53, Caddy TLS, hand-written GitHub Actions pipeline | `active` | **narrowed by 0033** — read together |
 | [0022](./0022-site-structure-routes-global-theme.md) | Site structure — twelve public routes, archetype differentiation, one global theme | `active` | **narrowed by 0031** — read together |
 | [0023](./0023-translations-hebrew-locale-subtree.md) | Translated articles live in a Hebrew locale subtree with compliance-bound attribution | `active` | narrows 0019 |
 | [0024](./0024-content-model-collections-and-analytics-key.md) | Content model — three typed collections and a namespaced analytics key contract | `active` | narrows 0020 |
@@ -43,3 +43,4 @@ produce the wrong result. Read both. (ADR 0027)
 | [0030](./0030-retired-agents-deleted-provenance-in-git.md) | Retired agents are deleted; provenance moves to git history and an evolution log | `active` | narrows 0025 |
 | [0031](./0031-docs-sync-retires-colophon-static-at-production.md) | The docs-sync machinery retires; the colophon becomes a static road-to-production page generated at first deploy | `active` | narrows 0022, 0028 |
 | [0032](./0032-enforcement-simplification-and-parameter-headers.md) | Enforcement layer simplifies to the static Phase 2 rule; species lint and parameter headers are dropped | `active` | narrows 0028 |
+| [0033](./0033-native-arm-runners-and-confirmed-ipv4-budget.md) | ARM images build on native GitHub runners; the cloud budget is ≈$10.28/mo with public IPv4 confirmed | `active` | narrows 0021 |
