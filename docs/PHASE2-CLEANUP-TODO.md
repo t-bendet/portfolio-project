@@ -75,40 +75,158 @@ gate system into theater.
 
 ## E. Process (from IMPROVEMENTS.md, still open)
 
-- [ ] **When `ci.yml` lands (first infra work item): add it as a required
-      status check on `main`'s branch protection** — that completes SR-18
-      ("require ci.yml green before merge"). Protection created at Phase 2
-      open requires PRs only, because a required check that doesn't exist
-      yet would block every merge. Owner: Tal. Procedure:
+- [~] **SR-18 partially closed (2026-07-22, PR #2) — NOT done.** The
+      procedure below assumed `ci.yml` had to come first, which read as
+      blocked on the whole scaffold. It wasn't:
+      `repo-topology-decision.md:72` already splits workshop checks into
+      their own workflow, and that one needs no `app/`, no dependencies and
+      no install step. `.github/workflows/workshop.yml` landed and
+      `contexts: ["checks"]` is now required on `main` with `strict: true`.
+
+      **Residual risk, stated plainly: `enforce_admins: false` and there is
+      exactly one account, which is an admin.** That flag exempts admins
+      from *every* branch protection — the required `checks` context, the
+      PR requirement, and `required_linear_history` alike. So none of this
+      mitigates the threat SR-18 actually names
+      (`security-requirements.md:163-168`, a compromised session pushing to
+      `main`); it gates the cooperative path only. Closing SR-18 means
+      flipping `enforce_admins: true` and accepting that a wedged check
+      locks Tal out until fixed through a PR. Tal's call, deliberately
+      deferred, and the item stays open until it is made.
+
+      Squash-only is now configuration rather than habit for anyone who is
+      not an admin: `required_linear_history: true` on the branch, plus
+      repo-level `allow_merge_commit: false` / `allow_rebase_merge: false`
+      (rebase-merge would satisfy linear-history but still land N commits
+      instead of ADR 0026's one). **For the admin, only the repo-level
+      pair binds, and only through the UI — a locally-made merge commit
+      pushed by an admin is not rejected.** Existing history is untouched
+      either way: the check is on incoming commits, so the six mission
+      merge commits stand. `delete_branch_on_merge: true` automates ADR
+      0026's optional work-item-branch cleanup; mission branches are
+      unaffected because it only fires on PR merge.
+
+      Actions supply-chain settings tightened at the same time, before any
+      workflow holds credentials: `sha_pinning_required: true` (tag refs
+      rejected — `workshop.yml` pins `actions/checkout` and
+      `actions/setup-node` to commit SHAs with the version in a trailing
+      comment), `allowed_actions: "selected"` with `github_owned_allowed:
+      true` / `verified_allowed: false` / `patterns_allowed: []`, and
+      Dependabot alerts + automated security fixes on.
+      `default_workflow_permissions` was already `read`.
+
+      SHA→tag provenance for the two pins (SR-20), resolved 2026-07-22 via
+      `gh api repos/<r>/git/ref/tags/<v>` and dereferenced where the ref is
+      an annotated tag object:
+      `actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1` = v7.0.1,
+      `actions/setup-node@820762786026740c76f36085b0efc47a31fe5020` = v7.0.0.
+      Re-resolve on every bump; the comment is a label, not evidence.
+
+      **This gates the scaffold: `deploy.yml` cannot use any third-party
+      action until it is added to `patterns_allowed`.** The known one is
+      `aws-actions/configure-aws-credentials@*` for the OIDC role assumption
+      in ADR 0021. Add it — SHA-pinned — as part of §5, or the first deploy
+      run fails on a permissions error that reads nothing like its cause.
+
+      **Latent deadlock in the procedure as written — do not repeat.** The
+      step below says to require `ci.yml`, but `ci.yml` is scoped
+      `paths: [app/**]`, so it never reports on a docs-only PR, and GitHub
+      cannot tell "will never report" from "still running". Requiring it as
+      written would have hung every ADR PR indefinitely. When the scaffold
+      authors `ci.yml`, the skip-shim job that reports success on
+      non-`app/**` PRs must land **in the same commit** that adds it as a
+      required context.
+
+      **Correction to a closed-mission spec (standing-corrections pattern,
+      as in `SCAFFOLD-VERIFICATION.md` §1-§7).** `repo-topology-decision.md`
+      lines 20-23 assign workshop checks to `paths: docs/**` / `.claude/**`,
+      reasoning that "app pushes never run workshop lint"; ADR 0013
+      §Consequences accepts path filters as the exhibited design.
+      **`workshop.yml` ships with no `paths:` filter, reversing that
+      clause.** The reason is one the closed mission could not have had: it
+      chose filters before the workflow was a *required status check*, and
+      a required check that never reports is indistinguishable to GitHub
+      from one still running, so a filtered workshop check blocks every
+      `app/**`-only PR forever. The saving — a few seconds of a runner with
+      no install step — does not buy back a deadlock. No ADR is written:
+      0013's Decision asserts `paths: [app/**]` for `ci.yml`/`deploy.yml`
+      only, so nothing binding is contradicted. If one is ever written it
+      needs `narrows: 0013` plus the reciprocal `narrowed-by` (ADR 0027).
+
+      **SR-17 gap, carried into the remaining half.** SR-17 requires a
+      secrets scan on *every* PR, but the `sec` stage is specified inside
+      `ci.yml`, which is `paths: [app/**]` — so today a docs-only PR gets
+      no scan, and `workshop.yml` does not add one (a scanner would be a
+      third-party action, and `patterns_allowed` is `[]`). When the shim
+      below is written it **must not report the `sec` stage green on
+      non-`app/**` PRs**; either the scan moves somewhere unfiltered or the
+      shim greens only the app-specific stages. Naming it here so the shim
+      does not quietly convert a coverage gap into a passing check.
+
+- [ ] **Remaining half — add `ci.yml` as a second required context when the
+      scaffold authors it** (with the skip-shim above). Owner: Tal.
+      Procedure, still accurate for the re-PUT mechanics:
 
       1. After ci.yml's first run on a PR, get the exact check names
          (GitHub matches on the job's reported name, not the workflow
          filename): `gh pr checks <PR#>`
       2. Re-PUT the full protection with those names (PATCHing the
          status-checks sub-endpoint 404s while checks are null). Replace
-         `"ci"` below with the real name(s), one per job that must gate:
+         `"ci"` below with the real name(s), one per job that must gate.
+         **Every field the branch should keep is listed explicitly** — see
+         the note under step 3 for why that is not optional:
 
          ```bash
          gh api -X PUT repos/t-bendet/portfolio-project/branches/main/protection \
            --input - <<'EOF'
          {
-           "required_status_checks": { "strict": true, "contexts": ["ci"] },
+           "required_status_checks": { "strict": true, "contexts": ["checks", "ci"] },
            "enforce_admins": false,
            "required_pull_request_reviews": { "required_approving_review_count": 0 },
            "restrictions": null,
+           "required_linear_history": true,
            "allow_force_pushes": false,
            "allow_deletions": false
          }
          EOF
          ```
 
-      3. Verify: `gh api repos/t-bendet/portfolio-project/branches/main/protection -q '.required_status_checks'`
-         (`strict: true` also forces branches to be up to date with main
-         before merging.)
+      3. Verify **the whole object, not just the field you changed** — the
+         old version of this step read `-q '.required_status_checks'`, which
+         projects out precisely the one field the procedure intends to
+         change, so it could not fail on the only thing worth checking:
 
-- [ ] Phase 2 work items carry the three-bullet friction note in the PR
+         ```bash
+         gh api repos/t-bendet/portfolio-project/branches/main/protection \
+           -q '{contexts: .required_status_checks.contexts,
+                strict:   .required_status_checks.strict,
+                linear:   .required_linear_history.enabled,
+                admins:   .enforce_admins.enabled,
+                reviews:  .required_pull_request_reviews.required_approving_review_count,
+                force:    .allow_force_pushes.enabled,
+                deletions: .allow_deletions.enabled}'
+         ```
+
+         Expect `strict: true` (also forces branches up to date with main
+         before merging), `linear: true`, `admins: false`, `force: false`,
+         `deletions: false`.
+
+         **Why the body lists fields it is not changing.** Measured on a
+         scratch branch 2026-07-22: PUT with `required_linear_history` and
+         `required_conversation_resolution` omitted left both `true` while
+         `contexts` changed, so omission currently *preserves* rather than
+         resets. But the API documents these as `Default: false`, so that
+         behaviour is unspecified, and unspecified behaviour is not a
+         contract. List them. The documented replace semantics do bite on
+         the array-shaped fields — `users`/`teams` under `restrictions` are
+         replaced wholesale — which is why `restrictions: null` is explicit
+         too.
+
+- [x] Phase 2 work items carry the three-bullet friction note in the PR
       description (IMPROVEMENTS.md #4 — the mechanism that never happened).
-      → First instance: this work item's PR.
+      → First instance in an actual PR description: #2 (2026-07-22). The
+      `infra/workshop-cleanup` squash-merge message carried the first one
+      before a remote existed.
 - [x] Start `docs/research/story-capture.md` on the first Phase 2 work item
       (IMPROVEMENTS.md #5) — started with this cleanup.
 - [x] After cleanup: `node scripts/test-machinery.ts &&
