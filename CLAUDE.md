@@ -21,6 +21,11 @@ not be created until Phase 2 (see `missions/00-mission-plan.md`).
   Only ADRs with `status: active` are binding. `reopened` means the question is open
   again — treat prior conclusions as input, not law. `proposed` means undecided.
 - **How missions run:** `missions/00-mission-plan.md` + the `mission-protocol` skill.
+- **Where frozen specs are wrong:** `docs/STANDING-CORRECTIONS.md`. Closed missions'
+  `outputs/` are Phase 2's specs and are never edited; when one turns out to be wrong
+  the correction is recorded there and the output stays as written. A frozen output
+  carrying a correction is still binding everywhere the correction does not reach —
+  read both, as with an ADR narrowing.
 - **Never** treat `docs/decisions/archive/portfolio-decisions.md` as current — it is
   provenance only, decomposed into ADRs.
 

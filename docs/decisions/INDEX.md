@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 25 · superseded: 8
+Summary: active: 26 · superseded: 8
 
 **"narrowed by NNNN"** means this ADR is still `active` and still binding,
 but a later ADR corrects one of its clauses. Acting on this ADR alone will
@@ -23,7 +23,7 @@ produce the wrong result. Read both. (ADR 0027)
 | [0010](./0010-writing-section-tabs.md) | Writing section — original and translated posts as tabs | `superseded` | superseded by 0023 |
 | [0011](./0011-rtl-hebrew-support.md) | RTL/Hebrew rendering is a hard design and IA constraint | `active` |  |
 | [0012](./0012-showcase-tech-constraints.md) | The portfolio must genuinely showcase SQL, Docker, from-scratch CI/CD, and cloud deployment | `active` |  |
-| [0013](./0013-repo-topology.md) | Repository topology — workshop and app live in one monorepo | `active` |  |
+| [0013](./0013-repo-topology.md) | Repository topology — workshop and app live in one monorepo | `active` | **narrowed by 0034** — read together |
 | [0014](./0014-mythology-subordinate-naming-register.md) | Greek mythology enters only as a bounded naming register over real infrastructure | `active` |  |
 | [0015](./0015-prototype-exact-palette.md) | Palette is prototype-exact — two temperatures, six accents, minimal AA nudges | `active` |  |
 | [0016](./0016-prototype-typography-hebrew-companions.md) | Typography is prototype-exact (Syne+DM Mono / Fraunces+IBM Plex Mono) with verified Hebrew companions | `active` |  |
@@ -44,3 +44,4 @@ produce the wrong result. Read both. (ADR 0027)
 | [0031](./0031-docs-sync-retires-colophon-static-at-production.md) | The docs-sync machinery retires; the colophon becomes a static road-to-production page generated at first deploy | `active` | narrows 0022, 0028 |
 | [0032](./0032-enforcement-simplification-and-parameter-headers.md) | Enforcement layer simplifies to the static Phase 2 rule; species lint and parameter headers are dropped | `active` | narrows 0028 |
 | [0033](./0033-native-arm-runners-and-confirmed-ipv4-budget.md) | ARM images build on native GitHub runners; the cloud budget is ≈$10.28/mo with public IPv4 confirmed | `active` | narrows 0021 |
+| [0034](./0034-workshop-checks-run-unfiltered.md) | Workshop checks run unfiltered — a required status check may not be path-scoped | `active` | narrows 0013 |

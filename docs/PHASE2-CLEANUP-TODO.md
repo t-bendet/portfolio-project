@@ -137,31 +137,54 @@ gate system into theater.
       non-`app/**` PRs must land **in the same commit** that adds it as a
       required context.
 
-      **Correction to a closed-mission spec (standing-corrections pattern,
-      as in `SCAFFOLD-VERIFICATION.md` §1-§7).** `repo-topology-decision.md`
-      lines 20-23 assign workshop checks to `paths: docs/**` / `.claude/**`,
-      reasoning that "app pushes never run workshop lint"; ADR 0013
-      §Consequences accepts path filters as the exhibited design.
-      **`workshop.yml` ships with no `paths:` filter, reversing that
-      clause.** The reason is one the closed mission could not have had: it
-      chose filters before the workflow was a *required status check*, and
-      a required check that never reports is indistinguishable to GitHub
-      from one still running, so a filtered workshop check blocks every
-      `app/**`-only PR forever. The saving — a few seconds of a runner with
-      no install step — does not buy back a deadlock. No ADR is written:
-      0013's Decision asserts `paths: [app/**]` for `ci.yml`/`deploy.yml`
-      only, so nothing binding is contradicted. If one is ever written it
-      needs `narrows: 0013` plus the reciprocal `narrowed-by` (ADR 0027).
+      **`workshop.yml` runs unfiltered, reversing
+      `repo-topology-decision.md` lines 20-23.** Decided and reasoned in
+      **ADR 0034** (`narrows: 0013`); the correction to the frozen output
+      is **SC-1** in `docs/STANDING-CORRECTIONS.md`. Both of those are
+      permanent; this list is not, which is why they are the record and
+      this is a pointer. Two ordering rules come out of it and bind the
+      remaining half below: a skip-shim ships in the same commit that makes
+      a filtered workflow required, and a workflow is on `main` before its
+      context is made required.
 
-      **SR-17 gap, carried into the remaining half.** SR-17 requires a
-      secrets scan on *every* PR, but the `sec` stage is specified inside
-      `ci.yml`, which is `paths: [app/**]` — so today a docs-only PR gets
-      no scan, and `workshop.yml` does not add one (a scanner would be a
-      third-party action, and `patterns_allowed` is `[]`). When the shim
-      below is written it **must not report the `sec` stage green on
-      non-`app/**` PRs**; either the scan moves somewhere unfiltered or the
-      shim greens only the app-specific stages. Naming it here so the shim
-      does not quietly convert a coverage gap into a passing check.
+      **The workflow-lint check ADR 0013 promised still does not exist.**
+      0013 §Consequences accepts "a misconfigured filter fails silently"
+      *because* it is "mitigated by a workflow-lint check in CI". ADR 0034
+      makes that mitigation more load-bearing, not less. It is not built
+      here: a linter belongs in `scripts/`, which ADR 0028 freezes against
+      agent sessions as the enforcement layer, and putting a checker in
+      `.github/` instead would route around that freeze rather than respect
+      it. **Owner: Tal. Trigger: the commit that authors `ci.yml`** — the
+      point at which a second filtered workflow makes silent
+      misconfiguration reachable again.
+
+      **SR-17 gap, narrower than first written, and carried into the
+      remaining half.** SR-17 requires a secrets scan on *every* PR. The
+      `sec` stage is specified inside `ci.yml`, which is `paths: [app/**]`,
+      so a docs-only PR gets no *workflow* scan and `workshop.yml` adds
+      none.
+
+      Two corrections to how this was first recorded. First, the gap is
+      smaller than stated: **GitHub secret scanning and push protection are
+      enabled** on this repo (verified 2026-07-22 —
+      `gh api repos/t-bendet/portfolio-project -q '.security_and_analysis'`),
+      and being a repo setting rather than a workflow they cover every
+      push, including pushes that never open a PR at all — which is more
+      than SR-17's own wording asks for. What is missing is the
+      workflow-level scan on non-`app/**` PRs, not scanning as such.
+      Second, the reason originally given for not adding one — "a scanner
+      would be a third-party action, and `patterns_allowed` is `[]`" — is
+      **not the real constraint**. A `run:` step that fetches a pinned
+      `gitleaks` or `trufflehog` binary is not an action and is unaffected
+      by `allowed_actions`. The honest reason is that push protection
+      already covers the exposure and a second scanner has not earned its
+      runtime; if that judgement is wrong, the fix is available and cheap.
+
+      When the shim below is written it **must not report the `sec` stage
+      green on non-`app/**` PRs**; either the scan moves somewhere
+      unfiltered or the shim greens only the app-specific stages. Naming it
+      here so the shim does not quietly convert a coverage gap into a
+      passing check.
 
 - [ ] **Remaining half — add `ci.yml` as a second required context when the
       scaffold authors it** (with the skip-shim above). Owner: Tal.
