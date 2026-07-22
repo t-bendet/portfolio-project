@@ -84,6 +84,18 @@ gate system into theater.
       `contexts: ["checks"]` is now required on `main` with `strict: true`.
       `enforce_admins` stays `false` (solo-repo escape hatch, Tal's call).
 
+      Squash-only is now configuration rather than habit, closing the other
+      half of ADR 0026's "protected by convention" consequence:
+      `required_linear_history: true` on the branch (rejects a merge commit
+      at push time, including one made locally), plus repo-level
+      `allow_merge_commit: false` / `allow_rebase_merge: false` (removes the
+      buttons; rebase-merge would pass linear-history but still land N
+      commits instead of 0026's one). Existing history is untouched — the
+      check is on incoming commits, so the six mission merge commits stand.
+      `delete_branch_on_merge: true` automates ADR 0026's optional
+      work-item-branch cleanup; mission branches are unaffected because it
+      only fires on PR merge.
+
       **Latent deadlock in the procedure as written — do not repeat.** The
       step below says to require `ci.yml`, but `ci.yml` is scoped
       `paths: [app/**]`, so it never reports on a docs-only PR, and GitHub
