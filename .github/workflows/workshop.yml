@@ -26,12 +26,15 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      # Pinned to commit SHAs, not tags: a tag is a mutable ref, so `@v7`
+      # silently re-points if it is ever moved or the account is compromised.
+      # `sha_pinning_required` is on for this repo and rejects tag refs.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Pinned to the floor CLAUDE.md declares ("Node >= 24 runs these files
       # directly"), not to whatever the dev machine happens to run, so the
       # erasable-syntax constraint is tested where it is actually promised.
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '24'
 
