@@ -79,7 +79,32 @@ gate system into theater.
       status check on `main`'s branch protection** — that completes SR-18
       ("require ci.yml green before merge"). Protection created at Phase 2
       open requires PRs only, because a required check that doesn't exist
-      yet would block every merge. Owner: Tal, GitHub console or `gh api`.
+      yet would block every merge. Owner: Tal. Procedure:
+
+      1. After ci.yml's first run on a PR, get the exact check names
+         (GitHub matches on the job's reported name, not the workflow
+         filename): `gh pr checks <PR#>`
+      2. Re-PUT the full protection with those names (PATCHing the
+         status-checks sub-endpoint 404s while checks are null). Replace
+         `"ci"` below with the real name(s), one per job that must gate:
+
+         ```bash
+         gh api -X PUT repos/t-bendet/portfolio-project/branches/main/protection \
+           --input - <<'EOF'
+         {
+           "required_status_checks": { "strict": true, "contexts": ["ci"] },
+           "enforce_admins": false,
+           "required_pull_request_reviews": { "required_approving_review_count": 0 },
+           "restrictions": null,
+           "allow_force_pushes": false,
+           "allow_deletions": false
+         }
+         EOF
+         ```
+
+      3. Verify: `gh api repos/t-bendet/portfolio-project/branches/main/protection -q '.required_status_checks'`
+         (`strict: true` also forces branches to be up to date with main
+         before merging.)
 
 - [ ] Phase 2 work items carry the three-bullet friction note in the PR
       description (IMPROVEMENTS.md #4 — the mechanism that never happened).
