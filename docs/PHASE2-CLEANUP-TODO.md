@@ -96,6 +96,21 @@ gate system into theater.
       work-item-branch cleanup; mission branches are unaffected because it
       only fires on PR merge.
 
+      Actions supply-chain settings tightened at the same time, before any
+      workflow holds credentials: `sha_pinning_required: true` (tag refs
+      rejected — `workshop.yml` pins `actions/checkout` and
+      `actions/setup-node` to commit SHAs with the version in a trailing
+      comment), `allowed_actions: "selected"` with `github_owned_allowed:
+      true` / `verified_allowed: false` / `patterns_allowed: []`, and
+      Dependabot alerts + automated security fixes on.
+      `default_workflow_permissions` was already `read`.
+
+      **This gates the scaffold: `deploy.yml` cannot use any third-party
+      action until it is added to `patterns_allowed`.** The known one is
+      `aws-actions/configure-aws-credentials@*` for the OIDC role assumption
+      in ADR 0021. Add it — SHA-pinned — as part of §5, or the first deploy
+      run fails on a permissions error that reads nothing like its cause.
+
       **Latent deadlock in the procedure as written — do not repeat.** The
       step below says to require `ci.yml`, but `ci.yml` is scoped
       `paths: [app/**]`, so it never reports on a docs-only PR, and GitHub
