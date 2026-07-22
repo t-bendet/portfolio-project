@@ -75,6 +75,12 @@ gate system into theater.
 
 ## E. Process (from IMPROVEMENTS.md, still open)
 
+- [ ] **When `ci.yml` lands (first infra work item): add it as a required
+      status check on `main`'s branch protection** — that completes SR-18
+      ("require ci.yml green before merge"). Protection created at Phase 2
+      open requires PRs only, because a required check that doesn't exist
+      yet would block every merge. Owner: Tal, GitHub console or `gh api`.
+
 - [ ] Phase 2 work items carry the three-bullet friction note in the PR
       description (IMPROVEMENTS.md #4 — the mechanism that never happened).
       → First instance: this work item's PR.
