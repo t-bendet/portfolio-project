@@ -172,7 +172,9 @@ gate system into theater.
          filename): `gh pr checks <PR#>`
       2. Re-PUT the full protection with those names (PATCHing the
          status-checks sub-endpoint 404s while checks are null). Replace
-         `"ci"` below with the real name(s), one per job that must gate:
+         `"ci"` below with the real name(s), one per job that must gate.
+         **Every field the branch should keep is listed explicitly** — see
+         the note under step 3 for why that is not optional:
 
          ```bash
          gh api -X PUT repos/t-bendet/portfolio-project/branches/main/protection \
@@ -182,15 +184,43 @@ gate system into theater.
            "enforce_admins": false,
            "required_pull_request_reviews": { "required_approving_review_count": 0 },
            "restrictions": null,
+           "required_linear_history": true,
            "allow_force_pushes": false,
            "allow_deletions": false
          }
          EOF
          ```
 
-      3. Verify: `gh api repos/t-bendet/portfolio-project/branches/main/protection -q '.required_status_checks'`
-         (`strict: true` also forces branches to be up to date with main
-         before merging.)
+      3. Verify **the whole object, not just the field you changed** — the
+         old version of this step read `-q '.required_status_checks'`, which
+         projects out precisely the one field the procedure intends to
+         change, so it could not fail on the only thing worth checking:
+
+         ```bash
+         gh api repos/t-bendet/portfolio-project/branches/main/protection \
+           -q '{contexts: .required_status_checks.contexts,
+                strict:   .required_status_checks.strict,
+                linear:   .required_linear_history.enabled,
+                admins:   .enforce_admins.enabled,
+                reviews:  .required_pull_request_reviews.required_approving_review_count,
+                force:    .allow_force_pushes.enabled,
+                deletions: .allow_deletions.enabled}'
+         ```
+
+         Expect `strict: true` (also forces branches up to date with main
+         before merging), `linear: true`, `admins: false`, `force: false`,
+         `deletions: false`.
+
+         **Why the body lists fields it is not changing.** Measured on a
+         scratch branch 2026-07-22: PUT with `required_linear_history` and
+         `required_conversation_resolution` omitted left both `true` while
+         `contexts` changed, so omission currently *preserves* rather than
+         resets. But the API documents these as `Default: false`, so that
+         behaviour is unspecified, and unspecified behaviour is not a
+         contract. List them. The documented replace semantics do bite on
+         the array-shaped fields — `users`/`teams` under `restrictions` are
+         replaced wholesale — which is why `restrictions: null` is explicit
+         too.
 
 - [x] Phase 2 work items carry the three-bullet friction note in the PR
       description (IMPROVEMENTS.md #4 — the mechanism that never happened).
