@@ -25,6 +25,10 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-latest
+    # test-machinery.ts spawns hooks and feeds them stdin. A hung child would
+    # otherwise burn the six-hour default while blocking every PR, since this
+    # is the required context on `main`.
+    timeout-minutes: 10
     steps:
       # Pinned to commit SHAs, not tags: a tag is a mutable ref, so `@v7`
       # silently re-points if it is ever moved or the account is compromised.
@@ -38,14 +42,16 @@ jobs:
         with:
           node-version: '24'
 
+      # First, per ADR 0028 and HANDBOOK.md:312 — a repo whose enforcement is
+      # broken should not spend runner minutes on anything else.
+      - name: Hook machinery
+        run: node scripts/test-machinery.ts
+
       - name: ADR format and narrowing graph
         run: node scripts/validate-adr.ts
 
       - name: Skill and agent structure
         run: node scripts/validate-workshop.ts
-
-      - name: Hook machinery
-        run: node scripts/test-machinery.ts
 
       # INDEX.md is generated and never hand-edited (CLAUDE.md). Regenerating
       # it must be a no-op on a branch that is in order; any diff here means
