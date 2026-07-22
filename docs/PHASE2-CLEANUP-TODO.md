@@ -75,11 +75,27 @@ gate system into theater.
 
 ## E. Process (from IMPROVEMENTS.md, still open)
 
-- [ ] **When `ci.yml` lands (first infra work item): add it as a required
-      status check on `main`'s branch protection** — that completes SR-18
-      ("require ci.yml green before merge"). Protection created at Phase 2
-      open requires PRs only, because a required check that doesn't exist
-      yet would block every merge. Owner: Tal. Procedure:
+- [x] **SR-18 done for the workshop half (2026-07-22, PR #2).** The
+      procedure below assumed `ci.yml` had to come first, which read as
+      blocked on the whole scaffold. It wasn't:
+      `repo-topology-decision.md:72` already splits workshop checks into
+      their own workflow, and that one needs no `app/`, no dependencies and
+      no install step. `.github/workflows/workshop.yml` landed and
+      `contexts: ["checks"]` is now required on `main` with `strict: true`.
+      `enforce_admins` stays `false` (solo-repo escape hatch, Tal's call).
+
+      **Latent deadlock in the procedure as written — do not repeat.** The
+      step below says to require `ci.yml`, but `ci.yml` is scoped
+      `paths: [app/**]`, so it never reports on a docs-only PR, and GitHub
+      cannot tell "will never report" from "still running". Requiring it as
+      written would have hung every ADR PR indefinitely. When the scaffold
+      authors `ci.yml`, the skip-shim job that reports success on
+      non-`app/**` PRs must land **in the same commit** that adds it as a
+      required context.
+
+- [ ] **Remaining half — add `ci.yml` as a second required context when the
+      scaffold authors it** (with the skip-shim above). Owner: Tal.
+      Procedure, still accurate for the re-PUT mechanics:
 
       1. After ci.yml's first run on a PR, get the exact check names
          (GitHub matches on the job's reported name, not the workflow
@@ -92,7 +108,7 @@ gate system into theater.
          gh api -X PUT repos/t-bendet/portfolio-project/branches/main/protection \
            --input - <<'EOF'
          {
-           "required_status_checks": { "strict": true, "contexts": ["ci"] },
+           "required_status_checks": { "strict": true, "contexts": ["checks", "ci"] },
            "enforce_admins": false,
            "required_pull_request_reviews": { "required_approving_review_count": 0 },
            "restrictions": null,
@@ -106,9 +122,11 @@ gate system into theater.
          (`strict: true` also forces branches to be up to date with main
          before merging.)
 
-- [ ] Phase 2 work items carry the three-bullet friction note in the PR
+- [x] Phase 2 work items carry the three-bullet friction note in the PR
       description (IMPROVEMENTS.md #4 — the mechanism that never happened).
-      → First instance: this work item's PR.
+      → First instance in an actual PR description: #2 (2026-07-22). The
+      `infra/workshop-cleanup` squash-merge message carried the first one
+      before a remote existed.
 - [x] Start `docs/research/story-capture.md` on the first Phase 2 work item
       (IMPROVEMENTS.md #5) — started with this cleanup.
 - [x] After cleanup: `node scripts/test-machinery.ts &&
