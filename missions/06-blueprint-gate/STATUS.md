@@ -50,8 +50,10 @@ his disposition: defer, both documents stand, gate condition G-1 blocks the
 definition of Phase 2 open (ADR 0028): `.claude/skills/**` and
 `.claude/agents/**` unlock for sessions; this mission's outputs freeze;
 `app/` becomes legitimate. Machinery at close: test-machinery 34 passed /
-0 failed / 2 intentional phase-skips (the two skips become runnable once
-this closes).
+0 failed / 2 intentional skips — both skip because M5's open/in-progress
+states can no longer exist in the real repo; the same branches stay
+covered by fixture trees (hooks-plan §5.1). Re-run post-merge on main:
+same result.
 
 ## ADR statuses observed at mission start (2026-07-22)
 
