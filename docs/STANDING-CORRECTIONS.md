@@ -18,6 +18,7 @@ at a time.
 |----|----------|----------|-----------|
 | SC-1 | `missions/03-technology-architecture/outputs/repo-topology-decision.md` lines 20-23 | 2026-07-22 | ADR 0034 |
 | SC-2 | `missions/05-ai-dev-workflow/outputs/phase2-workflow.md` §2, infra track "Owns" column | 2026-07-22 | ADR 0034 |
+| SC-3 | `missions/05-ai-dev-workflow/outputs/phase2-workflow.md` §2 track table and §4.1 Gated examples | 2026-07-22 | ADR 0035 |
 
 ---
 
@@ -61,3 +62,38 @@ was wrong on the day it was written rather than made wrong by later work.
 **Why it matters enough to record:** §2 is the table an infra work item is
 told to read to find out what it governs, so an undercount there is an
 invitation to treat `workshop.yml` as out of scope.
+
+---
+
+## SC-3 — the workshop's own machinery is infra-track and always Gated
+
+**The output says:** §2 defines four tracks — `infra`, `api`, `web`,
+`content` — as "four long-lived areas", with `infra` owning Dockerfiles,
+compose files, the `Caddyfile`, the GitHub Actions workflows, and AWS
+provisioning. §4.1's Gated examples list auth, migrations, container and
+proxy config, the workflows, secrets/IAM/DNS, first-of-kind content, and the
+theme mechanism.
+
+**What is true instead:** both lists are incomplete in the same place. The
+workshop's own machinery — `scripts/**`, `.claude/skills/**`,
+`.claude/agents/**`, both settings files, and the workshop process documents
+— belongs to the `infra` track, and any change to the *enforcement layer*
+(`scripts/hooks/**`, `scripts/*.ts`, the settings files) is Gated. This
+compounds SC-2 on the same `infra` row.
+
+**Why:** §2 was written while Mission 5 was still open, when machinery
+changes were mission work rather than work items, so no track needed to own
+them. PR #5 improvised "OFF-TRACK + Gated" and its reviewer accepted both,
+which left the classification resting on a withdrawn branch. Full reasoning,
+including why this is `infra` rather than a fifth `workshop` track and why
+OFF-TRACK is rejected as a standing category, is in **ADR 0035**.
+
+**Read with it:** ADR 0035 decisions 1 and 2 also fix who may author such a
+change. A session writes the specification and the verification; Tal writes
+the code for anything under the enforcement layer. §2's ordering sentence
+(`infra` scaffolds first) is unaffected — it governs the four build tracks,
+and a machinery item sits outside that dependency chain.
+
+**Still true in the same output:** everything else in §2 and §4.1, including
+"one track at a time", the class-declared-before-work rule, and the
+first-of-each-kind rule.
