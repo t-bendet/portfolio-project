@@ -1,0 +1,53 @@
+name: workshop
+
+# The workshop's own checks, kept separate from the app pipeline
+# (repo-topology-decision.md: "workshop checks keep their own workflow").
+#
+# Deliberately NOT path-filtered. This is the required status check on `main`,
+# and GitHub blocks a PR forever when a required check never reports — which is
+# what a `paths:` filter causes on any PR that misses the filter. Running it on
+# every PR costs nothing: `scripts/` has no package.json and no install step.
+# `ci.yml` (paths: [app/**]) needs a skip-shim before it can also be required.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workshop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # Pinned to the floor CLAUDE.md declares ("Node >= 24 runs these files
+      # directly"), not to whatever the dev machine happens to run, so the
+      # erasable-syntax constraint is tested where it is actually promised.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: ADR format and narrowing graph
+        run: node scripts/validate-adr.ts
+
+      - name: Skill and agent structure
+        run: node scripts/validate-workshop.ts
+
+      - name: Hook machinery
+        run: node scripts/test-machinery.ts
+
+      # INDEX.md is generated and never hand-edited (CLAUDE.md). Regenerating
+      # it must be a no-op on a branch that is in order; any diff here means
+      # someone edited it by hand or forgot to regenerate after an ADR change.
+      - name: Decision index is not stale
+        run: |
+          node scripts/reindex-decisions.ts
+          git diff --exit-code docs/decisions/INDEX.md
