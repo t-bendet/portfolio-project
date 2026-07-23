@@ -1,0 +1,67 @@
+// Schema v1 — tables per specs/scaffold-plan.md §3 and the analytics key
+// contract in specs/content-model.md §2/§6.
+// Design rule: additive migrations; articles referenced by stable content
+// id (the namespaced key), so comments tables can arrive later without
+// reshaping anything.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// One row per view beacon. `key` is the namespaced analytics key
+// (`writing:<id>`, `translations:<id>`, `projects:<id>`, `page:home`) —
+// opaque to the API, never parsed, never a URL path.
+// Deliberately contains nothing that identifies a visitor: referrer host
+// (not full URL) and a coarse UA class only. No raw IP, ever (SR-4).
+model ViewEvent {
+  id           BigInt   @id @default(autoincrement())
+  key          String   @db.VarChar(200)
+  occurredAt   DateTime @default(now())
+  referrerHost String?  @db.VarChar(255)
+  uaClass      String?  @db.VarChar(32)
+
+  @@index([key])
+  @@index([occurredAt])
+  @@map("view_events")
+}
+
+// Aggregated reaction counters. `kind` validates against a fixed enum in
+// the application layer (SR-2); the vocabulary members are Tal's copy
+// decision, additive via migration — hence a string column, not a DB enum.
+model Reaction {
+  id    BigInt @id @default(autoincrement())
+  key   String @db.VarChar(200)
+  kind  String @db.VarChar(32)
+  count Int    @default(0)
+
+  @@unique([key, kind])
+  @@map("reactions")
+}
+
+// Server-side sessions — the auth model is session cookie + this table,
+// no JWT (specs/architecture.md §3). Absolute TTL; logout deletes the row.
+model Session {
+  id          String   @id // random token id, generated server-side
+  adminUserId Int
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// Single seeded row; credential re-seeded by migration (no reset flow).
+model AdminUser {
+  id           Int       @id @default(autoincrement())
+  username     String    @unique @db.VarChar(64)
+  passwordHash String    @db.VarChar(255) // argon2id
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+
+  @@map("admin_user")
+}

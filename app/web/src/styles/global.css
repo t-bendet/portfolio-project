@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+@import './tokens.css';
+
+html {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  scroll-behavior: smooth;
+}
+
+/* Theme swap — the one theatrical moment (600ms; instant under reduced motion). */
+html.theme-transition,
+html.theme-transition * {
+  transition:
+    background-color var(--motion-theme) ease,
+    color var(--motion-theme) ease,
+    border-color var(--motion-theme) ease,
+    fill var(--motion-theme) ease;
+}
+
+/* Code is notation, not prose — LTR unconditionally. */
+pre,
+code {
+  direction: ltr;
+  font-family: var(--font-mono);
+}
+
+/* Focus indication must never lag or fade in. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.theme-transition,
+  html.theme-transition * {
+    transition: none;
+  }
+}

@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="T://bendet" description="Personal site of Tal Bendet.">
+  {/* Static placeholder — the typing resolution ships per specs/design/hero-and-motion.md §1. */}
+  <h1 class="hero-mark">T<span class="scheme">://</span>bendet</h1>
+</Base>
+
+<style>
+  .hero-mark {
+    font-family: var(--font-mono);
+    font-size: var(--size-h1);
+    line-height: var(--leading-display);
+    letter-spacing: var(--track-display);
+    color: var(--text-strong);
+    direction: ltr; /* the mark is an LTR run regardless of page dir */
+  }
+  .scheme {
+    color: var(--accent-3);
+    text-shadow: 0 0 24px var(--glow);
+  }
+</style>

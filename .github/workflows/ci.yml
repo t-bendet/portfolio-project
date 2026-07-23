@@ -1,0 +1,77 @@
+# ci.yml — skeleton of the pipeline specs/ci-obligations.md defines.
+# Implemented so far: typecheck, api tests against Postgres with migrations,
+# web build, docker image builds (not pushed). Remaining obligations
+# (Playwright RTL stage, contrast gate, token parity, vocabulary greps,
+# perf/bundle/sec stages) land with the features they check.
+#
+# Repo settings require SHA-pinned actions and allow only github-owned
+# actions — pnpm comes via corepack, docker builds are plain `docker build`.
+name: ci
+
+on:
+  pull_request:
+    paths: ['app/**', '.github/workflows/ci.yml']
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/ci.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U ci"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+
+      - name: Enable pnpm via corepack
+        run: corepack enable && pnpm --version
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck api
+        run: pnpm --filter api typecheck
+
+      - name: Typecheck web
+        run: pnpm --filter web exec astro check
+
+      - name: Migrate (prisma migrate deploy against the service container)
+        run: pnpm --filter api exec prisma migrate deploy
+
+      - name: Test api
+        run: pnpm --filter api test
+
+      - name: Build web
+        run: pnpm --filter web build
+
+      - name: Build docker images (not pushed on PRs)
+        run: |
+          docker build -f deploy/api.Dockerfile -t api:ci .
+          docker build -f deploy/web.Dockerfile -t web:ci .
+
+      - name: Validate Caddyfile
+        run: docker run --rm -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.11.4 caddy validate --config /etc/caddy/Caddyfile
