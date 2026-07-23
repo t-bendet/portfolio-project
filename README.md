@@ -1,36 +1,21 @@
 # T://bendet
 
-Personal portfolio of Tal Bendet — currently in the **blueprint phase**.
+Personal portfolio of Tal Bendet.
 
-This repository is (for now) a decision workshop: an AI-assisted, mission-driven
-process that produces a complete, reviewed blueprint before any application
-code is written. The workshop machinery itself — ADR system, mission gates,
-hooks, agents — is part of the portfolio's story.
+Static Astro site + a hand-built Node/TS API + containerized Postgres,
+deployed to AWS via a from-scratch GitHub Actions pipeline. English and
+Hebrew (RTL) content.
 
 ## Layout
 
 | Path | What it is |
 |------|-----------|
-| `CLAUDE.md` | Project constitution for AI agents |
-| `missions/` | Mission plan + per-mission workspaces (STATUS + outputs) |
-| `docs/decisions/` | ADRs — the single source of truth for what's decided |
-| `.claude/` | Agents, skills (incl. `/m1`–`/m6` missions), settings |
-| `scripts/` | TypeScript validators and hooks (Node ≥ 24, zero deps) |
-| `assets/reference/` | Read-only source material |
-| `app/` | Doesn't exist yet — created in Phase 2, per Mission 3's ADRs |
+| `specs/` | The blueprint — design system, routes, content model, architecture, budgets (`specs/README.md` is the map) |
+| `app/` | The application: `web/` (Astro), `api/` (Node/TS + Prisma), `deploy/` (Docker/Caddy/compose) |
+| `docs/research/` | Source material (bio, notes) |
+| `assets/reference/` | Design prototypes and reference imagery |
+| `CLAUDE.md` | Invariants for AI agent sessions |
 
-## Documentation
-
-Full explanation of how everything works — phases, ADR lifecycle, mission
-anatomy, enforcement hooks, operating manual — lives in
-[`docs/HANDBOOK.md`](docs/HANDBOOK.md), with standalone diagram files in
-[`docs/diagrams/`](docs/diagrams/).
-
-## Status
-
-Phase 0 (bootstrap): ADRs decomposed, awaiting status sign-off.
-See `missions/00-mission-plan.md`.
-
-## Requirements
-
-Node ≥ 24 (scripts run via native type-stripping — no build step, no deps).
+The blueprint was produced by an AI-assisted decision workshop (missions,
+ADRs, adversarial reviews, enforcement hooks) that ran from 2026-07-20 to
+2026-07-23; that machinery is preserved in git history before 2026-07-23.
