@@ -102,7 +102,7 @@ Illustrative TypeScript, normative in content. Phase 2 writes the real file;
 these field sets, requirednesses, and defaults are binding.
 
 ```ts
-// app/web/src/content.config.ts
+// web/src/content.config.ts
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';

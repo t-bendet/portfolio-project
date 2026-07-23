@@ -1,5 +1,5 @@
 # Multi-stage: pnpm build of web/ -> dist/ into a pinned Caddy image.
-# Build context is app/ (docker build -f deploy/web.Dockerfile .)
+# Build context is the repo root (docker build -f deploy/web.Dockerfile .)
 FROM node:24-slim AS build
 RUN corepack enable
 WORKDIR /app

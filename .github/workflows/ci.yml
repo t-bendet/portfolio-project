@@ -10,10 +10,22 @@ name: ci
 
 on:
   pull_request:
-    paths: ['app/**', '.github/workflows/ci.yml']
+    paths:
+      - 'web/**'
+      - 'api/**'
+      - 'deploy/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/ci.yml'
   push:
     branches: [main]
-    paths: ['app/**', '.github/workflows/ci.yml']
+    paths:
+      - 'web/**'
+      - 'api/**'
+      - 'deploy/**'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/ci.yml'
 
 permissions:
   contents: read
@@ -22,9 +34,6 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    defaults:
-      run:
-        working-directory: app
     services:
       postgres:
         image: postgres:18.4-alpine
