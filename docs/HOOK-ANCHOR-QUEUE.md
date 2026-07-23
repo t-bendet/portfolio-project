@@ -30,7 +30,7 @@ Q5 needs Q2 and Q3. Q6 is last.
 | #   | Item                                                                        | Who authors                  | Session may write          |
 | --- | --------------------------------------------------------------------------- | ---------------------------- | -------------------------- |
 | Q1  | Record the O1 ruling + the missing track/class for workshop-machinery items | session drafts, Tal approves | ADR + STANDING-CORRECTIONS |
-| Q2  | Decide whether this hook guards user-level `~/.claude/settings*.json` (O5)  | Tal rules                    | ADR                        |
+| Q2  | ✅ RULED (i), ADR 0036 — guards user-level `~/.claude/settings*.json` (O5)   | Tal rules                    | ADR                        |
 | Q3  | The hook fix itself (O2, O3, O4, O5)                                        | **Tal**                      | nothing in `scripts/`      |
 | Q4  | Absolute-path assertions in `test-machinery.ts` (O6)                        | **Tal**                      | nothing in `scripts/`      |
 | Q5  | HANDBOOK propagation sentence (O7)                                          | session                      | `docs/HANDBOOK.md`         |
@@ -39,6 +39,11 @@ Q5 needs Q2 and Q3. Q6 is last.
 ---
 
 ## Q1 — Record the O1 ruling and the workshop-machinery track/class gap
+
+**NOT YET RUN.** Next free ADR id is **0037** (0036 is Q2's ruling). Q1 writes
+its own ADR — do not fold Q2 into it. The `reindex`/`decision-guard` hooks assign
+the number from the highest on disk, so 0037 is correct as long as no other ADR
+lands first.
 
 ```
 Read CLAUDE.md first, then `gh pr view 5 --comments` in this repo
@@ -88,6 +93,11 @@ somewhere other than an ADR.
 ---
 
 ## Q2 — Decide: does this hook guard user-level `~/.claude/settings*.json`? (O5)
+
+**RULED (2026-07-23): option (i) — keep guarding, root-independent, before any
+repo-scope check. Recorded as [ADR 0036](decisions/0036-workshop-hook-guards-user-level-settings.md)
+(standalone, PR #9). This is property 5 and a required input to Q3.** Q2 no
+longer folds into Q1's ADR — 0036 is its own record.
 
 ```
 Read CLAUDE.md, then `gh pr view 5 --comments` (objection O5 in the first
