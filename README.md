@@ -12,8 +12,6 @@ Hebrew (RTL) content.
 |------|-----------|
 | `specs/` | The blueprint — design system, routes, content model, architecture, budgets (`specs/README.md` is the map) |
 | `app/` | The application: `web/` (Astro), `api/` (Node/TS + Prisma), `deploy/` (Docker/Caddy/compose) |
-| `docs/research/` | Source material (bio, notes) |
-| `assets/reference/` | Design prototypes and reference imagery |
 | `CLAUDE.md` | Invariants for AI agent sessions |
 
 The blueprint was produced by an AI-assisted decision workshop (missions,

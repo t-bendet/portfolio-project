@@ -38,6 +38,7 @@ never resurrect its process.
 - Pin dependency versions from fresh lookups, never from memory.
 - Never commit secrets; `.env` on-instance and GitHub environment secrets
   only.
-- `assets/reference/` is source material — read, don't edit.
+- `specs/design/prototypes/` holds Tal's design prototypes — the normative
+  source of every design value. Read, don't edit.
 - Waiting on Tal before cloud provisioning: domain choice + region pricing
   check (`specs/scaffold-plan.md` §6).

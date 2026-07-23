@@ -514,7 +514,7 @@ when any single tag has five or more entries.
 
 ### `/resume` or `/cv` — **rejected as a route**
 
-The CV exists (`docs/research/Tal_Bendet_CV.pdf`) and Tal is available for
+The CV exists (`specs/research/Tal_Bendet_CV.pdf`, local-only) and Tal is available for
 work, so hiding it would be dishonest. But a route for a PDF is a redirect
 with extra steps, and a full HTML resume page competes with `/about` for the
 same job while making the site read as a job-board asset — which the stated
