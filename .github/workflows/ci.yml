@@ -30,6 +30,12 @@ on:
 permissions:
   contents: read
 
+# One run per ref; superseded pushes are cancelled (runner minutes are the
+# same budget line as the instance).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -51,6 +57,10 @@ jobs:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # Later steps run PR-authored code (install scripts, tests, the
+          # Dockerfiles under deploy/). Don't leave the token in .git/config.
+          persist-credentials: false
 
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
