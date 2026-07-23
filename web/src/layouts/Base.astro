@@ -1,14 +1,18 @@
 ---
 import '../styles/global.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 
 interface Props {
   title: string;
   description: string;
-  /** Eyebrow section label — renders as `T://bendet · section` */
-  section?: string;
+  /** Eyebrow section segment — renders as `T://bendet · section` */
+  section: string;
+  /** Language of the section segment (navigation.md §3.2) */
+  sectionLang?: 'en' | 'he';
 }
 
-const { title, description, section } = Astro.props;
+const { title, description, section, sectionLang = 'en' } = Astro.props;
 
 // One source of truth for direction: the locale (specs/content-model.md §5).
 // dir is derived here and set on <html> alongside lang — one place, both
@@ -24,6 +28,7 @@ const dir = locale === 'he' ? 'rtl' : 'ltr';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <script is:inline>
       // Persisted theme must apply before first paint (specs/design/tokens.md §2).
       if (localStorage.getItem('theme') === 'warm') {
@@ -32,27 +37,11 @@ const dir = locale === 'he' ? 'rtl' : 'ltr';
     </script>
   </head>
   <body>
-    <header>
-      {
-        section && (
-          <p class="eyebrow">
-            <bdi>T://bendet</bdi> · {section}
-          </p>
-        )
-      }
-    </header>
-    <main id="content">
+    <a class="skip-link" href="#content">skip to content</a>
+    <SiteHeader section={section} sectionLang={sectionLang} />
+    <main id="content" class="shell">
       <slot />
     </main>
+    <SiteFooter />
   </body>
 </html>
-
-<style>
-  .eyebrow {
-    font-family: var(--font-mono);
-    font-size: var(--size-eyebrow);
-    letter-spacing: var(--track-eyebrow);
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-</style>

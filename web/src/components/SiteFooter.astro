@@ -1,0 +1,90 @@
+---
+// Global footer — feed · colophon · direct links · the Hebrew link.
+// specs/navigation.md §4. Content-independent (N-1), and identical on all
+// twelve routes including both 404s (§7.3).
+
+const locale = Astro.currentLocale ?? 'en';
+const path = Astro.url.pathname;
+
+// One feed per page: the one matching the current locale (§4.1).
+const feed = locale === 'he' ? '/he/rss.xml' : '/rss.xml';
+
+// TODO(Tal): which address to publish is yours to decide — the specs record
+// none, so this is a marked placeholder and must not ship as-is.
+const email = 'mailto:tal@t-bendet.invalid';
+const github = 'https://github.com/t-bendet';
+const linkedin = 'https://www.linkedin.com/in/tal-bendet';
+
+// /colophon/ has no owning nav item, so its footer link is the primary — and
+// therefore the marked — occurrence (§2.3). The Hebrew link below never is.
+const colophonCurrent = path === '/colophon/' ? 'page' : undefined;
+---
+
+<footer class="site-footer">
+  <div class="shell footer-row">
+    <ul class="links">
+      <li><a href={feed}>rss</a></li>
+      <li><a href="/colophon/" aria-current={colophonCurrent}>colophon</a></li>
+    </ul>
+
+    <ul class="links">
+      <li><a href={email}>email</a></li>
+      <li><a href={github} rel="noopener">github</a></li>
+      <li><a href={linkedin} rel="noopener">linkedin</a></li>
+    </ul>
+
+    <ul class="links">
+      <li>
+        <a href="/he/writing/" lang={locale === 'he' ? undefined : 'he'}>תרגומים</a>
+      </li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-block-start: 1px solid var(--border);
+    margin-block-start: 96px;
+  }
+
+  .footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 40px;
+    padding-block: 32px 48px;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .links a {
+    font-family: var(--font-mono);
+    font-size: var(--size-meta);
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--motion-hover) ease;
+  }
+
+  .links a:hover {
+    color: var(--text);
+  }
+
+  /* Not carried by color alone. */
+  .links a[aria-current] {
+    color: var(--text-strong);
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .links a {
+      transition: none;
+    }
+  }
+</style>

@@ -17,7 +17,9 @@ export default defineConfig({
   },
   // sitemap: deliberately NO i18n option — no hreflang alternates
   // (the English counterparts of /he/ articles are not on this site).
-  integrations: [mdx(), sitemap()],
+  // The integration drops /404 on its own; /he/404 is a page like any other
+  // to it, and an error page does not belong in the sitemap.
+  integrations: [mdx(), sitemap({ filter: (page) => !page.endsWith('/he/404/') })],
   vite: {
     plugins: [tailwindcss()],
   },
