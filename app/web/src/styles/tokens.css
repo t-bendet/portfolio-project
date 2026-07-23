@@ -1,0 +1,156 @@
+/*
+ * Token registry — transcribed from specs/design/tokens.md (values normative
+ * in specs/design/palette.md and specs/design/typography.md).
+ *
+ * Parity invariant: every color/type token present in one theme block is
+ * present in the other (value or alias) — CI diffs the key sets.
+ * Structure tokens (radius) are theme-invariant and appear only on :root.
+ */
+
+:root {
+  /* structure — dark (default) */
+  --bg: #0d0d0f;
+  --surface: #141417;
+  --surface-2: #18181d;
+  --surface-inset: #111114;
+  --chip-bg: #1e1e24;
+  --border: #222228;
+  --border-strong: #444444;
+
+  /* text */
+  --text-strong: #ffffff;
+  --text: #e8e8ec;
+  --muted: #85858f;
+  --subtle: var(--muted);
+
+  /* accents */
+  --accent-1: #ff6b35;
+  --accent-2: #8676f8;
+  --accent-3: #2fc98e;
+  --accent-4: #f5c542;
+  --accent-5: #e06fe8;
+  --accent-6: #3fc9d4;
+  --badge-1: #301e1b;
+  --badge-2: #222032;
+  --badge-3: #172a25;
+  --badge-4: #2f291c;
+  --badge-5: #2c1f30;
+  --badge-6: #192a2e;
+  --focus: var(--accent-2);
+  --glow: color-mix(in srgb, var(--accent-3) 35%, transparent);
+
+  /* code panels */
+  --code-bg: #0d0d0f;
+  --code-text: #c8c8d4;
+  --code-comment: #7a7a7a;
+  --code-kw: var(--accent-2);
+  --code-str: var(--accent-3);
+  --code-ty: #87b3d4;
+  --code-prop: #c99fd0;
+  --code-num: #e08060;
+
+  /* type */
+  --font-display: 'Syne', 'Heebo', sans-serif;
+  --font-body: 'Syne', 'Heebo', sans-serif;
+  --font-mono: 'DM Mono', 'Heebo', monospace;
+  --size-micro: 9px;
+  --size-label: 10px;
+  --size-eyebrow: 11px;
+  --size-code: 12.5px;
+  --size-meta: 13px;
+  --size-body: 15.5px;
+  --size-lede: 17px;
+  --size-h4: 12px;
+  --size-h3: 1.2rem;
+  --size-h2: 1.9rem;
+  --size-h1: clamp(2rem, 5vw, 3.4rem);
+  --leading-display: 1.05;
+  --leading-tight: 1.5;
+  --leading-body: 1.6;
+  --leading-code: 1.7;
+  --track-display: -0.03em;
+  --track-eyebrow: 0.2em;
+  --track-label: 0.1em;
+
+  /* motion */
+  --motion-fast: 150ms;
+  --motion-hover: 200ms;
+  --motion-theme: 600ms;
+
+  /* structure — theme-invariant, never re-declared in a theme block */
+  --radius-s: 4px;
+  --radius-m: 8px;
+  --radius-l: 16px;
+  --radius-pill: 100px;
+}
+
+[data-theme='warm'] {
+  /* structure */
+  --bg: #f5f2eb;
+  --surface: #fffdf8;
+  --surface-2: #f0ede4;
+  --surface-inset: #f0ede4;
+  --chip-bg: #f0ede4;
+  --border: #ddd8cc;
+  --border-strong: #b8b0a0;
+
+  /* text */
+  --text-strong: #2c2820;
+  --text: #1a1814;
+  --muted: #746a5b;
+  --subtle: #706b61;
+
+  /* accents */
+  --accent-1: #c0392b;
+  --accent-2: #1a5276;
+  --accent-3: #1e6641;
+  --accent-4: #7d4e00;
+  --accent-5: #4a235a;
+  --accent-6: #0e4d6b;
+  --badge-1: #fdecea;
+  --badge-2: #e8f0f8;
+  --badge-3: #e8f5ee;
+  --badge-4: #fef9e7;
+  --badge-5: #f5eef8;
+  --badge-6: #e8f4f8;
+  --focus: var(--accent-2);
+  --glow: transparent;
+
+  /* code panels */
+  --code-bg: #2c2820;
+  --code-text: #e8e4d8;
+  --code-comment: #938e85;
+  --code-kw: #d4a857;
+  --code-str: #7ec87e;
+  --code-ty: #87b3d4;
+  --code-prop: #c99fd0;
+  --code-num: #e08060;
+
+  /* type */
+  --font-display: 'Fraunces', 'Frank Ruhl Libre', serif;
+  --font-body: 'Fraunces', 'Frank Ruhl Libre', serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Sans Hebrew', monospace;
+  --size-micro: 9px;
+  --size-label: 10px;
+  --size-eyebrow: 11px;
+  --size-code: 12.5px;
+  --size-meta: 13px;
+  --size-body: 15.5px;
+  --size-lede: 17px;
+  --size-h4: 12px;
+  --size-h3: 1.2rem;
+  --size-h2: 1.9rem;
+  --size-h1: clamp(2.4rem, 5vw, 3.8rem);
+  --leading-display: 1.05;
+  --leading-tight: 1.5;
+  --leading-body: 1.75;
+  --leading-code: 1.8;
+  --track-display: -0.02em;
+  --track-eyebrow: 0.2em;
+  --track-label: 0.1em;
+
+  /* motion */
+  --motion-fast: 150ms;
+  --motion-hover: 200ms;
+  --motion-theme: 600ms;
+}

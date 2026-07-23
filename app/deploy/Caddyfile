@@ -1,0 +1,43 @@
+# TODO(Tal): replace with the real domain when chosen (specs/scaffold-plan.md §6).
+# Automatic HTTPS activates once a real domain is set.
+{$SITE_ADDRESS::80}
+
+root * /srv
+encode gzip zstd
+
+# Security headers on all static responses (SR-10).
+header {
+	Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	X-Content-Type-Options "nosniff"
+	Referrer-Policy "strict-origin-when-cross-origin"
+	# CSP with hash-based script-src for the inline theme script is finalized
+	# at the Gated Caddyfile review — hashes are stable per deploy.
+	X-Frame-Options "DENY"
+	-Server
+}
+
+# Default-deny toward the api container: exactly these prefixes proxy (SR-9).
+handle /api/* {
+	reverse_proxy api:3000
+}
+handle /admin/* {
+	reverse_proxy api:3000
+}
+
+handle {
+	file_server
+}
+
+# Real 404 statuses for both error pages; /he/* gets the Hebrew page
+# (specs/scaffold-plan.md §0 — validated with `caddy validate`).
+handle_errors {
+	@he_404 expression `{http.request.uri.path}.startsWith("/he/") && {err.status_code} == 404`
+	handle @he_404 {
+		rewrite * /he/404.html
+		file_server
+	}
+	handle {
+		rewrite * /{err.status_code}.html
+		file_server
+	}
+}

@@ -1,0 +1,58 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Eyebrow section label — renders as `T://bendet · section` */
+  section?: string;
+}
+
+const { title, description, section } = Astro.props;
+
+// One source of truth for direction: the locale (specs/content-model.md §5).
+// dir is derived here and set on <html> alongside lang — one place, both
+// attributes, never separately.
+const locale = Astro.currentLocale ?? 'en';
+const dir = locale === 'he' ? 'rtl' : 'ltr';
+---
+
+<!doctype html>
+<html lang={locale} dir={dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <script is:inline>
+      // Persisted theme must apply before first paint (specs/design/tokens.md §2).
+      if (localStorage.getItem('theme') === 'warm') {
+        document.documentElement.dataset.theme = 'warm';
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      {
+        section && (
+          <p class="eyebrow">
+            <bdi>T://bendet</bdi> · {section}
+          </p>
+        )
+      }
+    </header>
+    <main id="content">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style>
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    letter-spacing: var(--track-eyebrow);
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+</style>

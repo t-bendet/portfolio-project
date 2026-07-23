@@ -15,11 +15,11 @@ fresh lookups at install time if this document is more than a few days old.
 | `@astrojs/mdx` | 7.0.3 | peer `astro:^7.0.0` — compatible |
 | `@tailwindcss/vite` | 4.3.3 | peer includes vite ^8; Astro 7 bundles Vite 8 — compatible |
 | `@astrojs/sitemap` | 3.7.3 | **UNCONFIRMED against Astro 7** — add it, run `astro build`, confirm `sitemap-index.xml` emits; if broken, look for a newer release before working around |
-| `prisma` | 7.9.0 | `prisma migrate deploy` remains the CI/prod command; no shadow DB in deploy; advisory lock has a fixed 10s timeout (escape hatch: `PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK`) |
+| `prisma` | 7.9.0 | `prisma migrate deploy` remains the CI/prod command; no shadow DB in deploy; advisory lock has a fixed 10s timeout (escape hatch: `PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK`). **Prisma 7 change (hit 2026-07-23):** `datasource.url` no longer lives in `schema.prisma` — it moves to `prisma.config.ts` (`defineConfig({ datasource: { url: env('DATABASE_URL') } })`), and even `prisma generate` requires `DATABASE_URL` to be set (placeholder is fine at image build) |
 | `express` | 5.2.1 | satisfies the Express-5-class decision |
 | `@playwright/test` | 1.61.1 | |
 | `caddy` | 2.11.4 | |
-| `postgres` image | `18.4-alpine` | use the explicit tag, not bare `postgres:18` |
+| `postgres` image | `18.4-alpine` | use the explicit tag, not bare `postgres:18`. **Gotcha (hit 2026-07-23):** 18+ images store data under `/var/lib/postgresql`, not `/var/lib/postgresql/data` — mount the named volume there or the container refuses to start |
 
 Other verified facts:
 - **arm64 builds run on native GitHub runners** (`runs-on: ubuntu-24.04-arm`,
@@ -40,8 +40,10 @@ Other verified facts:
   }
   ```
 - **Caddy path-scoped `handle_errors` works** for the `/he/*` 404 page with
-  a real 404 status (snippet in §4). Not compile-tested — `caddy validate`
-  before trusting, and assert the *status* in CI, not just the body.
+  a real 404 status (snippet in §4 — `caddy validate`d against 2.11.4 on
+  2026-07-23; the originally researched snippet had the CEL quoting wrong:
+  the whole expression must be backtick-wrapped with inner strings
+  double-quoted). Assert the *status* in CI, not just the body.
 
 ## 1. Directory layout
 
@@ -122,7 +124,7 @@ pnpm add prisma @prisma/client && pnpm prisma init
    headers. Error pages with real statuses, Hebrew 404 path-scoped:
    ```caddyfile
    handle_errors {
-       @he_404 expression {http.request.uri.path}.startsWith(`/he/`) && {err.status_code} == 404
+       @he_404 expression `{http.request.uri.path}.startsWith("/he/") && {err.status_code} == 404`
        handle @he_404 {
            rewrite * /he/404.html
            file_server

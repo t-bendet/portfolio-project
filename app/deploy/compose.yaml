@@ -1,0 +1,63 @@
+# Production topology: three services, internal network, TLS at Caddy.
+# Secrets come from the instance-local .env (never committed).
+# Images are pulled from ECR by deploy.yml; tags are the git SHA
+# (rollback = compose up with the previous SHA).
+services:
+  web:
+    image: ${ECR_REGISTRY}/web:${IMAGE_TAG}
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - internal
+
+  api:
+    image: ${ECR_REGISTRY}/api:${IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - internal
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  db:
+    image: postgres:18.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      # postgres:18+ images store data under /var/lib/postgresql (not .../data)
+      - pgdata:/var/lib/postgresql
+    networks:
+      - internal
+    # No host port mapping — reachable only on the internal network (SR-11).
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  internal:
+
+volumes:
+  pgdata:
+  caddy-data:
+  caddy-config:
