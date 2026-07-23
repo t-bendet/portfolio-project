@@ -1,0 +1,41 @@
+---
+// In-page contents: the article's own h2s as anchors.
+// specs/pages/writing-article.md §2.2.
+//
+// Rendered in the sticky column on wide viewports and inline above the body
+// below the breakpoint (article.css) — one component, one source position,
+// no disclosure widget. The column binds to the inline start, so it lands on
+// the right under dir="rtl".
+
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  /** Already filtered to depth 2 and known to be >= 3 by the caller */
+  headings: MarkdownHeading[];
+  lang: 'en' | 'he';
+}
+
+const { headings, lang } = Astro.props;
+
+const title = lang === 'he' ? 'תוכן העניינים' : 'contents';
+---
+
+<nav class="contents" aria-labelledby="contents-title">
+  {/* Hebrew is unicameral: no text-transform, letter-spacing normal
+      (specs/design/typography.md §6). */}
+  <p
+    class:list={['contents-title', { 'contents-title-he': lang === 'he' }]}
+    id="contents-title"
+  >
+    {title}
+  </p>
+  <ol class="contents-items">
+    {
+      headings.map((heading) => (
+        <li>
+          <a href={`#${heading.slug}`}>{heading.text}</a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>

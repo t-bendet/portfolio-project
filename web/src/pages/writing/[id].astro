@@ -1,0 +1,88 @@
+---
+// Article (/writing/[id]/) — specs/pages/writing-article.md.
+// Deep-dive editorial archetype. One job: let someone read the article. The
+// whole piece renders as static HTML — the R1 anchor (near-zero JS to read)
+// and the R4 anchor (content survives dynamic-layer failure) meeting here.
+//
+// The dynamic layer (view event, count, reactions) is NOT in this template:
+// static HTML contains no placeholder for it, no empty container, no
+// aria-live region announcing nothing (§4).
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ArticleMeta from '../../components/ArticleMeta.astro';
+import Contents from '../../components/Contents.astro';
+import '../../styles/article.css';
+
+export async function getStaticPaths() {
+  // Drafts generate no route in production (specs/content-model.md §3.1);
+  // they remain reachable in `astro dev`.
+  const entries = await getCollection('writing', ({ data }) => !data.draft);
+
+  return entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry, entries },
+  }));
+}
+
+const { entry, entries } = Astro.props;
+const { Content, headings } = await render(entry);
+
+// A table of contents over two headings is noise (§2.2).
+const sections = headings.filter((heading) => heading.depth === 2);
+const hasContents = sections.length >= 3;
+
+// "More writing", not "related": a similarity list computed from shared tags
+// is a taxonomy pretending to be relevance (§2.3).
+const others = entries
+  .filter((other) => other.id !== entry.id)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+// Threshold from §2 (siblings only when >=2 others exist); showing the two
+// most recent keeps the end matter end matter rather than a second index.
+const siblings = others.length >= 2 ? others.slice(0, 2) : [];
+---
+
+<Base
+  title={`${entry.data.title} · T://bendet`}
+  description={entry.data.description}
+  section="writing"
+>
+  <div class:list={['article-grid', { 'with-contents': hasContents }]}>
+    <header class="article-header">
+      <h1>{entry.data.title}</h1>
+      <p class="lede">{entry.data.description}</p>
+      <ArticleMeta
+        pubDate={entry.data.pubDate}
+        updatedDate={entry.data.updatedDate}
+        tags={entry.data.tags}
+        lang="en"
+      />
+    </header>
+
+    {/* Source order: after the header, before the body — where a linear
+        reader meets a contents list (§2.2). */}
+    {hasContents && <Contents headings={sections} lang="en" />}
+
+    <article class="article-body">
+      <Content />
+    </article>
+
+    <footer class="end-matter">
+      <a class="end-matter-link" href="/writing/">writing</a>
+
+      {
+        siblings.length > 0 && (
+          <section class="siblings">
+            <h2 class="siblings-title">more writing</h2>
+            <ul class="siblings-items">
+              {siblings.map((sibling) => (
+                <li>
+                  <a href={`/writing/${sibling.id}/`}>{sibling.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </footer>
+  </div>
+</Base>

@@ -1,0 +1,22 @@
+---
+// Translator's note — editorial apparatus, allowed only inside `translations`
+// (specs/content-model.md §4.4). The boundary is enforced by import: this
+// component lives in components/translations/ and is imported by translation
+// MDX entries, never by `writing` ones.
+//
+// The label is the point. A reader must never be unsure whose sentence they
+// are reading — which is why this is labelled while easter eggs are not: a
+// note is a different voice on the same page, not a reference to explain.
+
+interface Props {
+  /** Override only if the standing label is wrong for a particular note */
+  label?: string;
+}
+
+const { label = 'הערת המתרגם' } = Astro.props;
+---
+
+<aside class="translator-note">
+  <strong class="translator-note-label">{label}</strong>
+  <slot />
+</aside>

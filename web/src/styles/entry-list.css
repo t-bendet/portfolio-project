@@ -1,0 +1,169 @@
+/*
+ * The overview archetype's index idiom, shared by /writing/ and /he/writing/.
+ * One stylesheet so the two indexes cannot drift — a Hebrew index that looked
+ * second-class would break specs/pages/translations-index.md §5.
+ *
+ * Logical properties only; under dir="rtl" every edge lands on the reading
+ * start without a special case.
+ */
+
+.page-header {
+  padding-block-end: 32px;
+  border-block-end: 1px solid var(--border);
+}
+
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: var(--size-h1);
+  font-weight: 700;
+  line-height: var(--leading-display);
+  letter-spacing: var(--track-display);
+  color: var(--text-strong);
+}
+
+/* Permanent content, not empty-state copy: it renders identically whether
+   there are zero entries or fifty (specs/pages/writing-index.md §2). */
+.standing {
+  margin-block-start: 20px;
+  font-size: var(--size-lede);
+  line-height: var(--leading-tight);
+  color: var(--text);
+  max-inline-size: 56ch;
+}
+
+/* The seam, shown rather than hidden (specs/routes/sitemap.md §3). */
+.cross-link {
+  margin-block-start: 20px;
+  font-size: var(--size-meta);
+  color: var(--muted);
+}
+
+.entries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  margin-block-start: 40px;
+}
+
+.entry {
+  padding-block: 24px;
+  border-block-end: 1px solid var(--border);
+}
+
+.entry-title {
+  display: inline-block;
+  font-size: var(--size-lede);
+  font-weight: 700;
+  color: var(--text-strong);
+  text-decoration: none;
+}
+
+.entry-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.entry-desc {
+  margin-block-start: 8px;
+  font-size: var(--size-meta);
+  line-height: var(--leading-tight);
+  color: var(--muted);
+  max-inline-size: 64ch;
+}
+
+.entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-block-start: 12px;
+  font-family: var(--font-mono);
+  font-size: var(--size-eyebrow);
+  color: var(--muted);
+}
+
+/* Tags are chips, not links: a chip that looks interactive and is not would
+   be worse than a chip that does not (specs/pages/writing-index.md §2). */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  color: var(--muted);
+  background-color: var(--chip-bg);
+  padding: 3px 8px;
+  border-radius: var(--radius-s);
+}
+
+/* ── the empty state ───────────────────────────────────────────────────── */
+
+/* The section's terms, in the callout idiom the archetypes already own
+   (specs/design/palette.md §7.3). Not an apology, and not about emptiness. */
+.terms {
+  margin-block-start: 40px;
+  padding: 20px 24px;
+  background-color: var(--surface-inset);
+  border-inline-start: 3px solid var(--accent-2);
+  border-radius: var(--radius-s);
+  font-size: var(--size-meta);
+  line-height: var(--leading-body);
+  color: var(--muted);
+  max-inline-size: 64ch;
+}
+
+.terms > * + * {
+  margin-block-start: 12px;
+}
+
+[data-theme='warm'] .terms {
+  background-color: var(--badge-2);
+}
+
+/* Until the copy lands, there is nothing to frame — and a decorated empty box
+   would be an element whose only purpose is to be filled later, which is the
+   shape this site refuses everywhere else. Remove these rules when the
+   TODO(Tal) blocks in the two index pages are written. */
+.standing:empty,
+.terms:empty {
+  display: none;
+}
+
+/* What there is to read right now — computed at build time from what
+   actually exists. A list of what is, not of what is missing. */
+.routes-out {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  margin-block-start: 32px;
+}
+
+.routes-out a {
+  font-family: var(--font-mono);
+  font-size: var(--size-meta);
+  color: var(--text);
+  text-decoration: none;
+  border-inline-start: 2px solid var(--border-strong);
+  padding-inline-start: 12px;
+  transition: color var(--motion-hover) ease;
+}
+
+.routes-out a:hover {
+  color: var(--text-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .routes-out a {
+    transition: none;
+  }
+}

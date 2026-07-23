@@ -1,0 +1,129 @@
+---
+// Translated article (/he/writing/[id]/) — specs/pages/translations-article.md.
+// Deep-dive editorial archetype under dir="rtl", set once on <html> from the
+// locale by the layout. This template sets no `dir` anywhere; the only
+// element that overrides direction is a code panel, and that rule lives in
+// global.css because it is a property of code, not of this page.
+//
+// Self-canonical: no rel="canonical" to the original, no hreflang alternates
+// (specs/content-model.md §4.2).
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import ArticleMeta from '../../../components/ArticleMeta.astro';
+import Contents from '../../../components/Contents.astro';
+import '../../../styles/article.css';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('translations', ({ data }) => !data.draft);
+
+  return entries.map((entry) => ({
+    params: { id: entry.id },
+    props: { entry, entries },
+  }));
+}
+
+const { entry, entries } = Astro.props;
+const { Content, headings } = await render(entry);
+const { original } = entry.data;
+
+const sections = headings.filter((heading) => heading.depth === 2);
+const hasContents = sections.length >= 3;
+
+// Siblings are translations only. Falling back to English articles would
+// append LTR rows to an RTL page and tell a Hebrew reader that this section
+// is a waiting room (§4).
+const others = entries
+  .filter((other) => other.id !== entry.id)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const siblings = others.length >= 2 ? others.slice(0, 2) : [];
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<Base
+  title={`${entry.data.title} · T://bendet`}
+  description={entry.data.description}
+  section="תרגומים"
+  sectionLang="he"
+>
+  <div class:list={['article-grid', { 'with-contents': hasContents }]}>
+    <header class="article-header">
+      <h1>{entry.data.title}</h1>
+      <p class="lede">{entry.data.description}</p>
+      <ArticleMeta
+        pubDate={entry.data.pubDate}
+        updatedDate={entry.data.updatedDate}
+        tags={entry.data.tags}
+        lang="he"
+      />
+    </header>
+
+    {hasContents && <Contents headings={sections} lang="he" />}
+
+    <article class="article-body">
+      {/*
+        The opening credit block — required, never conditional, and it
+        precedes the first element of the body. CI asserts the ordering, not
+        merely the presence (specs/content-model.md §5, assertion 2).
+
+        Script split is deliberate: the sentence is Hebrew, but the original's
+        title and its author's name stay in Latin, so the credit is legible to
+        someone who cannot read Hebrew (§2.1).
+
+        TODO(Tal): the Hebrew wording is yours. What is binding and must
+        survive any rewrite: it states that this is a translation, it names
+        the author, and it links the original — all three, above the body.
+      */}
+      <aside class="credit">
+        <span class="credit-label">תרגום</span>
+        <p>
+          תרגום לעברית של המאמר{' '}
+          <a href={original.url} lang="en" rel="noopener">
+            <bdi>{original.title}</bdi>
+          </a>{' '}
+          מאת <bdi lang="en">{original.author}</bdi>
+          {
+            original.publishedAt && (
+              <>
+                , שפורסם במקור ב־
+                <time datetime={iso(original.publishedAt)}>
+                  {iso(original.publishedAt)}
+                </time>
+              </>
+            )
+          }.
+        </p>
+      </aside>
+
+      <Content />
+
+      {/* The closing credit: the same link, where acting on it is natural. */}
+      {/* TODO(Tal): the Hebrew wording */}
+      <p class="closing-credit">
+        לקריאת המקור באנגלית:{' '}
+        <a href={original.url} lang="en" rel="noopener">
+          <bdi>{original.title}</bdi>
+        </a>
+      </p>
+    </article>
+
+    <footer class="end-matter">
+      <a class="end-matter-link" href="/he/writing/">תרגומים</a>
+
+      {
+        siblings.length > 0 && (
+          <section class="siblings">
+            <h2 class="siblings-title siblings-title-he">תרגומים נוספים</h2>
+            <ul class="siblings-items">
+              {siblings.map((sibling) => (
+                <li>
+                  <a href={`/he/writing/${sibling.id}/`}>{sibling.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </footer>
+  </div>
+</Base>

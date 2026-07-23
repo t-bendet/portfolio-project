@@ -1,0 +1,48 @@
+---
+// The meta line shared by both article templates: publication date, an
+// explicitly labelled update date when one is set, and non-linking tag chips.
+// specs/pages/writing-article.md §2 (section 3), §3.
+//
+// An absent thing renders nothing at all — no "Updated: —", no empty chip
+// group (§5). If the dynamic layer is ever switched on, the view count
+// appends as the LAST child of this line and carries its own separator
+// (INV-2); nothing here reserves space for it (INV-1).
+
+interface Props {
+  pubDate: Date;
+  updatedDate?: Date;
+  tags: string[];
+  /** Label language — the page's locale, not a per-entry field */
+  lang: 'en' | 'he';
+}
+
+const { pubDate, updatedDate, tags, lang } = Astro.props;
+
+// ISO dates: unambiguous in both locales, and an LTR numeral run inside
+// Hebrew prose that bidi handles on its own (specs/content-model.md §5 rule 6).
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+const updatedLabel = lang === 'he' ? 'עודכן' : 'updated';
+---
+
+<p class="meta-line">
+  <time datetime={iso(pubDate)}>{iso(pubDate)}</time>
+
+  {
+    updatedDate && (
+      <span class="updated">
+        {updatedLabel} <time datetime={iso(updatedDate)}>{iso(updatedDate)}</time>
+      </span>
+    )
+  }
+
+  {
+    tags.length > 0 && (
+      <ul class="chips">
+        {tags.map((tag) => (
+          <li class="chip">{tag}</li>
+        ))}
+      </ul>
+    )
+  }
+</p>
