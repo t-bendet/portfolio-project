@@ -21,7 +21,7 @@ retired with the workshop.
 5. Contrast gate over `design/palette.md` §5's pairs at **full precision**
    (thinnest margin is 4.50 — rounding can pass a failing pair). The old
    workshop had `scripts/contrast.ts` for this; restore it from git history
-   or reimplement in `app/` tooling.
+   or reimplement in workspace tooling.
 6. Token parity: both theme blocks' key sets diff empty
    (`design/tokens.md` §4.1).
 7. Banned-vocabulary grep over shipped CSS/JS/HTML — **whole identifier

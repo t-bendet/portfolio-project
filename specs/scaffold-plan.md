@@ -48,16 +48,15 @@ Other verified facts:
 ## 1. Directory layout
 
 ```
-app/
-  pnpm-workspace.yaml     # app/ is its own pnpm workspace
-  web/                    # Astro 7 static site
-  api/                    # hand-built Node/TS service + prisma/ schema
-  deploy/
-    compose.yaml          # prod: web, api, db
-    compose.dev.yaml      # local: db (+ optional api hot-reload)
-    Caddyfile
-    web.Dockerfile        # multi-stage: astro build -> caddy image
-    api.Dockerfile        # multi-stage: node:24-slim
+pnpm-workspace.yaml       # the repo root is the pnpm workspace (flattened 2026-07-23)
+web/                      # Astro 7 static site
+api/                      # hand-built Node/TS service + prisma/ schema
+deploy/
+  compose.yaml            # prod: web, api, db
+  compose.dev.yaml        # local: db (+ optional api hot-reload)
+  Caddyfile
+  web.Dockerfile          # multi-stage: astro build -> caddy image
+  api.Dockerfile          # multi-stage: node:24-slim
 .github/workflows/
   ci.yml                  # stages per specs/ci-obligations.md
   deploy.yml
@@ -69,7 +68,6 @@ Create directories individually (mkdir per path — no brace expansion).
 ## 2. Scaffold the static site
 
 ```
-cd app
 pnpm create astro@latest web -- --template minimal --no-git
 cd web
 pnpm astro add mdx sitemap
@@ -96,7 +94,7 @@ pnpm add tailwindcss @tailwindcss/vite
 ## 3. Scaffold the API service
 
 ```
-cd app/api
+cd api
 pnpm init
 pnpm add express@5.2.1 argon2 ... (re-pin at run time)
 pnpm add -D typescript vitest @types/node
@@ -152,7 +150,7 @@ Playwright RTL check (fixture translated article; **five assertions**, see
 `runs-on: ubuntu-24.04-arm`** (no QEMU) → ECR via OIDC → `prisma migrate
 deploy` → SSH compose pull/up → health check → rollback-by-SHA-tag. Then
 `backup.yml` (cron pg_dump → S3). `ci.yml`/`deploy.yml` carry
-`paths: [app/**]` filters; a protected `production` environment holds
+path filters scoped to `web/**`, `api/**`, `deploy/**`; a protected `production` environment holds
 deploy secrets.
 
 ## 6. Cloud provisioning — GATED ON TAL (do not start without both)

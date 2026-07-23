@@ -1,5 +1,5 @@
 # Multi-stage: deps -> build (tsc) -> runtime on node:24-slim, non-root.
-# Build context is app/ (docker build -f deploy/api.Dockerfile .)
+# Build context is the repo root (docker build -f deploy/api.Dockerfile .)
 FROM node:24-slim AS deps
 RUN corepack enable
 WORKDIR /app

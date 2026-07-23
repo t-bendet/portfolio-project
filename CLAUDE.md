@@ -33,7 +33,8 @@ never resurrect its process.
 
 ## Working rules
 
-- App code lives in `app/` (pnpm workspace: `web/`, `api/`, `deploy/`).
+- The repo root is the pnpm workspace: `web/` (Astro), `api/` (Node/TS +
+  Prisma), `deploy/` (Docker/Caddy/compose).
 - Branches + PRs to `main`; no direct pushes once `ci.yml` exists.
 - Pin dependency versions from fresh lookups, never from memory.
 - Never commit secrets; `.env` on-instance and GitHub environment secrets

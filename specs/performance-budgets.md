@@ -165,7 +165,7 @@ RTT will dominate real-world LCP for far visitors. Two consequences:
 
 ## 8. CI enforcement (what code mode runs against this file)
 
-1. **`perf` stage** (PRs touching `app/web/**`): Lighthouse CI against the
+1. **`perf` stage** (PRs touching `web/**`): Lighthouse CI against the
    built site — §2 scores and metrics, §3/§5 byte budgets via the budgets
    JSON. **Build fails on breach** — that is the contract.
 2. **`bundle` stage** (PRs touching any manifest): bundle analysis diff;

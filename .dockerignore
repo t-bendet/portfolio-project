@@ -1,0 +1,10 @@
+# Build context is the repo root — keep it small.
+node_modules
+**/node_modules
+**/dist
+**/.astro
+.git
+specs
+*.md
+.env
+.env.*

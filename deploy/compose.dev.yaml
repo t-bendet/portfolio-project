@@ -1,5 +1,5 @@
 # Local dev: database only by default. The Astro dev loop stays on the host
-# (pnpm astro dev); run the api on the host too (pnpm dev in app/api) with
+# (pnpm astro dev); run the api on the host too (pnpm dev in api/) with
 # DATABASE_URL=postgresql://portfolio:portfolio@localhost:5433/portfolio
 # (host port 5433 because 5432 is occupied by a local Postgres on Tal's
 # machine)
