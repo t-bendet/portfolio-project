@@ -3,7 +3,7 @@
 **GENERATED FILE — do not hand-edit.** Regenerate with
 `node scripts/reindex-decisions.ts`. On merge conflict: regenerate.
 
-Summary: active: 27 · superseded: 8
+Summary: active: 28 · superseded: 8
 
 **"narrowed by NNNN"** means this ADR is still `active` and still binding,
 but a later ADR corrects one of its clauses. Acting on this ADR alone will
@@ -46,3 +46,4 @@ produce the wrong result. Read both. (ADR 0027)
 | [0033](./0033-native-arm-runners-and-confirmed-ipv4-budget.md) | ARM images build on native GitHub runners; the cloud budget is ≈$10.28/mo with public IPv4 confirmed | `active` | narrows 0021 |
 | [0034](./0034-workshop-checks-run-unfiltered.md) | Workshop checks run unfiltered — a required status check may not be path-scoped | `active` | narrows 0013 |
 | [0035](./0035-enforcement-authorship-and-workshop-track.md) | Authoring enforcement-layer content counts as editing it; workshop machinery is infra-track and always Gated | `active` | narrows 0025, 0032 |
+| [0036](./0036-workshop-hook-guards-user-level-settings.md) | The workshop hook guards user-level ~/.claude/settings*.json as a deliberate, ADR-unscoped over-reach | `active` |  |
