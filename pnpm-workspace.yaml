@@ -7,9 +7,12 @@ overrides:
   find-my-way: '>=9.7.0'
 
 # pnpm blocks dependency build scripts by default; these need theirs
-# (native builds / Prisma engine downloads).
+# (native builds / Prisma engine downloads). sharp comes from astro's image
+# pipeline and was carried by web/pnpm-workspace.yaml until that nested
+# workspace root was removed.
 allowBuilds:
   '@prisma/engines': true
   argon2: true
   esbuild: true
   prisma: true
+  sharp: true

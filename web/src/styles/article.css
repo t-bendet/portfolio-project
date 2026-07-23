@@ -1,0 +1,446 @@
+/*
+ * The deep-dive editorial archetype: sticky in-page contents + long-form
+ * column, and the prose components an article body is built from.
+ *
+ * One stylesheet, both article routes, both directions. Every directional
+ * property here binds logically (specs/content-model.md §5 rule 4) — the
+ * contents column lands on the right under dir="rtl" without a special case.
+ * Values transcribed from specs/design/prototypes/tooling-deepdive.html.
+ */
+
+/* ── shell ─────────────────────────────────────────────────────────────── */
+
+/* Single column by default. The contents column only exists when the article
+   earned one (>=3 h2s, specs/pages/writing-article.md §2.2). */
+.article-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 0;
+}
+
+@media (min-width: 900px) {
+  .article-grid.with-contents {
+    grid-template-columns: 200px minmax(0, 1fr);
+    column-gap: 48px;
+  }
+
+  .with-contents > .article-header {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  /* Sticky in-page navigation — not site navigation, which is why the global
+     header is not sticky and this is (specs/navigation.md §1). */
+  .with-contents > .contents {
+    grid-column: 1;
+    grid-row: 2;
+    position: sticky;
+    inset-block-start: 24px;
+    align-self: start;
+    max-block-size: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+
+  .with-contents > .article-body {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .with-contents > .end-matter {
+    grid-column: 2;
+    grid-row: 3;
+  }
+}
+
+/* ── article header ────────────────────────────────────────────────────── */
+
+.article-header {
+  margin-block-end: 48px;
+  padding-block-end: 32px;
+  border-block-end: 1px solid var(--border);
+}
+
+.article-header h1 {
+  font-family: var(--font-display);
+  font-size: var(--size-h1);
+  font-weight: 700;
+  line-height: var(--leading-display);
+  letter-spacing: var(--track-display);
+  color: var(--text-strong);
+}
+
+/* The lede is the entry's `description` — the same string the index row and
+   the meta description use (specs/content-model.md §3.1). */
+.lede {
+  margin-block-start: 20px;
+  font-size: var(--size-lede);
+  line-height: var(--leading-tight);
+  color: var(--muted);
+  max-inline-size: 56ch;
+}
+
+.meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-block-start: 24px;
+  font-family: var(--font-mono);
+  font-size: var(--size-eyebrow);
+  color: var(--muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Non-linking, and styled so they do not imply a destination — tag routes are
+   deferred (specs/routes/sitemap.md §4). */
+.chip {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  color: var(--muted);
+  background-color: var(--chip-bg);
+  padding: 3px 8px;
+  border-radius: var(--radius-s);
+}
+
+/* ── contents ──────────────────────────────────────────────────────────── */
+
+/* Below the sidebar breakpoint this renders inline, above the body, in its
+   source position — no disclosure widget (§2.2). */
+.contents {
+  margin-block-end: 40px;
+}
+
+.contents-title {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-block-end: 12px;
+  border-block-end: 1px solid var(--border);
+}
+
+.contents-title-he {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.contents-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  margin-block-start: 12px;
+}
+
+/* No scroll-spy: an active-section indicator needs a scroll listener, which
+   is JavaScript on the reading path (§2.2). The list shows the article's
+   shape, not the reader's position in it. */
+.contents-items a {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--size-meta);
+  line-height: var(--leading-tight);
+  color: var(--muted);
+  text-decoration: none;
+  padding-block: 6px;
+  padding-inline-start: 12px;
+  border-inline-start: 2px solid var(--border);
+  transition: color var(--motion-hover) ease;
+}
+
+.contents-items a:hover {
+  color: var(--text);
+  border-inline-start-color: var(--border-strong);
+}
+
+/* ── body ──────────────────────────────────────────────────────────────── */
+
+.article-body {
+  max-inline-size: 68ch;
+}
+
+.article-body > * + * {
+  margin-block-start: 20px;
+}
+
+.article-body :is(h2, h3, h4) {
+  font-family: var(--font-display);
+  color: var(--text-strong);
+  /* Anchor targets must not land under the viewport edge. */
+  scroll-margin-block-start: 32px;
+}
+
+.article-body h2 {
+  margin-block-start: 56px;
+  padding-block-end: 12px;
+  border-block-end: 1px solid var(--border);
+  font-size: var(--size-h2);
+  font-weight: 600;
+  letter-spacing: var(--track-display);
+}
+
+.article-body h3 {
+  margin-block-start: 36px;
+  font-size: var(--size-h3);
+  font-weight: 600;
+}
+
+.article-body h4 {
+  margin-block-start: 28px;
+  font-family: var(--font-mono);
+  font-size: var(--size-h4);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.article-body :is(ul, ol) {
+  padding-inline-start: 1.4em;
+}
+
+.article-body li + li {
+  margin-block-start: 8px;
+}
+
+.article-body blockquote {
+  padding-inline-start: 20px;
+  border-inline-start: 3px solid var(--border-strong);
+  color: var(--muted);
+}
+
+/* Emphasis is weight, not slant: italic is unavailable in the dark
+   temperature and for Hebrew in either (specs/design/typography.md §5). */
+.article-body strong {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+
+.article-body :is(img, video) {
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: var(--radius-m);
+}
+
+/* Code panels are LTR unconditionally — a property of code, not of the page
+   (specs/design/typography.md §7.1). `direction` itself is set globally. */
+.article-body pre {
+  background-color: var(--code-bg);
+  color: var(--code-text);
+  font-size: var(--size-code);
+  line-height: var(--leading-code);
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-m);
+  /* Wide code scrolls inside its own container, never the page
+     (specs/pages/translations-article.md §2.3 rule 7). */
+  overflow-x: auto;
+}
+
+.article-body :not(pre) > code {
+  font-size: var(--size-code);
+  color: var(--text-strong);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-s);
+  padding: 1px 6px;
+}
+
+.article-body pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* Same treatment as code panels: the table scrolls, the page does not. */
+.article-body table {
+  display: block;
+  overflow-x: auto;
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--size-meta);
+}
+
+.article-body th {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  background-color: var(--surface-2);
+  text-align: start;
+  padding: 10px 14px;
+  border-block-end: 1px solid var(--border);
+}
+
+.article-body td {
+  padding: 10px 14px;
+  border-block-end: 1px solid var(--border);
+  vertical-align: top;
+  line-height: var(--leading-tight);
+}
+
+/* ── callouts ──────────────────────────────────────────────────────────── */
+
+/* The shared box structure, per-temperature fill (specs/design/palette.md
+   §7.3): dark = --surface-inset with an accent inline-start edge. */
+.note {
+  padding: 16px 20px;
+  background-color: var(--surface-inset);
+  border-inline-start: 3px solid var(--accent-2);
+  border-radius: var(--radius-s);
+  font-size: var(--size-meta);
+  color: var(--muted);
+}
+
+.note :is(p, ul, ol) + * {
+  margin-block-start: 12px;
+}
+
+[data-theme='warm'] .note {
+  background-color: var(--badge-2);
+}
+
+/* ── translation credit ────────────────────────────────────────────────── */
+
+/*
+ * The one place on this site where a composition rule is a compliance
+ * condition (specs/pages/translations-article.md §2.1): the upstream grant
+ * requires the translation notice at the beginning of the translation.
+ *
+ * "A distinct block, not a stylistic aside" — it must not read as the lede,
+ * and must not be styled so quietly that it reads as boilerplate to skip.
+ * Hence a surface, an accent edge, and body-size text rather than meta-size.
+ */
+.credit {
+  padding: 20px 24px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--accent-1);
+  border-radius: var(--radius-s);
+  font-size: var(--size-body);
+  line-height: var(--leading-body);
+  color: var(--text);
+}
+
+.credit-label {
+  display: block;
+  margin-block-end: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: normal;
+  color: var(--muted);
+}
+
+/* Where acting on it is natural: after the reader has read the piece. */
+.closing-credit {
+  margin-block-start: 56px;
+  padding-block-start: 24px;
+  border-block-start: 1px solid var(--border);
+  font-size: var(--size-meta);
+  color: var(--muted);
+}
+
+/*
+ * Translator's notes — a different voice on the same page, so they must be
+ * distinguishable from the author's own callouts (.note) at a glance, and
+ * always carry their label (specs/content-model.md §4.4).
+ */
+.translator-note {
+  padding: 16px 20px;
+  background-color: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-s);
+  font-size: var(--size-meta);
+  line-height: var(--leading-body);
+  color: var(--muted);
+}
+
+.translator-note-label {
+  display: block;
+  margin-block-end: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  color: var(--accent-4);
+}
+
+/* ── end matter ────────────────────────────────────────────────────────── */
+
+.end-matter {
+  margin-block-start: 72px;
+  padding-block-start: 32px;
+  border-block-start: 1px solid var(--border);
+}
+
+.end-matter-link {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: var(--size-meta);
+  color: var(--muted);
+  text-decoration: none;
+  border-inline-start: 2px solid var(--border-strong);
+  padding-inline-start: 12px;
+  transition: color var(--motion-hover) ease;
+}
+
+.end-matter-link:hover {
+  color: var(--text);
+}
+
+.siblings {
+  margin-block-start: 40px;
+}
+
+.siblings-title {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.siblings-title-he {
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.siblings-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  margin-block-start: 12px;
+}
+
+.siblings-items li + li {
+  margin-block-start: 12px;
+}
+
+.siblings-items a {
+  font-size: var(--size-body);
+  color: var(--text-strong);
+  text-decoration: none;
+}
+
+.siblings-items a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contents-items a,
+  .end-matter-link {
+    transition: none;
+  }
+}

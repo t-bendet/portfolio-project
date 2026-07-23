@@ -1,0 +1,96 @@
+---
+// Writing index (/writing/) — specs/pages/writing-index.md.
+// Overview archetype. Sections 2–4 are permanent: they render identically
+// whether the section holds zero entries or fifty, which is what lets the
+// empty state be the same page minus the list rather than a page about its
+// own emptiness (§4).
+//
+// No pagination, no excerpts beyond `description`, no view counts (§5).
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import '../../styles/entry-list.css';
+
+const entries = (await getCollection('writing', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+// Routes out are computed from what actually exists, not asserted (§4.3).
+// The translations index is offered only when it has something to show.
+const translations = await getCollection('translations', ({ data }) => !data.draft);
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+{/* TODO(Tal): the meta description */}
+<Base title="writing · T://bendet" description="TODO: Tal's copy" section="writing">
+  <header class="page-header">
+    <h1>writing</h1>
+
+    {/* TODO(Tal): the standing description — what this section publishes, in
+        the honest-tradeoff register. Permanent content, not empty-state copy. */}
+    <p class="standing"></p>
+
+    {/* TODO(Tal): the sentence around this link. The label itself is Hebrew
+        and carries lang="he" so the destination's language is disclosed
+        before the click (specs/navigation.md §2.2). */}
+    <p class="cross-link">
+      <a href="/he/writing/" lang="he">תרגומים</a>
+    </p>
+  </header>
+
+  {
+    entries.length > 0 ? (
+      <ul class="entries">
+        {entries.map((entry) => (
+          <li class="entry">
+            <a class="entry-title" href={`/writing/${entry.id}/`}>
+              {entry.data.title}
+            </a>
+            <p class="entry-desc">{entry.data.description}</p>
+            <p class="entry-meta">
+              <time datetime={iso(entry.data.pubDate)}>{iso(entry.data.pubDate)}</time>
+              {/* An update never silently replaces the publication date. */}
+              {entry.data.updatedDate && (
+                <span>
+                  updated{' '}
+                  <time datetime={iso(entry.data.updatedDate)}>
+                    {iso(entry.data.updatedDate)}
+                  </time>
+                </span>
+              )}
+              {entry.data.tags.length > 0 && (
+                <ul class="chips">
+                  {entry.data.tags.map((tag) => (
+                    <li class="chip">{tag}</li>
+                  ))}
+                </ul>
+              )}
+            </p>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <>
+        {/* TODO(Tal): the section's terms — what belongs here and what does
+            not. No dates, no schedule, no "soon"; true on day 1 and day 400. */}
+        <div class="terms" />
+
+        <ul class="routes-out">
+          {translations.length > 0 && (
+            <li>
+              <a href="/he/writing/" lang="he">
+                תרגומים
+              </a>
+            </li>
+          )}
+          <li>
+            <a href="/projects/">projects</a>
+          </li>
+          <li>
+            <a href="/about/">about</a>
+          </li>
+        </ul>
+      </>
+    )
+  }
+</Base>

@@ -1,0 +1,108 @@
+---
+// Translations index (/he/writing/) — specs/pages/translations-index.md.
+// The Hebrew front door: its own URL, its own feed, its own chrome. Not an
+// annex of the English site.
+//
+// lang="he" dir="rtl" come from the locale via the layout — this page sets
+// neither (specs/content-model.md §5 rule 1). Its empty state is deliberately
+// NOT a translation of the English one (§4).
+import { getCollection } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import '../../../styles/entry-list.css';
+
+const entries = (await getCollection('translations', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+{/* TODO(Tal): the meta description, in Hebrew */}
+<Base
+  title="תרגומים · T://bendet"
+  description="TODO: Tal's copy"
+  section="תרגומים"
+  sectionLang="he"
+>
+  <header class="page-header">
+    <h1>תרגומים</h1>
+
+    {/* TODO(Tal): the standing description, in Hebrew — three statements,
+        permanently, one paragraph each:
+          (a) this section holds Hebrew translations of others' English
+              articles;
+          (b) every translation credits and links its original;
+          (c) suggestions for articles worth translating are welcome.
+        Which element carries which statement is binding; the wording is
+        yours (specs/pages/translations-index.md, standing caveat). */}
+    <p class="standing"></p>
+    <p class="standing"></p>
+    <p class="standing"></p>
+
+    {/* The scope pointer — the seam, shown. Tal's own writing is in English,
+        and the label says so in English before the click is made. */}
+    {/* TODO(Tal): the sentence around this link, in Hebrew */}
+    <p class="cross-link">
+      <a href="/writing/" lang="en">writing</a>
+    </p>
+  </header>
+
+  {
+    entries.length > 0 ? (
+      <ul class="entries">
+        {entries.map((entry) => (
+          <li class="entry">
+            <a class="entry-title" href={`/he/writing/${entry.id}/`}>
+              {entry.data.title}
+            </a>
+            <p class="entry-desc">{entry.data.description}</p>
+            <p class="entry-meta">
+              <time datetime={iso(entry.data.pubDate)}>{iso(entry.data.pubDate)}</time>
+              {entry.data.updatedDate && (
+                <span>
+                  עודכן{' '}
+                  <time datetime={iso(entry.data.updatedDate)}>
+                    {iso(entry.data.updatedDate)}
+                  </time>
+                </span>
+              )}
+              {/* Developers follow authors: the Latin author name is this
+                  list's strongest scanning signal, and it makes the list
+                  legible as translation work (§2.1). A Latin run inside an
+                  RTL row — isolated so it cannot misorder (§2.2). */}
+              <bdi lang="en">{entry.data.original.author}</bdi>
+              {entry.data.tags.length > 0 && (
+                <ul class="chips">
+                  {entry.data.tags.map((tag) => (
+                    <li class="chip">{tag}</li>
+                  ))}
+                </ul>
+              )}
+            </p>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <>
+        {/* TODO(Tal): the section's terms, in Hebrew — what gets translated
+            here (technical writing worth reading in Hebrew, with the
+            author's permission or under a published grant) and what does
+            not. No schedule, no counter. */}
+        <div class="terms" />
+
+        <ul class="routes-out">
+          <li>
+            <a href="/writing/" lang="en">
+              writing
+            </a>
+          </li>
+          <li>
+            <a href="/projects/" lang="en">
+              projects
+            </a>
+          </li>
+        </ul>
+      </>
+    )
+  }
+</Base>
