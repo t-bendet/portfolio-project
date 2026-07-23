@@ -1,6 +1,11 @@
 packages:
   - web
   - api
+# Dependabot #1: find-my-way <=9.6.0 (HTTP/2 DDoS) pulled via prisma's
+# @prisma/dev; drop the override once prisma ships a patched chain.
+overrides:
+  find-my-way: '>=9.7.0'
+
 # pnpm blocks dependency build scripts by default; these need theirs
 # (native builds / Prisma engine downloads).
 allowBuilds:
