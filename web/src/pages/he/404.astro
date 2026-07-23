@@ -1,0 +1,55 @@
+---
+// Not found, Hebrew subtree (/he/404) — specs/pages/not-found.md §5.
+// Same minimal composition, rendered lang="he" dir="rtl" from the locale;
+// its two links point at /he/writing/ and / (Hebrew target first).
+// The eyebrow's `404` segment renders under the Hebrew stack: no
+// text-transform, letter-spacing normal (navigation.md §3.2).
+import Base from '../../layouts/Base.astro';
+---
+
+{/* TODO: Tal's copy — the statement line and the meta description */}
+<Base title="404 · T://bendet" description="TODO: Tal's copy" section="404" sectionLang="he">
+  <p class="statement">{/* TODO: Tal's copy */}</p>
+
+  <ul class="routes">
+    <li><a href="/he/writing/">תרגומים</a></li>
+    <li><a href="/" lang="en">home</a></li>
+  </ul>
+</Base>
+
+<style>
+  .statement {
+    font-size: var(--size-lede);
+    color: var(--text);
+    max-inline-size: 44ch;
+  }
+
+  .routes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-block-start: 32px;
+    list-style: none;
+    padding: 0;
+  }
+
+  .routes a {
+    font-family: var(--font-mono);
+    font-size: var(--size-meta);
+    color: var(--text);
+    text-decoration: none;
+    border-inline-start: 2px solid var(--border-strong);
+    padding-inline-start: 12px;
+    transition: color var(--motion-hover) ease;
+  }
+
+  .routes a:hover {
+    color: var(--text-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .routes a {
+      transition: none;
+    }
+  }
+</style>

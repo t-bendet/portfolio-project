@@ -1,0 +1,168 @@
+---
+// Global header — eyebrow (with the mark) · primary nav.
+// specs/navigation.md §1–3. Content-independent (N-1): nothing here varies
+// with how much the site contains.
+
+interface Props {
+  /** Eyebrow section segment — one of the eight in navigation.md §3.2 */
+  section: string;
+  /** Language of that segment */
+  sectionLang: 'en' | 'he';
+}
+
+const { section, sectionLang } = Astro.props;
+
+const locale = Astro.currentLocale ?? 'en';
+const path = Astro.url.pathname;
+
+// Fixed set and order (navigation.md §2.1). Each item is labelled in the
+// language of the page it leads to (§2.2) — four English words and one
+// Hebrew word, in both locales.
+const items = [
+  { href: '/writing/', label: 'writing', lang: 'en' },
+  { href: '/he/writing/', label: 'תרגומים', lang: 'he' },
+  { href: '/projects/', label: 'projects', lang: 'en' },
+  { href: '/about/', label: 'about', lang: 'en' },
+  { href: '/contact/', label: 'contact', lang: 'en' },
+] as const;
+
+// aria-current="page" on an exact URL match only; child routes mark their
+// section with "true" (§2.3). Routes with no owning nav item — /colophon/,
+// /404, /he/404 — match nothing, which is the specified behaviour.
+function currentState(href: string): 'page' | 'true' | undefined {
+  if (path === href) return 'page';
+  if (path.startsWith(href)) return 'true';
+  return undefined;
+}
+---
+
+<header class="site-header">
+  <div class="shell header-row">
+    <p class="eyebrow">
+      <a class="mark" href="/" aria-current={path === '/' ? 'page' : undefined}>T://bendet</a>
+      <span class="separator" aria-hidden="true">·</span>
+      <span
+        class:list={['segment', { 'segment-he': sectionLang === 'he' }]}
+        lang={sectionLang === locale ? undefined : sectionLang}>{section}</span
+      >
+    </p>
+
+    <nav aria-label="primary">
+      <ul class="nav-items">
+        {
+          items.map((item) => {
+            const current = currentState(item.href);
+            return (
+              <li>
+                <a
+                  class:list={['nav-link', { current: current !== undefined }]}
+                  href={item.href}
+                  lang={item.lang === locale ? undefined : item.lang}
+                  aria-current={current}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  /* Not sticky — a deliberate decision, not an omission (navigation.md §1). */
+  .site-header {
+    border-block-end: 1px solid var(--border);
+  }
+
+  .header-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 32px;
+    padding-block: 20px;
+  }
+
+  /* ADR 0001: identity, not decoration (typography.md §6). */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    letter-spacing: var(--track-eyebrow);
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Linking the mark must not alter its resting appearance
+     (navigation.md §3.3 rule 3). */
+  .mark {
+    color: var(--muted);
+    text-decoration: none;
+    /* The mark is an LTR run inside an RTL line. */
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  .mark:hover {
+    color: var(--text);
+  }
+
+  .separator {
+    margin-inline: 0.4em;
+  }
+
+  /* Hebrew is unicameral; 0.2em tracking is a Latin-caps idiom
+     (typography.md §6, navigation.md §3.3 rule 4). */
+  .segment-he {
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .nav-items {
+    display: flex;
+    flex-wrap: wrap; /* the narrow-viewport behaviour: wrap, no disclosure menu */
+    align-items: center;
+    gap: 4px 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* The nav-link idiom: accent edge bound with border-inline-start
+     (palette.md §8.1), so it lands on the reading-start side under dir="rtl". */
+  .nav-link {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--size-meta);
+    color: var(--muted);
+    text-decoration: none;
+    padding-block: 6px;
+    padding-inline: 12px;
+    border-inline-start: 2px solid transparent;
+    transition:
+      color var(--motion-hover) ease,
+      border-color var(--motion-hover) ease,
+      background-color var(--motion-fast) ease;
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background-color: var(--surface-2);
+  }
+
+  /* Current state is carried by the edge and the surface step as well as by
+     color — never by color alone (navigation.md §2.3). */
+  .nav-link.current {
+    color: var(--text-strong);
+    background-color: var(--surface-2);
+    border-inline-start-color: var(--text-strong);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link {
+      transition: none;
+    }
+  }
+</style>

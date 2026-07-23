@@ -1,0 +1,130 @@
+/*
+ * The hero — the site's single licensed animation
+ * (specs/design/hero-and-motion.md §1).
+ *
+ * Lives outside the component because the completion moment reveals page
+ * content the component does not own: the mark and the reveal must share one
+ * set of timings, not two that drift apart.
+ *
+ * Degradation contract (specs/pages/home.md §3.1): every rule below states
+ * the FINAL frame as its resting value and uses animations only to withhold
+ * it. A browser that ignores these animations — or a visitor who asks for
+ * reduced motion — gets the completed mark and visible content, never a
+ * blank page.
+ */
+
+:root {
+  /* Reveal times, measured from page load: the four typed frames, then
+     completion. Local to the hero; no other surface consumes them. */
+  --hero-frame-1: 240ms; /* T:   */
+  --hero-frame-2: 400ms; /* T:/  */
+  --hero-frame-3: 560ms; /* T:// */
+  --hero-frame-4: 860ms; /* T://bendet */
+  --hero-complete: 1120ms;
+}
+
+.hero-mark {
+  font-family: var(--font-mono);
+  font-size: var(--size-h1);
+  font-weight: 500; /* DM Mono / IBM Plex Mono top out at 500 (typography §4) */
+  line-height: var(--leading-display);
+  letter-spacing: var(--track-display);
+  color: var(--text-strong);
+  /* The mark is an LTR run whatever the page direction (hero-and-motion §1). */
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
+}
+
+/* Resting state = the completed frame. The glow is dark-theme only: in the
+   warm temperature --glow resolves to transparent and only the color lands. */
+.hero-mark .scheme {
+  color: var(--accent-3);
+  text-shadow: 0 0 24px var(--glow); /* symmetric — no directional offset */
+  animation: hero-resolve 1ms steps(1, end) var(--hero-complete) backwards;
+}
+
+/* Typed frames: present in the markup, withheld until their moment. Withheld
+   by collapsing the glyph rather than by `display`, which would terminate the
+   animation that is meant to bring it back. */
+.hero-mark .frame {
+  animation: hero-frame 1ms steps(1, end) backwards;
+}
+.hero-mark .frame-1 {
+  animation-delay: var(--hero-frame-1);
+}
+.hero-mark .frame-2 {
+  animation-delay: var(--hero-frame-2);
+}
+.hero-mark .frame-3 {
+  animation-delay: var(--hero-frame-3);
+}
+.hero-mark .frame-4 {
+  animation-delay: var(--hero-frame-4);
+}
+
+/* The block cursor: absent at rest, present only while the mark resolves. */
+.hero-mark .cursor {
+  display: inline-block;
+  inline-size: 0.55em;
+  block-size: 0.8em;
+  margin-inline-start: 0.06em;
+  background-color: var(--text-strong);
+  opacity: 0;
+  animation: hero-cursor var(--hero-complete) steps(1, end);
+}
+
+/* What completion reveals — the tagline and the page below it. */
+.hero-reveal {
+  animation: hero-reveal var(--motion-hover) ease var(--hero-complete) backwards;
+}
+
+@keyframes hero-frame {
+  from {
+    font-size: 0;
+  }
+  to {
+    font-size: var(--size-h1);
+  }
+}
+
+@keyframes hero-resolve {
+  from {
+    color: var(--text-strong);
+    text-shadow: none;
+  }
+  to {
+    color: var(--accent-3);
+    text-shadow: 0 0 24px var(--glow);
+  }
+}
+
+@keyframes hero-cursor {
+  0%,
+  99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hero-reveal {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Final frame immediately — glow included: it is static decoration, not
+   motion (hero-and-motion.md §1, §5). */
+@media (prefers-reduced-motion: reduce) {
+  .hero-mark .scheme,
+  .hero-mark .frame,
+  .hero-mark .cursor,
+  .hero-reveal {
+    animation: none;
+  }
+}

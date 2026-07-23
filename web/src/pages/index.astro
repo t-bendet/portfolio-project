@@ -1,23 +1,246 @@
 ---
+// Home (/) — specs/pages/home.md. Sections in the brief's order; sections 4
+// and 5 are composed away entirely when their collection is empty (§3.2), so
+// no heading ever stands over a void.
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import HeroMark from '../components/HeroMark.astro';
+
+const writing = (await getCollection('writing', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const projects = (await getCollection('projects', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+
+// Destination disclosure (specs/pages/projects-index.md §2.2): a card must
+// say where it goes before it is clicked, so an outbound card carries its
+// host as metadata.
+function destination(project: (typeof projects)[number]) {
+  if (project.data.caseStudy) return { href: `/projects/${project.id}/`, host: null };
+  const url = project.data.liveUrl ?? project.data.repoUrl!;
+  return { href: url, host: new URL(url).host };
+}
+
+const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
-<Base title="T://bendet" description="Personal site of Tal Bendet.">
-  {/* Static placeholder — the typing resolution ships per specs/design/hero-and-motion.md §1. */}
-  <h1 class="hero-mark">T<span class="scheme">://</span>bendet</h1>
+{/* TODO: Tal's copy — the title's short descriptor and the meta description */}
+<Base title="T://bendet" description="TODO: Tal's copy" section="home">
+  <HeroMark />
+
+  {/* One opacity step at completion; visible without JavaScript (home.md §3.1) */}
+  <div class="hero-reveal">
+    <p class="tagline">{/* TODO: Tal's copy */}</p>
+
+    {
+      writing.length > 0 && (
+        <section class="block">
+          <h2 class="block-title">recent writing</h2>
+          <ul class="rows">
+            {writing.map((entry) => (
+              <li class="row">
+                <a class="row-title" href={`/writing/${entry.id}/`}>
+                  {entry.data.title}
+                </a>
+                <p class="row-desc">{entry.data.description}</p>
+                <time class="row-meta" datetime={isoDate(entry.data.pubDate)}>
+                  {isoDate(entry.data.pubDate)}
+                </time>
+              </li>
+            ))}
+          </ul>
+          <a class="block-link" href="/writing/">
+            writing
+          </a>
+        </section>
+      )
+    }
+
+    {
+      projects.length > 0 && (
+        <section class="block">
+          <h2 class="block-title">selected projects</h2>
+          <ul class="cards">
+            {projects.map((project) => {
+              const { href, host } = destination(project);
+              return (
+                <li class="card">
+                  <a
+                    class="row-title"
+                    href={href}
+                    rel={host === null ? undefined : 'noopener'}
+                  >
+                    {project.data.title}
+                  </a>
+                  <p class="row-desc">{project.data.description}</p>
+                  {host !== null && <span class="row-meta">{host}</span>}
+                  {project.data.stack.length > 0 && (
+                    <ul class="chips">
+                      {project.data.stack.map((item, index) => (
+                        <li class={`chip accent-${(index % 6) + 1}`}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          <a class="block-link" href="/projects/">
+            projects
+          </a>
+        </section>
+      )
+    }
+
+    <p class="person-line">
+      {/* TODO: Tal's copy */}
+      <a href="/about/">about</a>
+    </p>
+  </div>
 </Base>
 
 <style>
-  .hero-mark {
-    font-family: var(--font-mono);
-    font-size: var(--size-h1);
-    line-height: var(--leading-display);
-    letter-spacing: var(--track-display);
-    color: var(--text-strong);
-    direction: ltr; /* the mark is an LTR run regardless of page dir */
+  .tagline {
+    margin-block-start: 24px;
+    font-size: var(--size-lede);
+    color: var(--text);
+    max-inline-size: 44ch;
   }
-  .scheme {
+
+  .block {
+    margin-block-start: 72px;
+  }
+
+  /* The overview archetype's section header device: mono caps at --size-meta
+     (specs/design/typography.md §4). */
+  .block-title {
+    font-family: var(--font-mono);
+    font-size: var(--size-meta);
+    font-weight: 500;
+    letter-spacing: var(--track-label);
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-block-end: 12px;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .rows,
+  .cards,
+  .chips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .row,
+  .card {
+    padding-block: 20px;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .cards {
+    display: grid;
+    /* Start-aligned, unstretched: two projects must read as two projects
+       (projects-index.md §2.3). */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    justify-content: start;
+    gap: 0 32px;
+  }
+
+  .row-title {
+    display: inline-block;
+    font-size: var(--size-lede);
+    font-weight: 700;
+    color: var(--text-strong);
+    text-decoration: none;
+  }
+
+  .row-title:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .row-desc {
+    margin-block-start: 6px;
+    font-size: var(--size-meta);
+    color: var(--muted);
+  }
+
+  .row-meta {
+    display: block;
+    margin-block-start: 8px;
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    color: var(--muted);
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-block-start: 12px;
+  }
+
+  .chip {
+    font-family: var(--font-mono);
+    font-size: var(--size-label);
+    letter-spacing: var(--track-label);
+    padding: 3px 8px;
+    border-radius: var(--radius-s);
+  }
+
+  .accent-1 {
+    color: var(--accent-1);
+    background-color: var(--badge-1);
+  }
+  .accent-2 {
+    color: var(--accent-2);
+    background-color: var(--badge-2);
+  }
+  .accent-3 {
     color: var(--accent-3);
-    text-shadow: 0 0 24px var(--glow);
+    background-color: var(--badge-3);
+  }
+  .accent-4 {
+    color: var(--accent-4);
+    background-color: var(--badge-4);
+  }
+  .accent-5 {
+    color: var(--accent-5);
+    background-color: var(--badge-5);
+  }
+  .accent-6 {
+    color: var(--accent-6);
+    background-color: var(--badge-6);
+  }
+
+  .block-link {
+    display: inline-block;
+    margin-block-start: 20px;
+    font-family: var(--font-mono);
+    font-size: var(--size-meta);
+    color: var(--muted);
+    text-decoration: none;
+    border-inline-start: 2px solid var(--border-strong);
+    padding-inline-start: 12px;
+    transition: color var(--motion-hover) ease;
+  }
+
+  .block-link:hover {
+    color: var(--text);
+  }
+
+  .person-line {
+    margin-block-start: 72px;
+    font-size: var(--size-body);
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .block-link {
+      transition: none;
+    }
   }
 </style>
