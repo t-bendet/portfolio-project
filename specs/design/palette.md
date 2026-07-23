@@ -2,8 +2,8 @@
 
 Decided 2026-07-21: *palette = prototype-exact + minimal AA fixes*.
 Ancestors and normative source of every value: Tal's committed prototypes
-`assets/reference/prototypes/build-tools-overview.html` (dark) and
-`tooling-deepdive.html` (warm). ADRs 0004/0005 (reopened) are input only.
+`specs/design/prototypes/build-tools-overview.html` (dark) and
+`tooling-deepdive.html` (warm).
 
 **Status: hardened.** The palette checkpoint has happened — Tal's decision was
 to lock the prototypes' own styles. This file is ADR-ready material for the

@@ -24,4 +24,5 @@ edit them.
 | `translations-checklist.md` | Licence/credit/back-link obligations per published translation |
 
 Hard invariants live in `CLAUDE.md`. Source material (bio, CV, notes) in
-`docs/research/`. Tal's design prototypes in `assets/reference/prototypes/`.
+`research/`. Tal's design prototypes — the normative source of every
+palette/typography value — in `design/prototypes/` (read, don't edit).
