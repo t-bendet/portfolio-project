@@ -181,8 +181,11 @@ this document adds no new gates, it tells the gates what to check).
   gate policy is: fail on high/critical in production dependencies, warn
   otherwise — proportionate to a solo project; tightening it later is a
   one-line change. *(Verify: the stage itself.)*
-- **SR-22. Dependency additions are deliberate:** `app/` adding a
-  dependency is already an escalation class in CLAUDE.md; within Phase 2,
+- **SR-22. Dependency additions are deliberate:** any workspace package
+  (`web/`, `api/`, or the root) adding a
+  dependency is a deliberate act, pinned from a fresh lookup per CLAUDE.md
+  (the escalation-class machinery this once cited died with the workshop on
+  2026-07-23; the discipline did not); within Phase 2,
   new runtime dependencies in `api` (the only long-running attack surface)
   get named in the PR description. *(Verify: review habit; cheap.)*
 
