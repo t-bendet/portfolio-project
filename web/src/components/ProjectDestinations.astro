@@ -1,0 +1,39 @@
+---
+// The destination links for a case study (specs/pages/project-detail.md §2,
+// rows 3 and 6 — the same row renders in the header and again in the end
+// matter, where acting on it is natural).
+//
+// Each link is disclosed as leaving the site: the host sits inside the anchor,
+// so the accessible name is "repo github.com" and the disclosure survives
+// link-by-link navigation (specs/pages/projects-index.md §2.2).
+//
+// A link whose URL is not set is simply absent — no disabled control, no
+// "coming soon" (§3, "Repo only" / "Live only"; §4). With neither set the
+// component renders nothing at all, which is why the two call sites do not
+// each need that condition.
+import { host } from '../lib/projects';
+
+interface Props {
+  repoUrl?: string;
+  liveUrl?: string;
+}
+
+const { repoUrl, liveUrl } = Astro.props;
+---
+
+{
+  (repoUrl || liveUrl) && (
+    <p class="meta-line">
+      {repoUrl && (
+        <a class="destination" href={repoUrl} rel="noopener">
+          repo<span class="destination-host">{host(repoUrl)}</span>
+        </a>
+      )}
+      {liveUrl && (
+        <a class="destination" href={liveUrl} rel="noopener">
+          live<span class="destination-host">{host(liveUrl)}</span>
+        </a>
+      )}
+    </p>
+  )
+}

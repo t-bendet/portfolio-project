@@ -1,0 +1,116 @@
+---
+// Projects index (/projects/) — specs/pages/projects-index.md.
+// Overview archetype, the card grid being the archetype's native pattern.
+// Sections 2–3 are permanent: they render identically at zero entries and at
+// twenty, which is what makes the empty state this page minus its grid rather
+// than a page about its own emptiness (§4).
+//
+// No dynamic layer here, and that absence is permanent, not deferred: §2's
+// header and specs/routes/sitemap.md §2 row 6 both say "none — no reads, and
+// no view event". The only client script on this route is the global theme
+// script (ADR 0002, specs/design/tokens.md §2).
+//
+// Not built, by §2.4: screenshots and device mockups, a featured-project hero,
+// filtering by stack, status badges, view counts, GitHub stars.
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { destination } from '../../lib/projects';
+import '../../styles/entry-list.css';
+import '../../styles/projects.css';
+
+// `order`, not a date: projects are a curated set, not a timeline
+// (specs/content-model.md §3.3).
+const entries = (await getCollection('projects', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+// Routes out are computed from what actually exists, not asserted (§4).
+const writing = await getCollection('writing', ({ data }) => !data.draft);
+const translations = await getCollection('translations', ({ data }) => !data.draft);
+---
+
+{/* TODO(Tal): the meta description */}
+<Base title="projects · T://bendet" description="TODO: Tal's copy" section="projects">
+  <header class="page-header">
+    <h1>projects</h1>
+
+    {/* TODO(Tal): the standing description — what counts as a project here:
+        real, finished-enough things someone else can run or read. Permanent
+        content, not empty-state copy; it renders identically at zero entries
+        and at twenty (§2, section 3). */}
+    <p class="standing"></p>
+  </header>
+
+  {
+    entries.length > 0 ? (
+      /* DOM order and class names are byte-identical to the home page's card
+         (src/pages/index.astro), deliberately: §2.2's disclosure test — no two
+         cards with visually identical affordances produce different navigation
+         outcomes — is written across the site, so there has to be one card. */
+      <ul class="cards">
+        {entries.map((entry) => {
+          const { href, host } = destination(entry);
+          const hostId = `card-host-${entry.id}`;
+          return (
+            <li class="card">
+              <a
+                class="card-title"
+                href={href}
+                rel={host === null ? undefined : 'noopener'}
+                aria-describedby={host === null ? undefined : hostId}
+              >
+                {entry.data.title}
+              </a>
+              <p class="card-desc">{entry.data.description}</p>
+              {/* The outbound card names where it goes; the inward card has
+                  nothing extra to disclose (§2.2). */}
+              {host !== null && (
+                <span class="card-host" id={hostId}>
+                  {host}
+                </span>
+              )}
+              {entry.data.stack.length > 0 && (
+                <ul class="stack-chips">
+                  {entry.data.stack.map((item, index) => (
+                    <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    ) : (
+      <>
+        {/* TODO(Tal): one line stating that nothing is listed here yet. No
+            promise, no date, no "check back". Never a placeholder card, a
+            "coming soon" tile, or a link to a GitHub profile standing in for a
+            project list — §4 names that last one as the tempting wrong move.
+            Thinner than /writing/'s empty state on purpose: this one is a
+            formality (§4). */}
+        <div class="terms" />
+
+        <ul class="routes-out">
+          {writing.length > 0 && (
+            <li>
+              <a href="/writing/">writing</a>
+            </li>
+          )}
+          {translations.length > 0 && (
+            <li>
+              <a href="/he/writing/" lang="he">
+                תרגומים
+              </a>
+            </li>
+          )}
+          {/* Unconditional, because a static page is what keeps R-4 (no dead
+              ends, specs/navigation.md §7.2) true while both collections are
+              empty — the state the site is in today. */}
+          <li>
+            <a href="/about/">about</a>
+          </li>
+        </ul>
+      </>
+    )
+  }
+</Base>

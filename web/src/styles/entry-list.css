@@ -1,7 +1,9 @@
 /*
- * The overview archetype's index idiom, shared by /writing/ and /he/writing/.
- * One stylesheet so the two indexes cannot drift — a Hebrew index that looked
- * second-class would break specs/pages/translations-index.md §5.
+ * The overview archetype's index idiom, shared by /writing/, /he/writing/ and
+ * /projects/ (which takes the header and the empty state from here, and its
+ * card grid from projects.css). One stylesheet so the indexes cannot drift —
+ * a Hebrew index that looked second-class would break
+ * specs/pages/translations-index.md §5.
  *
  * Logical properties only; under dir="rtl" every edge lands on the reading
  * start without a special case.

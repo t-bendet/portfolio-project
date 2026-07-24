@@ -1,0 +1,96 @@
+---
+// Project case study (/projects/[id]/) — specs/pages/project-detail.md.
+// Deep-dive editorial archetype, and a conditional route: it exists only where
+// depth genuinely exists, i.e. for entries with `caseStudy: true`
+// (specs/content-model.md §3.3, specs/routes/sitemap.md §2 row 7). A project
+// without one links straight out from its card and generates nothing here.
+//
+// The dynamic layer is NOT in this template. specs/content-model.md §6 gives
+// this route a view-event write keyed `projects:<id>` and no reads; it lands
+// with the API, mirroring writing/[id].astro. INV-1 (§5): no container, label
+// or placeholder for API-sourced content exists here, and none may be added
+// ahead of the data. No reactions — ADR 0020 scopes those to articles (§6).
+//
+// No siblings block: §2 lists seven sections and "more projects" is not among
+// them. writing-article.md §2.3 argues for siblings on the grounds that
+// articles accumulate; a curated project set does not.
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Contents from '../../components/Contents.astro';
+import ProjectDestinations from '../../components/ProjectDestinations.astro';
+import '../../styles/article.css';
+import '../../styles/projects.css';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('projects', ({ data }) => !data.draft);
+
+  // §4: `caseStudy: true` over an empty body would generate exactly the thin
+  // page the conditional route exists to prevent. `entry.body` is available
+  // here — the glob loader keeps it (retainBody defaults true;
+  // specs/scaffold-plan.md §0, verified 2026-07-22).
+  //
+  // Deliberately over the non-draft set rather than the whole collection: a
+  // draft carrying `caseStudy: true` with the case study still unwritten is
+  // the legitimate in-progress state, and the guard's job is to stop a thin
+  // page from shipping, not to stop one from being started.
+  for (const entry of entries) {
+    if (entry.data.caseStudy && !entry.body?.trim()) {
+      throw new Error(`caseStudy: true with an empty body — projects/${entry.id}`);
+    }
+  }
+
+  return entries
+    .filter((entry) => entry.data.caseStudy)
+    .map((entry) => ({ params: { id: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+
+// Identical rules to writing-article.md §2.2 (§2 row 4): a table of contents
+// over two headings is noise.
+const sections = headings.filter((heading) => heading.depth === 2);
+const hasContents = sections.length >= 3;
+---
+
+<Base
+  title={`${entry.data.title} · T://bendet`}
+  description={entry.data.description}
+  section="projects"
+>
+  <div class:list={['article-grid', { 'with-contents': hasContents }]}>
+    <header class="article-header">
+      <h1>{entry.data.title}</h1>
+      <p class="lede">{entry.data.description}</p>
+
+      {/* Chips sit directly in the header rather than inside a .meta-line: a
+          <ul> start tag closes an open <p>, so a wrapped list would be hoisted
+          straight back out by the parser. */}
+      {
+        entry.data.stack.length > 0 && (
+          <ul class="stack-chips">
+            {entry.data.stack.map((item, index) => (
+              <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
+            ))}
+          </ul>
+        )
+      }
+
+      <ProjectDestinations repoUrl={entry.data.repoUrl} liveUrl={entry.data.liveUrl} />
+    </header>
+
+    {hasContents && <Contents headings={sections} lang="en" />}
+
+    <article class="article-body">
+      <Content />
+    </article>
+
+    {/* The destinations come first and the way back second — §2 row 6's order,
+        which inverts writing/[id].astro's. Acting on the links is the natural
+        end of a case study; returning to the index is the fallback. */}
+    <footer class="end-matter">
+      <ProjectDestinations repoUrl={entry.data.repoUrl} liveUrl={entry.data.liveUrl} />
+      <a class="end-matter-link" href="/projects/">projects</a>
+    </footer>
+  </div>
+</Base>
