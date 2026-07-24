@@ -9,7 +9,7 @@ edit them.
 |---|---|
 | `brand.md` | Identity, voice, allowed/banned symbolic vocabulary |
 | `architecture.md` | Stack: Astro 7 static core + hand-built Node/TS API + Postgres; auth model; CI stages; budget |
-| `scaffold-plan.md` | Step-by-step `app/` creation: layout, commands, containers, workflows, AWS (cloud part gated on Tal) |
+| `scaffold-plan.md` | Step-by-step workspace creation (`web/`, `api/`, `deploy/` at the repo root): layout, commands, containers, workflows, AWS (cloud part gated on Tal) |
 | `ci-obligations.md` | The 11 things `ci.yml` must do |
 | `content-model.md` | Three content collections, Zod schemas, translation pairing, analytics key contract |
 | `routes/sitemap.md` | The 12 public routes + Hebrew locale subtree |
@@ -22,6 +22,7 @@ edit them.
 | `performance-budgets.md` | Numeric budgets CI enforces |
 | `security-requirements.md` | SR-1…SR-24, threat model |
 | `translations-checklist.md` | Licence/credit/back-link obligations per published translation |
+| `build-status.md` | **Not a decision** — what is built and what is not; the one mutable file here |
 
 Hard invariants live in `CLAUDE.md`. Source material (bio, CV, notes) in
 `research/`. Tal's design prototypes — the normative source of every

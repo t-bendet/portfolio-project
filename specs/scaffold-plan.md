@@ -1,8 +1,12 @@
-# Scaffold Plan — app/
+# Scaffold Plan — the workspace
 
 Consolidated from the Phase 1 scaffold plan + the 2026-07-22 scaffold-time
 verification batch (all seven owed verifications ran; results are baked in
-below). Monorepo topology: `app/` lives in this repo.
+below). Topology: the repo root **is** the pnpm workspace, holding `web/`,
+`api/`, and `deploy/`. This document originally nested them under `app/`;
+that folder was flattened away in PR #14 (2026-07-23) because a single-app
+repo gained nothing from the extra level. Read every path below as
+root-relative.
 
 **Standing rule:** every version below is a 2026-07-22 fact. Re-pin from
 fresh lookups at install time if this document is more than a few days old.
