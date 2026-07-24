@@ -1,0 +1,166 @@
+/*
+ * The projects device set: the card, the stack chip, the destination
+ * disclosure. One stylesheet across /, /projects/ and /projects/[id]/ so the
+ * three cannot drift — and because specs/pages/projects-index.md §2.2's
+ * disclosure test ("no two cards with visually identical affordances produce
+ * different navigation outcomes") is a property of the card, which means
+ * there has to be exactly one card.
+ *
+ * Named for the device set rather than for cards: the detail page imports it
+ * for the stack chip and the destination link without rendering a card.
+ *
+ * Logical properties only, as everywhere else.
+ */
+
+/* ── the card grid ─────────────────────────────────────────────────────── */
+
+/* auto-fill, not auto-fit, and the difference is load-bearing. auto-fill keeps
+   the empty tracks, so two cards render at track width and stay start-aligned;
+   auto-fit collapses them and two cards stretch across the measure — the exact
+   failure specs/pages/projects-index.md §2.3 forbids ("two cards must not
+   stretch to fill a three-column row"). auto-fit is the more commonly typed of
+   the two, so a future edit to it will look like a no-op and will not be. */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  justify-content: start;
+  gap: 0 32px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The prototype's card idiom (`.cards { gap: 1px; background: var(--border) }`
+   over filled cards) is deliberately not used: with auto-fill the border
+   background paints the *empty* tracks, producing the layout-with-holes §2.3
+   rejects. The hairline moves to the card's own block-end edge instead.
+   The prototype's card-wide hover is dropped for a second reason — the card is
+   not a link, only its title is, and a card-wide hover would advertise an
+   affordance that does not exist. */
+.card {
+  padding-block: 20px;
+  border-block-end: 1px solid var(--border);
+}
+
+/* .card-title/.card-desc/.card-host repeat the declarations that the home
+   page's .row-* rules carry, exactly as entry-list.css's .entry-title repeats
+   them. That is the house posture: each archetype device owns its own title,
+   description and meta treatment. Do not consolidate them into global.css. */
+.card-title {
+  display: inline-block;
+  font-size: var(--size-lede);
+  font-weight: 700;
+  color: var(--text-strong);
+  text-decoration: none;
+}
+
+.card-title:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.card-desc {
+  margin-block-start: 6px;
+  font-size: var(--size-meta);
+  color: var(--muted);
+}
+
+/* Destination disclosure (specs/pages/projects-index.md §2.2): the outbound
+   card names the host it leaves for. The inward card renders nothing here. */
+.card-host {
+  display: block;
+  margin-block-start: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--size-eyebrow);
+  color: var(--muted);
+}
+
+/* ── stack chips ───────────────────────────────────────────────────────── */
+
+/* Named .stack-chip, not .chip, and the rename is not cosmetic. /projects/
+   imports both entry-list.css and this file, and /projects/[id]/ imports both
+   article.css and this file; both of those own a .chip with the neutral
+   --chip-bg fill, which contradicts the --badge-N fill this device requires
+   (specs/design/palette.md §7.2). Astro's plain-CSS imports are global, so one
+   name would make the rendering depend on bundle order.
+
+   Not links: there is no stack-index route (projects-index.md §2.1). */
+.stack-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stack-chip {
+  font-family: var(--font-mono);
+  font-size: var(--size-label);
+  letter-spacing: var(--track-label);
+  padding: 3px 8px;
+  border-radius: var(--radius-s);
+}
+
+/* The one sanctioned accent-tint pattern: --badge-N behind --accent-N text
+   (specs/design/palette.md §7.2). Compounded onto .stack-chip so the modifier
+   can never match something that is not a chip. */
+.stack-chip.accent-1 {
+  color: var(--accent-1);
+  background-color: var(--badge-1);
+}
+
+.stack-chip.accent-2 {
+  color: var(--accent-2);
+  background-color: var(--badge-2);
+}
+
+.stack-chip.accent-3 {
+  color: var(--accent-3);
+  background-color: var(--badge-3);
+}
+
+.stack-chip.accent-4 {
+  color: var(--accent-4);
+  background-color: var(--badge-4);
+}
+
+.stack-chip.accent-5 {
+  color: var(--accent-5);
+  background-color: var(--badge-5);
+}
+
+.stack-chip.accent-6 {
+  color: var(--accent-6);
+  background-color: var(--badge-6);
+}
+
+/* Placement is context's, not the device's. The second rule reaches into
+   article.css's .article-header on the detail page, to sit on the same rhythm
+   .meta-line takes there. */
+.card .stack-chips {
+  margin-block-start: 12px;
+}
+
+.article-header .stack-chips {
+  margin-block-start: 24px;
+}
+
+/* ── destination links ─────────────────────────────────────────────────── */
+
+/* These live here rather than in article.css because that file is shared with
+   /writing/[id]/ and /he/writing/[id]/, which never render this device.
+   They keep the global underline rather than the borderless mono treatment of
+   .routes-out a and .end-matter-link: those links stay on the site, these leave
+   it, and §2.2's whole posture is that leaving must not be the quiet case. */
+.destination {
+  font-family: var(--font-mono);
+  font-size: var(--size-eyebrow);
+  color: var(--text);
+  text-underline-offset: 0.2em;
+}
+
+.destination-host {
+  color: var(--muted);
+  padding-inline-start: 8px;
+}

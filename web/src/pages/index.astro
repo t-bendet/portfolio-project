@@ -5,6 +5,10 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import HeroMark from '../components/HeroMark.astro';
+// The card is one device wherever it appears (specs/pages/projects-index.md
+// §2.2); the stylesheet and the destination rule are shared with /projects/.
+import { destination } from '../lib/projects';
+import '../styles/projects.css';
 
 const writing = (await getCollection('writing', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -13,15 +17,6 @@ const writing = (await getCollection('writing', ({ data }) => !data.draft))
 const projects = (await getCollection('projects', ({ data }) => !data.draft))
   .sort((a, b) => a.data.order - b.data.order)
   .slice(0, 3);
-
-// Destination disclosure (specs/pages/projects-index.md §2.2): a card must
-// say where it goes before it is clicked, so an outbound card carries its
-// host as metadata.
-function destination(project: (typeof projects)[number]) {
-  if (project.data.caseStudy) return { href: `/projects/${project.id}/`, host: null };
-  const url = project.data.liveUrl ?? project.data.repoUrl!;
-  return { href: url, host: new URL(url).host };
-}
 
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 ---
@@ -65,21 +60,30 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
           <ul class="cards">
             {projects.map((project) => {
               const { href, host } = destination(project);
+              // aria-describedby, so the host reaches a reader navigating by
+              // links — §2.2's test is what a visitor can tell before the
+              // click, and a span outside the anchor tells only sighted ones.
+              const hostId = `card-host-${project.id}`;
               return (
                 <li class="card">
                   <a
-                    class="row-title"
+                    class="card-title"
                     href={href}
                     rel={host === null ? undefined : 'noopener'}
+                    aria-describedby={host === null ? undefined : hostId}
                   >
                     {project.data.title}
                   </a>
-                  <p class="row-desc">{project.data.description}</p>
-                  {host !== null && <span class="row-meta">{host}</span>}
+                  <p class="card-desc">{project.data.description}</p>
+                  {host !== null && (
+                    <span class="card-host" id={hostId}>
+                      {host}
+                    </span>
+                  )}
                   {project.data.stack.length > 0 && (
-                    <ul class="chips">
+                    <ul class="stack-chips">
                       {project.data.stack.map((item, index) => (
-                        <li class={`chip accent-${(index % 6) + 1}`}>{item}</li>
+                        <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
                       ))}
                     </ul>
                   )}
@@ -126,27 +130,18 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
     border-block-end: 1px solid var(--border);
   }
 
-  .rows,
-  .cards,
-  .chips {
+  /* The card grid, the stack chip and the destination host live in
+     src/styles/projects.css — one device across / and /projects/. What is
+     left here is the home page's own composition. */
+  .rows {
     list-style: none;
     margin: 0;
     padding: 0;
   }
 
-  .row,
-  .card {
+  .row {
     padding-block: 20px;
     border-block-end: 1px solid var(--border);
-  }
-
-  .cards {
-    display: grid;
-    /* Start-aligned, unstretched: two projects must read as two projects
-       (projects-index.md §2.3). */
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    justify-content: start;
-    gap: 0 32px;
   }
 
   .row-title {
@@ -174,46 +169,6 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
     font-family: var(--font-mono);
     font-size: var(--size-eyebrow);
     color: var(--muted);
-  }
-
-  .chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-block-start: 12px;
-  }
-
-  .chip {
-    font-family: var(--font-mono);
-    font-size: var(--size-label);
-    letter-spacing: var(--track-label);
-    padding: 3px 8px;
-    border-radius: var(--radius-s);
-  }
-
-  .accent-1 {
-    color: var(--accent-1);
-    background-color: var(--badge-1);
-  }
-  .accent-2 {
-    color: var(--accent-2);
-    background-color: var(--badge-2);
-  }
-  .accent-3 {
-    color: var(--accent-3);
-    background-color: var(--badge-3);
-  }
-  .accent-4 {
-    color: var(--accent-4);
-    background-color: var(--badge-4);
-  }
-  .accent-5 {
-    color: var(--accent-5);
-    background-color: var(--badge-5);
-  }
-  .accent-6 {
-    color: var(--accent-6);
-    background-color: var(--badge-6);
   }
 
   .block-link {
