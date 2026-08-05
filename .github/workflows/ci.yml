@@ -1,9 +1,9 @@
 # ci.yml — skeleton of the pipeline specs/ci-obligations.md defines.
 # Implemented so far: typecheck, api tests against Postgres with migrations,
-# web build, docker image builds (not pushed), and the four static design gates
-# (contrast, token parity, banned vocabulary, no raw hex). Remaining obligations
-# (Playwright RTL stage, workflow paths-lint, perf/bundle/sec stages) land with
-# the features they check.
+# web build, docker image builds (not pushed), the four static design gates
+# (contrast, token parity, banned vocabulary, no raw hex), and the Playwright
+# RTL stage. Remaining obligations (workflow paths-lint, perf/bundle/sec
+# stages) land with the features they check.
 #
 # Repo settings require SHA-pinned actions and allow only github-owned
 # actions — pnpm comes via corepack, docker builds are plain `docker build`.
@@ -120,3 +120,29 @@ jobs:
 
       - name: Validate Caddyfile
         run: docker run --rm -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.11.4 caddy validate --config /etc/caddy/Caddyfile
+
+      # ci-obligations §4. Last on purpose: this step installs the e2e fixtures
+      # into the content collections, so everything that ships or greps what
+      # ships — the build, the banned-vocabulary gate, both images — has
+      # already run against a tree with no fixture in it. The script takes them
+      # back out when it exits.
+      #
+      # It serves the built site through the real deploy/Caddyfile in the
+      # pinned Caddy image and runs the suite from the pinned Playwright image,
+      # which is also how it runs on a laptop — that is what makes the
+      # checked-in screenshot baseline meaningful. Both are docker images, not
+      # actions, so nothing here needs allowlisting.
+      - name: RTL stage (ci-obligations §4)
+        run: web/tests/run-e2e.sh
+
+      # The diff images are the whole diagnosis when a screenshot assertion
+      # fails, and they do not exist anywhere else.
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            web/test-results/
+            web/playwright-report/
+          retention-days: 7

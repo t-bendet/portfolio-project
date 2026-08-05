@@ -20,16 +20,16 @@ const { headings, lang } = Astro.props;
 const title = lang === 'he' ? 'תוכן העניינים' : 'contents';
 ---
 
-<nav class="contents" aria-labelledby="contents-title">
+<nav class="article-contents" aria-labelledby="contents-title">
   {/* Hebrew is unicameral: no text-transform, letter-spacing normal
       (specs/design/typography.md §6). */}
   <p
-    class:list={['contents-title', { 'contents-title-he': lang === 'he' }]}
+    class:list={['article-contents-title', { 'article-contents-title-he': lang === 'he' }]}
     id="contents-title"
   >
     {title}
   </p>
-  <ol class="contents-items">
+  <ol class="article-contents-items">
     {
       headings.map((heading) => (
         <li>

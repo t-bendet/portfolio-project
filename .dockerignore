@@ -8,3 +8,10 @@ specs
 *.md
 .env
 .env.*
+
+# Tests never ship, and neither does a fixture left behind by an interrupted
+# e2e run (mirrored in .gitignore).
+web/tests
+web/src/content/**/*-fixture.md
+web/test-results
+web/playwright-report
