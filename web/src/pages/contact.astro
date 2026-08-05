@@ -1,0 +1,108 @@
+---
+// Contact (/contact/) — specs/pages/contact.md. The minimal archetype: a
+// short editorial column, no sidebar, no card grid, no index idiom.
+//
+// The page is thin by nature — roughly fifty words and three links is its
+// honest maximum (§1, §2.1). Anything added here to make it look less empty
+// is the exact failure this route was warned about, and §5 records what
+// happens then: the content folds into /about/ and the route retires.
+//
+// No dynamic layer, permanently. No form (ADR 0020 authorizes no endpoint),
+// no booking embed, no availability badge, no response-time promise (§2.2,
+// §6). Every link is a plain anchor that works with scripts disabled.
+//
+// The address is a plain mailto: with its cost accepted — it will be scraped
+// (§2.3). Obfuscating it with JavaScript would make the site's most basic
+// affordance depend on a script and would not defeat modern harvesting.
+import Base from '../layouts/Base.astro';
+import { email, emailAddress, github, linkedin } from '../lib/links';
+// The label/value row, shared with /about/ and /colophon/. The minimal
+// archetype takes the register but not the deep-dive shell: no article.css,
+// no sidebar, no prose components — there is no prose to compose here.
+import '../styles/reference.css';
+
+// Shown as what they are, not as icons (§2, section 4). The label is the
+// account name a visitor would recognize; the link text is the destination.
+const links = [
+  { label: 'email', href: email, text: emailAddress, external: false },
+  { label: 'github', href: github, text: 't-bendet', external: true },
+  { label: 'linkedin', href: linkedin, text: 'tal-bendet', external: true },
+];
+---
+
+{/* TODO(Tal): the meta description */}
+<Base title="contact · T://bendet" description="TODO: Tal's copy" section="contact">
+  <header class="page-header">
+    <h1>contact</h1>
+  </header>
+
+  {/* TODO(Tal): the openness statement (§2, section 3) — one short paragraph
+      saying what you are open to: work, and translation requests and article
+      suggestions from the Israeli dev community. It is the sentence that
+      earns this route existing.
+
+      Binding: never "let's connect", "reach out", "get in touch", or anything
+      in that register (banned #6, grep-tested). No response-time promise. No
+      "open to work" status — if availability changes, this sentence changes.
+      No Hebrew paragraph here: that audience is addressed natively in Hebrew
+      on /he/writing/ instead (§2.4). */}
+  <p class="openness"></p>
+
+  <ul class="ref-rows direct">
+    {
+      links.map((link) => (
+        <li class="ref-row">
+          <span class="ref-label">{link.label}</span>
+          <a class="direct-link" href={link.href} rel={link.external ? 'noopener' : undefined}>
+            {link.text}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Base>
+
+<style>
+  .page-header {
+    padding-block-end: 32px;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: var(--size-h1);
+    font-weight: 700;
+    line-height: var(--leading-display);
+    letter-spacing: var(--track-display);
+    color: var(--text-strong);
+  }
+
+  .openness {
+    margin-block-start: 32px;
+    font-size: var(--size-lede);
+    line-height: var(--leading-tight);
+    color: var(--text);
+    max-inline-size: 52ch;
+  }
+
+  .direct {
+    margin-block-start: 40px;
+  }
+
+  /* The row's value slot is a link here rather than prose — mono, because it
+     is an address, and isolated because an address is an LTR run. */
+  .direct-link {
+    font-family: var(--font-mono);
+    font-size: var(--size-meta);
+    color: var(--text-strong);
+    text-decoration: none;
+    /* An address is an LTR run wherever it sits. */
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  .direct-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+</style>
