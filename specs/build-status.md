@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-07-24**, at `caf4419` on `main`.
+Last checked against the repo: **2026-08-05**, at `b47469f` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -24,7 +24,7 @@ Rows follow `routes/sitemap.md` §1. "Landed in" is the PR number.
 | `/he/writing/[id]/` | `pages/translations-article.md` | yes | #17 |
 | `/projects/` | `pages/projects-index.md` | yes | #18 |
 | `/projects/[id]/` | `pages/project-detail.md` | yes — route generated only for entries with a body (sitemap row 7) | #18 |
-| `/about/` | `pages/about.md` | **no** | — |
+| `/about/` | `pages/about.md` | yes — no portrait and no CV link yet, both by removal rather than placeholder (brief §3); prose slots are `TODO(Tal)` | #20 |
 | `/colophon/` | `pages/colophon.md` | **no** | — |
 | `/contact/` | `pages/contact.md` | **no** | — |
 | `/404` | `pages/not-found.md` | yes | #16 |
@@ -33,12 +33,12 @@ Rows follow `routes/sitemap.md` §1. "Landed in" is the PR number.
 | `/sitemap-index.xml` | sitemap row 13 | yes — `@astrojs/sitemap`, no hreflang alternates, `/he/404/` filtered out | #10 |
 | `/he/` → `/he/writing/` | sitemap row 14 | yes — `redirects` in `web/astro.config.mjs` | #17 |
 
-Three page briefs remain unbuilt: about, colophon, contact. Nothing else in
+Two page briefs remain unbuilt: colophon, contact. Nothing else in
 `pages/` is outstanding.
 
 **All three content collections are empty.** `web/src/content/` holds no
-entries, so `astro build` currently emits **6 pages**: the three indexes in
-their empty states, both 404s, and home. Every `[id]` route above is
+entries, so `astro build` currently emits **7 pages**: the three indexes in
+their empty states, both 404s, home, and about. Every `[id]` route above is
 implemented and generates zero pages until content lands — the templates are
 exercised by nothing but the build. Read "built" in this table as *the route
 exists and is spec-complete*, not as *a visitor can see a filled page*.
