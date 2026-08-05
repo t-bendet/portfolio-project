@@ -1,6 +1,8 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-06**, at `012b531` on `main`.
+Last checked against the repo: **2026-08-06**, at `aa66613` on `main` plus the
+branch that adds the RTL stage. (#24 updated this file's body and left the
+commit above it reading `012b531`; corrected here.)
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -56,13 +58,16 @@ what is running, so it grows a section — dynamic layer, containers and
 deploy, monthly cost — when each of those starts running, and its review date
 moves when it is actually re-read. Today it is at `2026-08`.
 
-**All three content collections are empty.** `web/src/content/` holds no
-entries, so `astro build` currently emits **9 pages**: the three indexes in
+**All three content collections are empty.** `web/src/content/` now exists —
+one directory per collection, each holding only a `.gitkeep` — so `astro build`
+currently emits **9 pages**: the three indexes in
 their empty states, both 404s, home, about, colophon, and contact. Every
 `[id]` route above is implemented and generates zero pages until content
-lands — the templates are
-exercised by nothing but the build. Read "built" in this table as *the route
-exists and is spec-complete*, not as *a visitor can see a filled page*.
+lands. Read "built" in this table as *the route exists and is spec-complete*,
+not as *a visitor can see a filled page*. Of the three, only
+`/he/writing/[id]/` is exercised by anything beyond the build: CI's RTL stage
+renders it from a fixture (§3). The other two templates have never had a page
+made out of them.
 
 **Not routes, recorded so their absence is not mistaken for an oversight:**
 `/admin`, `/admin/*` (private, API-served — sitemap row 15) and `/api/v1/*`
@@ -96,7 +101,7 @@ One workflow, `.github/workflows/ci.yml`, job `checks`. Numbering is
 | 1 | Typecheck — `tsc --noEmit` (api) + `astro check` (web) | yes |
 | 2 | API tests against a `postgres:18.4-alpine` service container, migrations applied first | yes |
 | 3 | Build — `astro build` + both docker images, not pushed on PRs | yes (+ Caddyfile validation) |
-| 4 | Playwright RTL stage, five assertions | **no** |
+| 4 | Playwright RTL stage, five assertions | yes — `web/tests/e2e/rtl.spec.ts`, nine tests, plus both 404 statuses |
 | 5 | Contrast gate at full precision | yes — `scripts/contrast.ts`, 73 pairs |
 | 6 | Token parity between theme blocks | yes — `scripts/token-parity.ts` |
 | 7 | Banned-vocabulary grep over shipped CSS/JS/HTML | yes — `scripts/banned-vocab.ts`, over `web/dist` |
@@ -105,8 +110,37 @@ One workflow, `.github/workflows/ci.yml`, job `checks`. Numbering is
 | 10 | `perf` (Lighthouse vs. budgets) + `bundle` stages | **no** |
 | 11 | `sec` stage (dependency audit + secrets scan) | **no** |
 
-Obligations 4 and 9–11 land with the features they check, not as a batch.
+Obligations 9–11 land with the features they check, not as a batch.
 `deploy.yml` and `backup.yml` do not exist yet — both are downstream of §4.
+
+**The RTL stage (4) runs on a fixture, not on content**, because there is no
+translation to run it on and inventing one would be publishing a translation
+of nothing. `web/tests/fixtures/translations/rtl-fixture.md` is copied into the
+collection by `web/tests/install-fixtures.ts` for that build alone; the copy is
+gitignored and dockerignored, and the step runs after the build, the
+banned-vocabulary gate and both image builds, so nothing that ships has ever
+seen it. A fixture also keeps the screenshot baseline still: real content would
+re-baseline the page every time a sentence changed.
+
+It serves the built site through the **real** `deploy/Caddyfile` in
+`caddy:2.11.4` and runs the suite from `mcr.microsoft.com/playwright` — both
+pinned images, no new action to allowlist — so the same command
+(`pnpm --filter web test:e2e`) produces the same pixels on CI and on a laptop.
+The Playwright image tag and `@playwright/test` must be bumped together.
+
+Two defects it found on its first run, both invisible to every gate that
+preceded it:
+
+- `handle_errors` rewrote `/he/*` 404s to `/he/404.html`, which the build has
+  never emitted — under `trailingSlash: 'always'` the file is
+  `he/404/index.html`. The status was right and the body was empty, which is
+  exactly the failure the "assert the *status*, not just the body" note in
+  `scaffold-plan.md` §0 was watching for, inverted.
+- The in-page contents column was named `.contents`, and Tailwind generates
+  `.contents { display: contents }` for any bare token it finds in a class
+  attribute. The nav stopped being a grid item and its heading list was
+  auto-placed at the foot of the page. Renamed `.article-contents`; component
+  classes do not use bare utility words.
 
 **The four design gates (5–8)** are dependency-free scripts in `scripts/`, run
 by `node`'s own type stripping — no new action to allowlist, nothing installed.

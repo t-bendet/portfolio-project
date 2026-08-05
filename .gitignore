@@ -7,3 +7,10 @@ node_modules/
 .env.*
 .DS_Store
 *.log
+
+# e2e fixtures copied into the collections by web/tests/install-fixtures.ts.
+# They are test artifacts with a real content path, so the safety net is here
+# as well as in the clean step (mirrored in .dockerignore).
+web/src/content/**/*-fixture.md
+web/test-results/
+web/playwright-report/

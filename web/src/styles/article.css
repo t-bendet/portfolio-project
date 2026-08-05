@@ -31,7 +31,7 @@
 
   /* Sticky in-page navigation — not site navigation, which is why the global
      header is not sticky and this is (specs/navigation.md §1). */
-  .with-contents > .contents {
+  .with-contents > .article-contents {
     grid-column: 1;
     grid-row: 2;
     position: sticky;
@@ -114,12 +114,20 @@
 /* ── contents ──────────────────────────────────────────────────────────── */
 
 /* Below the sidebar breakpoint this renders inline, above the body, in its
-   source position — no disclosure widget (§2.2). */
-.contents {
+   source position — no disclosure widget (§2.2).
+
+   The prefix is not decoration. Tailwind generates a utility for every bare
+   token it finds in a class attribute, so a component class named `contents`
+   is silently shadowed by `.contents { display: contents }` — the element
+   stops being a grid item, its children get auto-placed, and the sticky
+   column comes apart. That is what shipped until the RTL stage's screenshot
+   showed the heading list stranded at the foot of the page. Component classes
+   here do not use bare utility words. */
+.article-contents {
   margin-block-end: 40px;
 }
 
-.contents-title {
+.article-contents-title {
   font-family: var(--font-mono);
   font-size: var(--size-label);
   letter-spacing: var(--track-label);
@@ -129,12 +137,12 @@
   border-block-end: 1px solid var(--border);
 }
 
-.contents-title-he {
+.article-contents-title-he {
   text-transform: none;
   letter-spacing: normal;
 }
 
-.contents-items {
+.article-contents-items {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -144,7 +152,7 @@
 /* No scroll-spy: an active-section indicator needs a scroll listener, which
    is JavaScript on the reading path (§2.2). The list shows the article's
    shape, not the reader's position in it. */
-.contents-items a {
+.article-contents-items a {
   display: block;
   font-family: var(--font-mono);
   font-size: var(--size-meta);
@@ -157,7 +165,7 @@
   transition: color var(--motion-hover) ease;
 }
 
-.contents-items a:hover {
+.article-contents-items a:hover {
   color: var(--text);
   border-inline-start-color: var(--border-strong);
 }
@@ -439,7 +447,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .contents-items a,
+  .article-contents-items a,
   .end-matter-link {
     transition: none;
   }
