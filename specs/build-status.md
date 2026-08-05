@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-05**, at `cfaf2ee` on `main`.
+Last checked against the repo: **2026-08-06**, at `012b531` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -97,16 +97,36 @@ One workflow, `.github/workflows/ci.yml`, job `checks`. Numbering is
 | 2 | API tests against a `postgres:18.4-alpine` service container, migrations applied first | yes |
 | 3 | Build — `astro build` + both docker images, not pushed on PRs | yes (+ Caddyfile validation) |
 | 4 | Playwright RTL stage, five assertions | **no** |
-| 5 | Contrast gate at full precision | **no** |
-| 6 | Token parity between theme blocks | **no** |
-| 7 | Banned-vocabulary grep over shipped CSS/JS/HTML | **no** |
-| 8 | No-raw-hex lint | **no** |
+| 5 | Contrast gate at full precision | yes — `scripts/contrast.ts`, 73 pairs |
+| 6 | Token parity between theme blocks | yes — `scripts/token-parity.ts` |
+| 7 | Banned-vocabulary grep over shipped CSS/JS/HTML | yes — `scripts/banned-vocab.ts`, over `web/dist` |
+| 8 | No-raw-hex lint | yes — `scripts/no-raw-hex.ts`, over `web/src` |
 | 9 | Workflow-lint for the `paths:` filters | **no** |
 | 10 | `perf` (Lighthouse vs. budgets) + `bundle` stages | **no** |
 | 11 | `sec` stage (dependency audit + secrets scan) | **no** |
 
-Obligations 4–11 land with the features they check, not as a batch.
+Obligations 4 and 9–11 land with the features they check, not as a batch.
 `deploy.yml` and `backup.yml` do not exist yet — both are downstream of §4.
+
+**The four design gates (5–8)** are dependency-free scripts in `scripts/`, run
+by `node`'s own type stripping — no new action to allowlist, nothing installed.
+They pass on the tree as it stands; this was enforcement arriving, not
+violations being fixed. Two scope decisions are worth knowing before reading a
+future failure:
+
+- **5** parses `design/palette.md` §5 rather than a checked-in pairs file, and
+  cross-checks every named token against `web/src/styles/tokens.css` — so a
+  nudge applied to one file and not the other fails. It also compares each
+  row's stated ratio against the computed one, which makes the spec's own
+  tables self-checking.
+- **7** greps `web/dist` (what ships, asset names included); **8** lints
+  `web/src` with `tokens.css` as its single allowlisted file. Splitting them
+  that way keeps Tailwind preflight's hexes — not ours — out of the hex lint
+  without an allowlist that would grow into a hiding place.
+
+The `paths:` filters gained `scripts/**` and `specs/**` in the same PR: the
+contrast gate reads `specs/design/palette.md`, so a spec-only edit must re-run
+CI. That is obligation 9's territory, and 9 is still unbuilt.
 
 **Live repo settings that will bite before any of this runs:** third-party
 actions are blocked (`allowed_actions: selected`, `patterns_allowed: []`) and
