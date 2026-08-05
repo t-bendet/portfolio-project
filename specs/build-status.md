@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-05**, at `b47469f` on `main`.
+Last checked against the repo: **2026-08-05**, at `cfaf2ee` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -24,9 +24,9 @@ Rows follow `routes/sitemap.md` §1. "Landed in" is the PR number.
 | `/he/writing/[id]/` | `pages/translations-article.md` | yes | #17 |
 | `/projects/` | `pages/projects-index.md` | yes | #18 |
 | `/projects/[id]/` | `pages/project-detail.md` | yes — route generated only for entries with a body (sitemap row 7) | #18 |
-| `/about/` | `pages/about.md` | yes — no portrait and no CV link yet, both by removal rather than placeholder (brief §3); prose slots are `TODO(Tal)` | #20 |
+| `/about/` | `pages/about.md` | yes — no portrait and no CV link yet, both by removal rather than placeholder (brief §3); prose written in #22 | #20 |
 | `/colophon/` | `pages/colophon.md` | yes — sections 4, 5, 8, 10 only: the layers that are not running yet have no section, per the brief's §4 ("a sentence in the future tense on this page is a bug") | #21 |
-| `/contact/` | `pages/contact.md` | yes — the openness statement is `TODO(Tal)`; the address is still the `.invalid` placeholder (brief §6) | #21 |
+| `/contact/` | `pages/contact.md` | yes — openness statement and published address both written in #22 (brief §6) | #21 |
 | `/404` | `pages/not-found.md` | yes | #16 |
 | `/he/404` | `pages/not-found.md` | yes — Caddy `handle_errors` serves it for `/he/*` (sitemap row 11b's owed verification, discharged) | #16 |
 | `/rss.xml`, `/he/rss.xml` | sitemap row 12 | yes | #17 |
