@@ -20,6 +20,9 @@ import Base from '../layouts/Base.astro';
 // "available on request" (§2.2, §3). See the module for how to turn either on.
 import { portrait, cv } from '../lib/about';
 import '../styles/article.css';
+// The section device and the label/value row, shared with /colophon/ and
+// /contact/ — one reference register across the three authored pages.
+import '../styles/reference.css';
 
 // Section 5, the reference register the prototypes already use
 // (build-tools-overview.html's config-row device). Facts from
@@ -94,12 +97,12 @@ const background: { label: string; value: string }[] = [
   <section class="section">
     <h2>background</h2>
 
-    <dl class="background">
+    <dl class="ref-rows">
       {
         background.map((row) => (
-          <div class="background-row">
-            <dt class="background-label">{row.label}</dt>
-            <dd class="background-value">{row.value}</dd>
+          <div class="ref-row">
+            <dt class="ref-label">{row.label}</dt>
+            <dd class="ref-value">{row.value}</dd>
           </div>
         ))
       }
@@ -156,61 +159,6 @@ const background: { label: string; value: string }[] = [
     display: block;
     max-inline-size: 100%;
     block-size: auto;
-  }
-
-  .section {
-    margin-block-start: 72px;
-  }
-
-  .section h2 {
-    font-family: var(--font-display);
-    font-size: var(--size-h2);
-    font-weight: 600;
-    letter-spacing: var(--track-display);
-    color: var(--text-strong);
-    padding-block-end: 12px;
-    border-block-end: 1px solid var(--border);
-  }
-
-  /* The reference register, transcribed from the config-row device in
-     specs/design/prototypes/build-tools-overview.html: mono label, prose
-     value, one rule between rows. */
-  .background {
-    margin: 0;
-  }
-
-  .background-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 4px 24px;
-    padding-block: 16px;
-    border-block-end: 1px solid var(--border);
-  }
-
-  .background-row:last-child {
-    border-block-end: none;
-  }
-
-  @media (min-width: 700px) {
-    .background-row {
-      grid-template-columns: 160px minmax(0, 1fr);
-      align-items: baseline;
-    }
-  }
-
-  .background-label {
-    font-family: var(--font-mono);
-    font-size: var(--size-label);
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .background-value {
-    margin: 0;
-    font-size: var(--size-meta);
-    line-height: var(--leading-body);
-    color: var(--text);
   }
 
   .cv-line {

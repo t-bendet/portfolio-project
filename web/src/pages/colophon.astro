@@ -1,0 +1,168 @@
+---
+// Colophon (/colophon/) — specs/pages/colophon.md. Footer-linked only, never
+// in primary nav (§2 row 9 of specs/routes/sitemap.md): a reward for the
+// curious, not a headline claim. Deep-dive editorial archetype.
+//
+// The register test is this page's reason to exist (§2.1): every claim is
+// paired with what it cost or what it replaced. A sentence that only says
+// what was used does not belong, and no technology gets promotional framing —
+// including the ones this project chose (CLAUDE.md). Apply the test on every
+// edit: read each sentence and ask what it concedes.
+//
+// Not built, by §2.4: live build/deploy status, CI badges, an architecture
+// diagram nobody will redraw, performance scores. The first two would make a
+// static page depend on the API and invert the R4 anchor, which is why the
+// absence is structural rather than a matter of taste.
+//
+// WHAT IS DELIBERATELY MISSING, AND WHEN IT LANDS (§3, §4): the page
+// describes what is running. A sentence in the future tense here is a bug.
+// So the dynamic layer (endpoints are stubs, no database is deployed),
+// containers and deploy (nothing is provisioned), and the monthly cost
+// (nothing is billed yet) have no sections. Each gets one when it runs — not
+// before, and the review date below moves with them.
+import Base from '../layouts/Base.astro';
+import { repo } from '../lib/links';
+import '../styles/article.css';
+import '../styles/reference.css';
+
+// A review date, not a build date (§2.2): a build timestamp would change on
+// every deploy without anyone checking anything, and would assert a freshness
+// the words do not have. Month precision. Moving this is what "reviewed"
+// means — bump it when the page has actually been read against reality.
+const reviewed = '2026-08';
+---
+
+{/* TODO(Tal): the meta description */}
+<Base title="colophon · T://bendet" description="TODO: Tal's copy" section="colophon">
+  <header class="article-header">
+    <h1>colophon</h1>
+    <p class="lede">
+      What runs this site, and what each choice cost. Every claim below is paired with what
+      it gave up.
+    </p>
+    <p class="reviewed">
+      reviewed <time datetime={reviewed}>{reviewed}</time>
+    </p>
+  </header>
+
+  <section class="section">
+    <h2>the static core</h2>
+    <div class="article-body">
+      <p>
+        Astro 7 with static output and no adapter: every public page is HTML on disk before
+        anyone asks for it, and the reading path carries no framework JavaScript.
+      </p>
+      <p>
+        The cost is paid at both ends. Publishing is a build and a deploy, so correcting a
+        typo is a pipeline run rather than an edit. And nothing that differs per visitor can
+        live here at all — it has to be a second system with its own uptime, which is a
+        larger bill than server-rendering the site would have been.
+      </p>
+      <p>
+        Content sits in typed collections, so a missing field fails the build instead of the
+        page. That trade buys a schema to migrate: adding a field means touching every entry
+        written before it.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>content and language</h2>
+    <div class="article-body">
+      <p>
+        Articles and translations are MDX files in the repository, versioned alongside the
+        code that renders them. The cost is that publishing requires git — there is no
+        editor, nothing can be written from a phone, and every correction is a commit
+        anyone can read.
+      </p>
+      <p>
+        Hebrew is a prebuilt locale subtree at <code>/he/</code> with <code>dir="rtl"</code>,
+        carrying its own index, its own feed, and its own routes rather than a
+        machine-translated mirror of the English ones.
+      </p>
+      <p>
+        Localization stops there, on purpose: the home page, projects, and this site's about
+        page have no Hebrew counterpart, so a Hebrew reader who follows a link out of the
+        translations gets English. Translating the chrome around a body of mostly English
+        writing would advertise a bilingual site that does not exist. A visible seam is
+        easier to read than a half-kept promise.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>the pipeline</h2>
+    <div class="article-body">
+      <p>
+        One workflow runs on every pull request: typecheck across both packages, the API's
+        tests against a Postgres service container with migrations applied first, then the
+        site build and both container images.
+      </p>
+      <p>
+        "From scratch" is a narrow claim, and worth stating narrowly. The vendor supplies
+        the workflow syntax and two primitive actions — a checkout and a Node setup. Every
+        stage's logic above that is authored here. What that costs is the debugging a
+        marketplace action would have absorbed: a hand-written stage that breaks on a runner
+        image update is a hand-written stage someone has to read.
+      </p>
+      <p>
+        Third-party actions are blocked at the repository level and anything that runs must
+        be pinned to a commit. It is a real constraint rather than a stance: adding one is a
+        settings change before it is a workflow change, and the failure when you forget is
+        an opaque permissions error.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>the record</h2>
+    <div class="article-body">
+      <p>
+        The site is built from a public repository, and the decisions behind it were argued
+        somewhere rather than asserted here — including the ones rejected and the ones
+        reversed. The specs are the distilled result; the argument itself is in the history
+        before them. They are working documents, not visitor documents, and this page does
+        not depend on anyone reading them.
+      </p>
+    </div>
+    <ul class="ref-rows pointers">
+      <li class="ref-row">
+        <span class="ref-label">repository</span>
+        <span class="ref-value">
+          <a href={repo} rel="noopener">github.com/t-bendet/portfolio-project</a>
+        </span>
+      </li>
+      <li class="ref-row">
+        <span class="ref-label">decisions</span>
+        <span class="ref-value">
+          <code>specs/</code> in the repository, and the commit history behind it
+        </span>
+      </li>
+    </ul>
+  </section>
+</Base>
+
+<style>
+  /* Meta-register, next to the header it qualifies: it is a caveat on the
+     page's claims, not a byline. */
+  .reviewed {
+    margin-block-start: 24px;
+    font-family: var(--font-mono);
+    font-size: var(--size-eyebrow);
+    color: var(--muted);
+  }
+
+  .pointers {
+    margin-block-start: 32px;
+  }
+
+  .pointers a {
+    color: var(--text-strong);
+    text-decoration: none;
+    border-block-end: 1px solid var(--border-strong);
+  }
+
+  .pointers a:hover {
+    border-block-end-color: var(--text-strong);
+  }
+</style>

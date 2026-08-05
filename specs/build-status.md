@@ -25,21 +25,31 @@ Rows follow `routes/sitemap.md` §1. "Landed in" is the PR number.
 | `/projects/` | `pages/projects-index.md` | yes | #18 |
 | `/projects/[id]/` | `pages/project-detail.md` | yes — route generated only for entries with a body (sitemap row 7) | #18 |
 | `/about/` | `pages/about.md` | yes — no portrait and no CV link yet, both by removal rather than placeholder (brief §3); prose slots are `TODO(Tal)` | #20 |
-| `/colophon/` | `pages/colophon.md` | **no** | — |
-| `/contact/` | `pages/contact.md` | **no** | — |
+| `/colophon/` | `pages/colophon.md` | yes — sections 4, 5, 8, 10 only: the layers that are not running yet have no section, per the brief's §4 ("a sentence in the future tense on this page is a bug") | #21 |
+| `/contact/` | `pages/contact.md` | yes — the openness statement is `TODO(Tal)`; the address is still the `.invalid` placeholder (brief §6) | #21 |
 | `/404` | `pages/not-found.md` | yes | #16 |
 | `/he/404` | `pages/not-found.md` | yes — Caddy `handle_errors` serves it for `/he/*` (sitemap row 11b's owed verification, discharged) | #16 |
 | `/rss.xml`, `/he/rss.xml` | sitemap row 12 | yes | #17 |
 | `/sitemap-index.xml` | sitemap row 13 | yes — `@astrojs/sitemap`, no hreflang alternates, `/he/404/` filtered out | #10 |
 | `/he/` → `/he/writing/` | sitemap row 14 | yes — `redirects` in `web/astro.config.mjs` | #17 |
 
-Two page briefs remain unbuilt: colophon, contact. Nothing else in
-`pages/` is outstanding.
+**Every page brief in `pages/` is now built.** What is outstanding on the
+built routes is copy, not construction: the `TODO(Tal)` prose slots (every
+meta description, both 404 statements, the three standing descriptions, the
+about lede/bio/work sections, the contact openness statement, the Hebrew
+credit wording) and the email address, which is still a `.invalid`
+placeholder in `web/src/lib/links.ts`.
+
+`/colophon/` carries a further obligation the others do not: it describes
+what is running, so it grows a section — dynamic layer, containers and
+deploy, monthly cost — when each of those starts running, and its review date
+moves when it is actually re-read. Today it is at `2026-08`.
 
 **All three content collections are empty.** `web/src/content/` holds no
-entries, so `astro build` currently emits **7 pages**: the three indexes in
-their empty states, both 404s, home, and about. Every `[id]` route above is
-implemented and generates zero pages until content lands — the templates are
+entries, so `astro build` currently emits **9 pages**: the three indexes in
+their empty states, both 404s, home, about, colophon, and contact. Every
+`[id]` route above is implemented and generates zero pages until content
+lands — the templates are
 exercised by nothing but the build. Read "built" in this table as *the route
 exists and is spec-complete*, not as *a visitor can see a filled page*.
 

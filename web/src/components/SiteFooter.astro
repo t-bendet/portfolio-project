@@ -3,17 +3,16 @@
 // specs/navigation.md §4. Content-independent (N-1), and identical on all
 // twelve routes including both 404s (§7.3).
 
+// The same three links /contact/ lists, from one module so the two surfaces
+// cannot drift — including the address, which is still a marked placeholder
+// (TODO(Tal), src/lib/links.ts).
+import { email, github, linkedin } from '../lib/links';
+
 const locale = Astro.currentLocale ?? 'en';
 const path = Astro.url.pathname;
 
 // One feed per page: the one matching the current locale (§4.1).
 const feed = locale === 'he' ? '/he/rss.xml' : '/rss.xml';
-
-// TODO(Tal): which address to publish is yours to decide — the specs record
-// none, so this is a marked placeholder and must not ship as-is.
-const email = 'mailto:tal@t-bendet.invalid';
-const github = 'https://github.com/t-bendet';
-const linkedin = 'https://www.linkedin.com/in/tal-bendet';
 
 // /colophon/ has no owning nav item, so its footer link is the primary — and
 // therefore the marked — occurrence (§2.3). The Hebrew link below never is.
