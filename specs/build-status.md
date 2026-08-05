@@ -33,12 +33,23 @@ Rows follow `routes/sitemap.md` §1. "Landed in" is the PR number.
 | `/sitemap-index.xml` | sitemap row 13 | yes — `@astrojs/sitemap`, no hreflang alternates, `/he/404/` filtered out | #10 |
 | `/he/` → `/he/writing/` | sitemap row 14 | yes — `redirects` in `web/astro.config.mjs` | #17 |
 
-**Every page brief in `pages/` is now built.** What is outstanding on the
-built routes is copy, not construction: the `TODO(Tal)` prose slots (every
-meta description, both 404 statements, the three standing descriptions, the
-about lede/bio/work sections, the contact openness statement, the Hebrew
-credit wording) and the email address, which is still a `.invalid`
-placeholder in `web/src/lib/links.ts`.
+**Every page brief in `pages/` is now built, and every route carries real
+copy.** No `TODO(Tal)` slot remains: meta descriptions, both 404 statements,
+the standing descriptions and empty-state terms, the about prose, the contact
+openness statement, and both feed channel descriptions are written. The
+contact address is `talbendet21@gmail.com` (Tal's call, 2026-08-05).
+
+**What is provisional rather than missing:** every Hebrew string is drafted
+and marked `REVIEW(Tal)` — `/he/writing/`, `/he/404`, `/he/rss.xml`, and both
+credit lines in `/he/writing/[id]/`. Tal is the native speaker and the voice
+owner; the structure around those strings is binding, the wording is not.
+The credit trio (states it is a translation · names the author · links the
+original) is a licence condition and survives any rewrite
+(`translations-checklist.md`).
+
+**The one sentence with a maintenance contract** is the availability line in
+`/about/`'s "the work". It is maintained by editing, which is the trade
+`pages/about.md` §2.3 chose over a status badge that goes stale silently.
 
 `/colophon/` carries a further obligation the others do not: it describes
 what is running, so it grows a section — dynamic layer, containers and

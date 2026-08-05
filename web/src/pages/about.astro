@@ -7,10 +7,11 @@
 // script. The only client script on this route is the global theme script
 // (ADR 0002, specs/design/tokens.md §2).
 //
-// Voice is Tal's, and sharper here than anywhere (§2.3): the prose slots are
-// left as TODO(Tal) rather than filled with plausible copy, which is the same
-// convention as / and /404. What is filled below is fact, not register — the
-// background rows, which are a reference list, not a voice surface.
+// The voice constraints are sharper here than anywhere (§2.3): zero
+// reference density, no template phrasing, and no sentence that would be
+// wrong in eighteen months if nobody touched it. The one sentence that must
+// be maintained is the availability line in "the work", and it is maintained
+// by editing rather than by a status widget — that trade is §2.3's.
 //
 // Not built, by §5: a /uses block, skills bars, company logos, testimonials,
 // a timeline widget, workspace photos, any hint of the second theme.
@@ -52,27 +53,48 @@ const background: { label: string; value: string }[] = [
 ];
 ---
 
-{/* TODO(Tal): the meta description */}
-<Base title="about · T://bendet" description="TODO: Tal's copy" section="about">
+<Base
+  title="about · T://bendet"
+  description="Tal Bendet — full stack developer in Tel Aviv. Four years of design-system work at Amdocs, Hebrew translations of technical articles, and the infrastructure behind this site."
+  section="about"
+>
   <header class="article-header">
     <h1>about</h1>
 
-    {/* TODO(Tal): the one-line lede, in your own register. Not a job title,
-        not a tagline — the sentence you would say to someone who just read
-        something here and wanted to know who wrote it. */}
-    <p class="lede"></p>
+    <p class="lede">
+      Design systems for four years, translation work on the side, and a site built the
+      hard way on purpose.
+    </p>
   </header>
 
   <div class:list={['bio-slot', { 'with-portrait': portrait !== null }]}>
+    {/* Zero reference density here, by §2.3: the person carries this page,
+        so no mythology, no fandom, no protocol wordplay past the eyebrow.
+        Every date is a closed span — nothing here needs editing to stay
+        true. */}
     <div class="bio article-body">
-      {/* TODO(Tal): the bio (§2, section 3) — who you are and what you have
-          actually done: the Amdocs design-system years, the translation work,
-          what you are available for. Prose, first person, no bullet list.
-          Binding: zero reference density (no mythology, no HP, no protocol
-          wordplay), no template phrasing ("passionate about", "crafting
-          delightful experiences", "results-driven"), and no sentence that
-          would be wrong in eighteen months if nobody touched it — no
-          "currently", no "recently", no "X years of experience". */}
+      <p>
+        I am Tal Bendet, a full stack developer in Tel Aviv. From 2021 to 2025 I worked at
+        Amdocs on shared frontend infrastructure: a React and TypeScript design system and
+        component library that several product teams built their own products out of, and
+        the frontend delivery for one large telecom deployment, end to end.
+      </p>
+      <p>
+        Design-system work teaches a particular discipline. Every component you ship is a
+        promise to someone who will never read your documentation, and every change is a
+        negotiation with the teams already depending on the old behaviour. It makes you
+        slow in the specific places where being slow is cheaper than being sorry, and it is
+        where most of my opinions about interfaces come from.
+      </p>
+      <p>
+        I also translate technical articles into Hebrew, with the original author's credit
+        and permission. The Israeli dev community reads English perfectly well; it just
+        reads Hebrew faster, and most of the good explanations were written in English.
+      </p>
+      <p>
+        In late 2025 I stopped for a planned break, which is a mild way to describe the
+        arrival of twins.
+      </p>
     </div>
 
     {
@@ -87,11 +109,24 @@ const background: { label: string; value: string }[] = [
   <section class="section">
     <h2>the work</h2>
 
-    {/* TODO(Tal): what /now would have carried, minus the currency promise
-        (specs/routes/sitemap.md §4) — the kind of work you are doing and
-        want, written to stay true without maintenance. If a sentence needs a
-        date to be honest, give it the date rather than "at the moment". */}
-    <div class="article-body"></div>
+    {/* What /now would have carried, minus the currency promise
+        (specs/routes/sitemap.md §4). The availability sentence is the one
+        thing on this page that has to be edited when it stops being true —
+        which is the deal §2.3 struck: an edited sentence rather than a status
+        badge that goes stale silently. */}
+    <div class="article-body">
+      <p>
+        The work I want is the work I have been doing: frontend systems that other
+        developers build on — design systems, component libraries, the build and delivery
+        around them — and increasingly the infrastructure underneath. This site is the
+        current instance of that. Its checks and its build are hand-written rather than
+        bought, which is the shortest honest way to say what I want more of.
+      </p>
+      <p>
+        I am open to frontend or full-stack roles in Israel. When that stops being true,
+        this paragraph changes.
+      </p>
+    </div>
   </section>
 
   <section class="section">
@@ -124,11 +159,9 @@ const background: { label: string; value: string }[] = [
     )
   }
 
-  {/* TODO(Tal): the sentence around this link (§2, section 7). One line,
-      pointing at /contact/. Not a call to action, and never "let's connect"
-      or anything in its register. */}
+  {/* One line, and not an invitation (§2, section 7). */}
   <p class="contact-pointer">
-    <a href="/contact/">contact</a>
+    Work, translation requests, and article suggestions: <a href="/contact/">contact</a>
   </p>
 </Base>
 

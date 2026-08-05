@@ -17,8 +17,8 @@ export async function GET(context: APIContext) {
   return rss({
     // The mark is never translated or altered, in a feed reader either.
     title: 'T://bendet · writing',
-    // TODO(Tal): the channel description
-    description: '',
+    description:
+      'Long-form writing on frontend work and the infrastructure under it — what each decision bought, and what it cost.',
     site: context.site!,
     items: entries.map((entry) => ({
       title: entry.data.title,

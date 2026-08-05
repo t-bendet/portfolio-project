@@ -129,15 +129,6 @@
   background-color: var(--badge-2);
 }
 
-/* Until the copy lands, there is nothing to frame — and a decorated empty box
-   would be an element whose only purpose is to be filled later, which is the
-   shape this site refuses everywhere else. Remove these rules when the
-   TODO(Tal) blocks in the two index pages are written. */
-.standing:empty,
-.terms:empty {
-  display: none;
-}
-
 /* What there is to read right now — computed at build time from what
    actually exists. A list of what is, not of what is missing. */
 .routes-out {

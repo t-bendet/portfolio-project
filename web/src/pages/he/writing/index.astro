@@ -17,33 +17,41 @@ const entries = (await getCollection('translations', ({ data }) => !data.draft))
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
-{/* TODO(Tal): the meta description, in Hebrew */}
+{/* REVIEW(Tal): every Hebrew string on this page is drafted, not
+    native-checked — you are the voice owner and the native speaker. What is
+    binding is the structure: which element carries which of the three
+    standing statements, and the English label on the scope pointer. */}
 <Base
   title="תרגומים · T://bendet"
-  description="TODO: Tal's copy"
+  description="תרגומים לעברית של מאמרים טכניים שנכתבו באנגלית, עם קרדיט וקישור למקור."
   section="תרגומים"
   sectionLang="he"
 >
   <header class="page-header">
     <h1>תרגומים</h1>
 
-    {/* TODO(Tal): the standing description, in Hebrew — three statements,
-        permanently, one paragraph each:
-          (a) this section holds Hebrew translations of others' English
-              articles;
-          (b) every translation credits and links its original;
-          (c) suggestions for articles worth translating are welcome.
-        Which element carries which statement is binding; the wording is
-        yours (specs/pages/translations-index.md, standing caveat). */}
-    <p class="standing"></p>
-    <p class="standing"></p>
-    <p class="standing"></p>
+    {/* (a) what this section holds. */}
+    <p class="standing">
+      כאן מתפרסמים תרגומים לעברית של מאמרים טכניים שנכתבו באנגלית בידי מחברים אחרים.
+    </p>
+
+    {/* (b) credit is not optional, and the page says so before anyone clicks. */}
+    <p class="standing">
+      כל תרגום נושא את שם המחבר המקורי וקישור למאמר באנגלית, בהרשאתו או תחת רישיון
+      שמתיר תרגום.
+    </p>
+
+    {/* (c) the invitation — it does real work in the empty state, because it
+        is something to act on that is true whether or not the list is full. */}
+    <p class="standing">
+      אם יש מאמר שלדעתכם שווה קריאה בעברית, אפשר להציע אותו ב־
+      <a href="/contact/" lang="en">contact</a>.
+    </p>
 
     {/* The scope pointer — the seam, shown. Tal's own writing is in English,
         and the label says so in English before the click is made. */}
-    {/* TODO(Tal): the sentence around this link, in Hebrew */}
     <p class="cross-link">
-      <a href="/writing/" lang="en">writing</a>
+      מה שאני כותב בעצמי מתפרסם באנגלית ב־<a href="/writing/" lang="en">writing</a>.
     </p>
   </header>
 
@@ -84,11 +92,17 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
       </ul>
     ) : (
       <>
-        {/* TODO(Tal): the section's terms, in Hebrew — what gets translated
-            here (technical writing worth reading in Hebrew, with the
-            author's permission or under a published grant) and what does
-            not. No schedule, no counter. */}
-        <div class="terms" />
+        {/* The section's terms. Not a translation of /writing/'s empty state
+            — the two sections are not symmetric, and translating that copy
+            would produce exactly the flat Hebrew this section exists to be
+            better than (§4). No schedule, no counter. */}
+        <div class="terms">
+          <p>
+            מה מתורגם כאן: כתיבה טכנית ארוכה ששווה קריאה בעברית, ורק בהרשאת המחבר או תחת
+            רישיון שמתיר תרגום.
+          </p>
+          <p>מה לא: חדשות, הודעות על גרסאות, וטקסטים שיהיו לא נכונים בעוד חודש.</p>
+        </div>
 
         <ul class="routes-out">
           <li>
