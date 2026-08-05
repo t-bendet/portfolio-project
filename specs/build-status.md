@@ -222,6 +222,35 @@ green is a habit, not an enforcement, until the `checks` context is re-added
 as required. There are now **two** contexts to require: `checks` and
 `secrets`. SR-18 is where that decision lives.
 
+## 3b. Styling — Tailwind utility migration (in progress)
+
+**Work started 2026-08-06** on branch `tailwind-utility-migration`. Tailwind
+v4.3.3 has been wired since the scaffold (`@tailwindcss/vite` in
+`web/astro.config.mjs`, `@import 'tailwindcss'` at `web/src/styles/global.css:1`)
+but **no utility has ever been used in markup** — all styling is hand-written
+custom-class CSS. This section records the evaluation and, if it goes ahead,
+the migration.
+
+The verdict protocol and its pre-registered thresholds are in
+`specs/notes-tailwind-verdict.md`. The constraint that governs everything else:
+rendered output must not change by one pixel, verified by a full-site
+screenshot diff at `maxDiffPixels: 0` against a baseline captured from `main`.
+`web/src/styles/tokens.css` is byte-frozen — the four design gates textually
+parse it, so the Tailwind theme *bridges* to it (`@theme inline`, one line per
+token, values never restated) rather than absorbing it.
+
+**The fidelity oracle had to be built before anything could move.** The
+checked-in RTL screenshot baseline (§3) covers one page. Worse, all three
+content collections are empty, so `astro build` emits 9 pages and the card
+grid, the entry rows, the article body, the in-page contents, the siblings
+block and the project detail template **render nowhere** — a screenshot diff
+over the shipped site cannot see the majority of the markup being migrated.
+The harness therefore runs twice, over two fixture sets: once on the empty
+state that ships today, and once on a filled set that forces every route and
+every device to render. Both live in untracked `web/.fidelity/`; the content
+files are named `*-fixture.md`, which `.gitignore` and `.dockerignore` already
+match by name, so they cannot be committed and cannot reach an image.
+
 ## 4. Cloud
 
 **Nothing is provisioned.** Both gates in `scaffold-plan.md` §6 are still
