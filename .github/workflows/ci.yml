@@ -1,11 +1,14 @@
 # ci.yml — skeleton of the pipeline specs/ci-obligations.md defines.
 # Implemented so far: typecheck, api tests against Postgres with migrations,
-# web build, docker image builds (not pushed). Remaining obligations
-# (Playwright RTL stage, contrast gate, token parity, vocabulary greps,
-# perf/bundle/sec stages) land with the features they check.
+# web build, docker image builds (not pushed), and the four static design gates
+# (contrast, token parity, banned vocabulary, no raw hex). Remaining obligations
+# (Playwright RTL stage, workflow paths-lint, perf/bundle/sec stages) land with
+# the features they check.
 #
 # Repo settings require SHA-pinned actions and allow only github-owned
 # actions — pnpm comes via corepack, docker builds are plain `docker build`.
+# The design gates are dependency-free scripts run by node's own type
+# stripping, so they add no action to allowlist and nothing to install.
 name: ci
 
 on:
@@ -14,6 +17,10 @@ on:
       - 'web/**'
       - 'api/**'
       - 'deploy/**'
+      # The design gates read specs/ as their source of truth (palette.md §5 is
+      # the contrast gate's pair list), so a spec edit has to re-run CI too.
+      - 'scripts/**'
+      - 'specs/**'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/ci.yml'
@@ -23,6 +30,10 @@ on:
       - 'web/**'
       - 'api/**'
       - 'deploy/**'
+      # The design gates read specs/ as their source of truth (palette.md §5 is
+      # the contrast gate's pair list), so a spec edit has to re-run CI too.
+      - 'scripts/**'
+      - 'specs/**'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
       - '.github/workflows/ci.yml'
@@ -72,6 +83,17 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      # The design gates need neither the build nor the database, so they run
+      # first: a palette that fails AA should not wait on Postgres to say so.
+      - name: Token parity (ci-obligations §6)
+        run: node scripts/token-parity.ts
+
+      - name: No raw hex (ci-obligations §8)
+        run: node scripts/no-raw-hex.ts
+
+      - name: Contrast gate (ci-obligations §5)
+        run: node scripts/contrast.ts
+
       - name: Typecheck api
         run: pnpm --filter api typecheck
 
@@ -86,6 +108,10 @@ jobs:
 
       - name: Build web
         run: pnpm --filter web build
+
+      # Greps what actually ships, so it has to follow the build.
+      - name: Banned vocabulary (ci-obligations §7)
+        run: node scripts/banned-vocab.ts
 
       - name: Build docker images (not pushed on PRs)
         run: |
