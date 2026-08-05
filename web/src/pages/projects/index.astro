@@ -29,16 +29,21 @@ const writing = await getCollection('writing', ({ data }) => !data.draft);
 const translations = await getCollection('translations', ({ data }) => !data.draft);
 ---
 
-{/* TODO(Tal): the meta description */}
-<Base title="projects · T://bendet" description="TODO: Tal's copy" section="projects">
+<Base
+  title="projects · T://bendet"
+  description="A short list of things Tal Bendet built and finished far enough that someone else can run them or read the source."
+  section="projects"
+>
   <header class="page-header">
     <h1>projects</h1>
 
-    {/* TODO(Tal): the standing description — what counts as a project here:
-        real, finished-enough things someone else can run or read. Permanent
-        content, not empty-state copy; it renders identically at zero entries
-        and at twenty (§2, section 3). */}
-    <p class="standing"></p>
+    {/* Permanent content: it renders identically at zero entries and at
+        twenty (§2, section 3). */}
+    <p class="standing">
+      Things built far enough that someone else can run them or read the source. A short
+      list rather than everything ever started — what is here was chosen, and each one
+      says where it actually lives.
+    </p>
   </header>
 
   {
@@ -82,13 +87,14 @@ const translations = await getCollection('translations', ({ data }) => !data.dra
       </ul>
     ) : (
       <>
-        {/* TODO(Tal): one line stating that nothing is listed here yet. No
-            promise, no date, no "check back". Never a placeholder card, a
+        {/* One line, no promise and no date. Never a placeholder card, a
             "coming soon" tile, or a link to a GitHub profile standing in for a
             project list — §4 names that last one as the tempting wrong move.
             Thinner than /writing/'s empty state on purpose: this one is a
             formality (§4). */}
-        <div class="terms" />
+        <div class="terms">
+          <p>Nothing is listed here yet.</p>
+        </div>
 
         <ul class="routes-out">
           {writing.length > 0 && (

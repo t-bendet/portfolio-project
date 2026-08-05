@@ -70,9 +70,11 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
         title and its author's name stay in Latin, so the credit is legible to
         someone who cannot read Hebrew (§2.1).
 
-        TODO(Tal): the Hebrew wording is yours. What is binding and must
-        survive any rewrite: it states that this is a translation, it names
-        the author, and it links the original — all three, above the body.
+        REVIEW(Tal): the Hebrew below is drafted, not native-checked. What is
+        binding and must survive any rewrite: it states that this is a
+        translation, it names the author, and it links the original — all
+        three, above the body. That trio is a licence condition, not a
+        style preference (specs/translations-checklist.md).
       */}
       <aside class="credit">
         <span class="credit-label">תרגום</span>
@@ -98,7 +100,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
       <Content />
 
       {/* The closing credit: the same link, where acting on it is natural. */}
-      {/* TODO(Tal): the Hebrew wording */}
+      {/* REVIEW(Tal): drafted Hebrew, not native-checked. */}
       <p class="closing-credit">
         לקריאת המקור באנגלית:{' '}
         <a href={original.url} lang="en" rel="noopener">

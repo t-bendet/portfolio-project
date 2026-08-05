@@ -21,20 +21,27 @@ const translations = await getCollection('translations', ({ data }) => !data.dra
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
-{/* TODO(Tal): the meta description */}
-<Base title="writing · T://bendet" description="TODO: Tal's copy" section="writing">
+<Base
+  title="writing · T://bendet"
+  description="Long-form writing on frontend work and the infrastructure under it — what each decision bought, and what it cost."
+  section="writing"
+>
   <header class="page-header">
     <h1>writing</h1>
 
-    {/* TODO(Tal): the standing description — what this section publishes, in
-        the honest-tradeoff register. Permanent content, not empty-state copy. */}
-    <p class="standing"></p>
+    {/* Permanent content, in the tradeoff register: it reads the same at zero
+        entries and at fifty (§2, section 3). */}
+    <p class="standing">
+      Long-form pieces about frontend work and the infrastructure under it. Each one says
+      what a decision bought and what it cost, because the second half is the part that
+      is usually missing.
+    </p>
 
-    {/* TODO(Tal): the sentence around this link. The label itself is Hebrew
-        and carries lang="he" so the destination's language is disclosed
-        before the click (specs/navigation.md §2.2). */}
+    {/* The label is Hebrew and carries lang="he" so the destination's
+        language is disclosed before the click (specs/navigation.md §2.2). */}
     <p class="cross-link">
-      <a href="/he/writing/" lang="he">תרגומים</a>
+      Translations of other developers' articles into Hebrew are in{' '}
+      <a href="/he/writing/" lang="he">תרגומים</a>.
     </p>
   </header>
 
@@ -71,9 +78,20 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
       </ul>
     ) : (
       <>
-        {/* TODO(Tal): the section's terms — what belongs here and what does
-            not. No dates, no schedule, no "soon"; true on day 1 and day 400. */}
-        <div class="terms" />
+        {/* The section's terms — true on day 1 and on day 400. No dates, no
+            schedule, no "soon" (§4.2). Delete the sentence saying the list is
+            empty and the page still states what the section is; that is the
+            test this block has to pass. */}
+        <div class="terms">
+          <p>
+            What belongs here: pieces that work through one real technical decision — what
+            was chosen, what was given up, and what it cost to live with afterwards.
+          </p>
+          <p>
+            What does not: link roundups, release notes, framework announcements, and
+            anything that would be wrong in a month.
+          </p>
+        </div>
 
         <ul class="routes-out">
           {translations.length > 0 && (

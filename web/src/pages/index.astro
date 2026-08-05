@@ -21,13 +21,18 @@ const projects = (await getCollection('projects', ({ data }) => !data.draft))
 const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 ---
 
-{/* TODO: Tal's copy — the title's short descriptor and the meta description */}
-<Base title="T://bendet" description="TODO: Tal's copy" section="home">
+<Base
+  title="T://bendet — full stack developer"
+  description="Tal Bendet, a full stack developer in Tel Aviv. Long-form writing on frontend work and the infrastructure under it, Hebrew translations of technical articles, and a few projects whose source is worth reading."
+  section="home"
+>
   <HeroMark />
 
   {/* One opacity step at completion; visible without JavaScript (home.md §3.1) */}
   <div class="hero-reveal">
-    <p class="tagline">{/* TODO: Tal's copy */}</p>
+    <p class="tagline">
+      I build interfaces and the systems under them, then write down what each choice cost.
+    </p>
 
     {
       writing.length > 0 && (
@@ -98,9 +103,9 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
       )
     }
 
+    {/* Carries no biography — About owns that (home.md §2, section 6). */}
     <p class="person-line">
-      {/* TODO: Tal's copy */}
-      <a href="/about/">about</a>
+      There is a person behind this — <a href="/about/">about</a>
     </p>
   </div>
 </Base>

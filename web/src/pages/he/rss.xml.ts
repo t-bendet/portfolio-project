@@ -16,13 +16,16 @@ export async function GET(context: APIContext) {
 
   return rss({
     title: 'T://bendet · תרגומים',
-    // TODO(Tal): the channel description, in Hebrew
-    description: '',
+    // REVIEW(Tal): drafted Hebrew, not native-checked. Meaning is fixed
+    // (translations of English technical articles, with credit); phrasing is
+    // yours.
+    description: 'תרגומים לעברית של מאמרים טכניים מאנגלית, בקרדיט ובקישור למקור.',
     site: context.site!,
     items: entries.map((entry) => {
       const { original } = entry.data;
-      // TODO(Tal): the Hebrew wording. Binding: the item says it is a
-      // translation, names the author, and carries the original's URL.
+      // REVIEW(Tal): drafted Hebrew, not native-checked. Binding and not
+      // yours to drop: the item says it is a translation, names the author,
+      // and carries the original's URL. Rephrase freely inside that.
       const credit = `תרגום של "${original.title}" מאת ${original.author} — ${original.url}`;
 
       return {
