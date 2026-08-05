@@ -1,8 +1,7 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-06**, at `aa66613` on `main` plus the
-branch that adds the RTL stage. (#24 updated this file's body and left the
-commit above it reading `012b531`; corrected here.)
+Last checked against the repo: **2026-08-06**, at `8385121` on `main` plus the
+branch that adds the sec stage.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -93,8 +92,9 @@ by design (`content-model.md` §6), so the site is complete without it.
 
 ## 3. CI
 
-One workflow, `.github/workflows/ci.yml`, job `checks`. Numbering is
-`ci-obligations.md`'s.
+Two workflows. `.github/workflows/ci.yml`, job `checks`, carries everything
+below except the secrets scan, which is `.github/workflows/sec.yml`, job
+`secrets`. Numbering is `ci-obligations.md`'s.
 
 | # | Obligation | Built |
 |---|---|---|
@@ -108,9 +108,9 @@ One workflow, `.github/workflows/ci.yml`, job `checks`. Numbering is
 | 8 | No-raw-hex lint | yes — `scripts/no-raw-hex.ts`, over `web/src` |
 | 9 | Workflow-lint for the `paths:` filters | **no** |
 | 10 | `perf` (Lighthouse vs. budgets) + `bundle` stages | **no** |
-| 11 | `sec` stage (dependency audit + secrets scan) | **no** |
+| 11 | `sec` stage (dependency audit + secrets scan) | yes — `scripts/sec.sh`, split across both workflows |
 
-Obligations 9–11 land with the features they check, not as a batch.
+Obligations 9 and 10 land with the features they check, not as a batch.
 `deploy.yml` and `backup.yml` do not exist yet — both are downstream of §4.
 
 **The RTL stage (4) runs on a fixture, not on content**, because there is no
@@ -162,13 +162,41 @@ The `paths:` filters gained `scripts/**` and `specs/**` in the same PR: the
 contrast gate reads `specs/design/palette.md`, so a spec-only edit must re-run
 CI. That is obligation 9's territory, and 9 is still unbuilt.
 
+**The sec stage (11) is split across two workflows, and the split is the
+requirement rather than a convenience.** SR-17 says the secrets scan runs on
+every PR; `ci.yml` is paths-filtered, so a PR touching only `README.md` never
+starts it. The scan therefore lives in `sec.yml`, which carries no filter and
+must never gain one — it is a checkout and a container, well under a minute.
+The dependency audit stays in `ci.yml`, where the lockfile is already covered.
+Both halves are `scripts/sec.sh`, runnable locally like the design gates.
+
+- **Secrets scan** — `gitleaks` as a pinned image (`v8.30.1`), not the action:
+  only github-owned actions are allowed here. It scans the working tree, not
+  the history, because `.env` is instance-local by decision and a PR checkout
+  is shallow enough to make a history scan a check that examines almost
+  nothing. `--redact` keeps a finding out of a public repo's log.
+- **Dependency audit** — SR-21's policy exactly: `--prod --audit-level high`
+  fails, a full audit above it warns. Deliberately no
+  `--ignore-registry-errors`; a gate that passes because it could not reach
+  the registry is worse than a red run.
+
+It failed on the tree as it stood, unlike the design gates. `@prisma/client`
+is a **production** dependency of `api` and pulls the entire `prisma` CLI
+behind it, so `fast-uri` (GHSA-7p8r-x3mc-p8w7, high) was reachable in the
+runtime image through `@prisma/dev > @prisma/streams-local > ajv`. Fixed with
+an override in `pnpm-workspace.yaml` alongside the `find-my-way` one that was
+already there for the same chain — both go when prisma ships a patched one.
+The two moderates that remain (postcss, dev-only) are what the warn half is
+for.
+
 **Live repo settings that will bite before any of this runs:** third-party
 actions are blocked (`allowed_actions: selected`, `patterns_allowed: []`) and
 `sha_pinning_required` is on. Any workflow needing a non-GitHub action must
 have it allowlisted and SHA-pinned first, or it fails with an opaque
 permissions error. `main` currently requires **zero** status contexts — CI
 green is a habit, not an enforcement, until the `checks` context is re-added
-as required.
+as required. There are now **two** contexts to require: `checks` and
+`secrets`. SR-18 is where that decision lives.
 
 ## 4. Cloud
 

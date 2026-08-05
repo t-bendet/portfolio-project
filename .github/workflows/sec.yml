@@ -1,0 +1,40 @@
+# The secrets scan half of ci-obligations.md §11, in its own workflow for one
+# reason: SR-17 says CI runs it on **every** PR, and `ci.yml` is paths-filtered.
+# A PR that touches only README.md, LICENSE, or a file nobody has thought of
+# yet does not start `ci.yml` at all — and "the tree must never contain a
+# credential" is a claim about the whole tree, so the check that backs it
+# cannot have a path filter. Nothing here may gain one.
+#
+# The other half of §11, the dependency audit, stays in `ci.yml`: its input is
+# the lockfile, which the filters already cover.
+#
+# gitleaks runs as a pinned docker image, not the action — repo settings allow
+# only github-owned actions. No node, no pnpm, no install: this job is a
+# checkout and a container, and it finishes in well under a minute.
+name: sec
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sec-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          # The next step mounts this tree into a container. Don't leave the
+          # token in .git/config.
+          persist-credentials: false
+
+      - name: Secrets scan (ci-obligations §11, SR-17)
+        run: scripts/sec.sh secrets
