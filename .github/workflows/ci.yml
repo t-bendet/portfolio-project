@@ -1,9 +1,12 @@
 # ci.yml — skeleton of the pipeline specs/ci-obligations.md defines.
 # Implemented so far: typecheck, api tests against Postgres with migrations,
 # web build, docker image builds (not pushed), the four static design gates
-# (contrast, token parity, banned vocabulary, no raw hex), and the Playwright
-# RTL stage. Remaining obligations (workflow paths-lint, perf/bundle/sec
-# stages) land with the features they check.
+# (contrast, token parity, banned vocabulary, no raw hex), the Playwright RTL
+# stage, and the dependency-audit half of the sec stage. Remaining obligations
+# (workflow paths-lint, perf/bundle) land with the features they check.
+#
+# The secrets-scan half of §11 is in sec.yml, deliberately outside this
+# workflow: it must run on every PR, and this one is paths-filtered.
 #
 # Repo settings require SHA-pinned actions and allow only github-owned
 # actions — pnpm comes via corepack, docker builds are plain `docker build`.
@@ -79,6 +82,13 @@ jobs:
 
       - name: Enable pnpm via corepack
         run: corepack enable && pnpm --version
+
+      # Before install: the audit reads the lockfile, not node_modules, so
+      # there is nothing to wait for. The other half of §11 — the secrets scan —
+      # lives in sec.yml, which carries no paths filter because SR-17 is a
+      # claim about the whole tree.
+      - name: Dependency audit (ci-obligations §11, SR-21)
+        run: scripts/sec.sh deps
 
       - name: Install
         run: pnpm install --frozen-lockfile

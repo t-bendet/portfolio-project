@@ -1,10 +1,19 @@
 packages:
   - web
   - api
-# Dependabot #1: find-my-way <=9.6.0 (HTTP/2 DDoS) pulled via prisma's
-# @prisma/dev; drop the override once prisma ships a patched chain.
+# Both entries patch the same chain: `@prisma/client` is a production
+# dependency of `api` and pulls the whole `prisma` CLI behind it, so an
+# advisory anywhere under `@prisma/dev` lands in the runtime image. Drop each
+# override once prisma ships a patched chain.
+#
+# Dependabot #1: find-my-way <=9.6.0 (HTTP/2 DDoS).
+# GHSA-7p8r-x3mc-p8w7: fast-uri <3.1.5 (host confusion via a backslash
+# authority introducer), reached through @prisma/streams-local > ajv. High, in
+# production dependencies — which is the CI `sec` stage's fail condition
+# (security-requirements.md SR-21), so this is a fix, not a suppression.
 overrides:
   find-my-way: '>=9.7.0'
+  fast-uri: '>=3.1.5'
 
 # pnpm blocks dependency build scripts by default; these need theirs
 # (native builds / Prisma engine downloads). sharp comes from astro's image
