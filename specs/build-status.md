@@ -293,6 +293,29 @@ Likewise `[&:hover]:` is mandatory throughout and `hover:` is banned — v4
 wraps `hover:` in `@media (hover: hover)`, which would have deleted the site's
 hover states on every touch device, and no screenshot reports that either.
 
+### The fidelity harness, if it is still on disk
+
+`web/.fidelity/` is untracked and gitignored (see `.gitignore` for what it
+holds and why). It is a local tool, not part of the build — but while it
+exists it is the only thing that can prove a CSS change moved nothing.
+
+```bash
+node web/.fidelity/run.mjs --mode=compare    # both passes, 156 screenshots
+```
+
+**Never run it with `--mode=capture` on a branch.** Capture writes the
+baselines rather than checking against them, so it overwrites the reference
+images with screenshots of whatever is currently checked out. Every comparison
+after that is the change measured against itself, and passes. Nothing reports
+this — a destroyed oracle and a correct one both print the same green.
+
+The baselines on disk were captured from clean `main`. If they are ever
+genuinely lost, recapturing means checking out `main` first, and it is worth
+saying out loud before doing it. This is not hypothetical: an early version of
+the harness named its snapshots with a `/`, which `toHaveScreenshot` rewrites
+to `-`, so it silently wrote baselines instead of comparing them for a full
+run. The names are flat now.
+
 ### The record
 
 `notes-tailwind-verdict.md` is the durable document. §1–2 are the thresholds,
