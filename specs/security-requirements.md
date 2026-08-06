@@ -198,12 +198,22 @@ this document adds no new gates, it tells the gates what to check).
   no input fields, so the listener cannot observe credentials today;
   SR-23 keeps that true by construction rather than by circumstance if a
   form ever appears. *(Verify: Gated review — the theme mechanism is
-  already a Gated class in ADR 0025.)*
+  already a Gated class in ADR 0025.)* **Discharged 2026-08-07:** the buffer
+  is a fixed-length tail window (`tokens.md` §2), so the bound is structural
+  rather than a reset rule; it is compared in the listener and referenced
+  nowhere else; the editable-target guard is asserted by
+  `web/tests/e2e/theme.spec.ts`. The Gated review is still owed — green CI is
+  evidence for it, not a substitute.
 - **SR-24. The incantation's shipped form is decided deliberately** at
   that same Gated review (coherence C7): a plain literal is defensible
   ("discoverable by the attentive" is the feature's register); the
   requirement is only that the choice be made, recorded, and the banned
   identifier vocabulary (tokens.md §1) hold around it either way.
+  **Discharged 2026-08-07:** plain literal, chosen over base64 and a hash on
+  exactly the register argument this requirement anticipated. §1's vocabulary
+  holds around it — the mechanism's own identifiers stay mundane, and the
+  carve-out that lets the phrases through is scoped to those two strings and
+  reported on every run. Recorded in `tokens.md` §2.
 
 ## 4. Data inventory and retention (design-mode statement)
 

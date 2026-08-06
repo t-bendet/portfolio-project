@@ -172,15 +172,20 @@
  *
  * ── the theme-transition rule is NOT dead ─────────────────────────────────
  *
- * `html.theme-transition` is set by no file in web/src, because the theme
- * toggle that would set it is not built. A class-name grep therefore reports
- * it dead, and wave 6's sweep would have deleted it with every gate staying
- * green — nothing renders it, so nothing can notice. It is a contract, not
- * an orphan: ADR 0002 fixes the swap at 600ms and specs/design/tokens.md §2
- * carries the table. It stays until the toggle exists, and then it is what
- * the toggle switches on.
+ * `html.theme-transition` was set by no file in web/src for as long as the
+ * theme toggle went unbuilt. A class-name grep reported it dead, and wave 6's
+ * sweep would have deleted it with every gate staying green — nothing rendered
+ * it, so nothing could have noticed. It survived as a contract rather than an
+ * orphan: ADR 0002 fixes the swap at 600ms and specs/design/tokens.md §2
+ * carries the table.
  *
- * That is the second trap of this shape in one sweep. The first is
+ * The toggle exists now, and this is what it switches on. Base.astro's inline
+ * script adds the class, flips `data-theme` in the same task so the
+ * after-change style carries the transition, and removes it one
+ * `--motion-theme` later. The reduced-motion clause below is what makes the
+ * swap instant, so the script needs no matchMedia.
+ *
+ * That was the second trap of this shape in one sweep. The first is
  * `.note` and the two `.translator-note*` rules in article.css, applied from
  * MDX by whoever writes an article and never from a template. Both would
  * have been deleted by the same grep, for the same reason, with the same

@@ -42,6 +42,22 @@ or asset name may contain: `jekyll`, `hyde`, `map`, `marauder`, `mischief`,
 platform identifiers like the `[hidden]` attribute or `sourceMappingURL`
 are not violations; the rule targets names this project authors.)
 
+**Carve-out, decided 2026-08-07 (SR-24): the two incantations themselves.**
+They are the trigger's *payload*, not a name for the mechanism — they have to
+ship as literals to be compared against a keystroke — and between them they
+carry three words on the list above. `scripts/banned-vocab.ts` masks the exact
+phrases out of the content before the identifier scan and reports the masked
+count on every run, so the carve-out cannot grow unnoticed.
+
+The exemption is scoped to those two exact strings and nothing wider:
+`solemnly`, `mischief` and `managed` still fail anywhere else in `web/dist`,
+which is what keeps this a carve-out rather than a hole. **Filenames are
+deliberately not masked** — an asset named for the incantation would be the
+mechanism naming itself, which is precisely what this section bans.
+
+The rule the carve-out does not touch: the mechanism's *identifiers* stay
+mundane. The script's variables are `on`, `off`, `tail`, `cue`, `warmed`.
+
 ## 2. Theme switching model (implements ADR 0002 — unchanged)
 
 | Aspect | Value | Notes |
@@ -63,6 +79,82 @@ one block only is a build error, not a style choice.
 script, the attribute must be set before first paint (inline head script —
 the standard pattern). Recorded here so it becomes an implementation
 requirement, not a discovery.
+
+### Shipped form of the trigger (SR-24 — decided 2026-08-07)
+
+Built in `web/src/layouts/Base.astro`'s single `is:inline` block, which now
+carries all three parts the performance budget names as one row: the pre-paint
+attribute-set, the keydown buffer, and persistence. One block rather than two
+because SR-10's hash-based CSP costs one hash per inline block, forever.
+
+**The literals ship plain.** The alternative was encoding them (base64 clears
+the §7 gate, as does an FNV hash), and the register decided it: `brand.md` §3's
+standard for this project is "discoverable in the open repo by the attentive;
+never pointed at". Encoding would have made the phrase *hidden* rather than
+*unannounced*, which is a different thing and the wrong one. The gate is
+amended instead — §1's carve-out — because the rule it was enforcing was "do
+not name the mechanism", and a payload is not a name.
+
+**The buffer is a tail window, not a timed buffer.** `tail = (tail + key)
+.slice(-40)`, capped at the longer phrase's length. Bounded by construction,
+which is SR-23's "fixed max length" met structurally rather than by a reset
+rule; it needs no timer, so `performance-budgets.md` §3's "zero timers at idle"
+holds literally. Noise before a phrase is harmless — typing the phrase after
+anything at all still works, which is the behaviour a visitor expects anyway.
+
+Guards, in the order they run: composition and the three non-shift modifiers;
+`key.length !== 1`; then editable targets (`INPUT`/`TEXTAREA`/`SELECT` and
+`isContentEditable`). No public page has a field today — that last guard is
+SR-23's "true by construction if a form ever appears", and it is the one
+property `web/tests/e2e/theme.spec.ts` tests most carefully. Matching is
+case-sensitive: the incantation is the incantation.
+
+**Console strings**, one per actual change of state:
+
+```
+on   Messrs Moony, Wormtail, Padfoot & Prongs are proud to present
+off  Mischief managed.
+```
+
+The half-quote is deliberate. The full line ends `…the Marauder's Map`, which
+would have forced `marauder` and `map` into the §1 carve-out as well; this pair
+needs the two phrase literals and nothing more. Typing the forward phrase while
+already warm is not a toggle and logs nothing — `brand.md` §2 says "console log
+on toggle", and logging a non-event would be a small lie.
+
+**Reverting removes the key rather than writing `dark`.** The value in the
+table above is `warm` and there is no second one; the default temperature is
+the *absent* attribute, and extending that to storage means a revert leaves the
+origin exactly as it was found. The cost — you cannot tell "never toggled" from
+"toggled back" — is a capability nothing here needs.
+
+**Warm fonts are warmed a phrase early.** The four warm faces are declared and
+never preloaded (`performance-budgets.md` §4.2), so at the flip they would
+arrive mid-transition — the one thing §4.2 forbids. `document.fonts.load()`
+fires once, when the buffer matches the first 12 characters: ~28 characters of
+typing still to come, no delay before the payoff, and nothing at all on a visit
+that never types one. This is a third option beyond the two §4.2 names, and it
+is better than either because it costs nothing in the common case.
+
+Two details that would have made it silently useless: the family names are read
+from `getComputedStyle` (Astro mints hashed families like
+`Fraunces-963041b4c56633f0`, so hardcoding is not possible), and the two Hebrew
+companions are passed an explicit Hebrew sample — `load()`'s default sample is
+Latin, matches neither `unicode-range`, and would resolve instantly having
+fetched nothing.
+
+**Accepted risk:** a slow enough connection can still swap inside the 600ms.
+The head start is generous, not a guarantee, and the alternative — awaiting the
+fonts before flipping — would put a pause of unknown length exactly where the
+payoff belongs.
+
+**The transition class.** The script adds `theme-transition` to `<html>`, flips
+the attribute in the same task so the after-change style carries the transition,
+then removes the class one `--motion-theme` later on a single
+`clearTimeout`-guarded timer. `transitionend` cannot do this: it fires per
+property per element across every node, and under reduced motion the rule is
+`transition: none` and it never fires at all. The duration is read from the
+token rather than restated as `600`.
 
 ## 3. Token registry
 

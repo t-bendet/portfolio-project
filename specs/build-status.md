@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-06**, at `69208e6` on `main`.
+Last checked against the repo: **2026-08-07**, at `3746cc9` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -229,6 +229,23 @@ stays in `ci.yml`, where the lockfile is already covered. Both halves are
   `--ignore-registry-errors`; a gate that passes because it could not reach
   the registry is worse than a red run.
 
+**A third override landed 2026-08-07, from a different chain.**
+GHSA-5p4m-2wfm-xmqj (js-yaml <4.3.1, quadratic CPU on `!!omap`) is reachable
+through `web > @astrojs/mdx > @astrojs/internal-helpers` — production, high,
+eleven paths, so the audit half of the gate went red on a tree nobody had
+touched. It is unrelated to whatever PR happens to be open when an advisory
+publishes, which is the point of the gate.
+
+The instructive part is the first attempt. Written as `js-yaml: '>=4.3.1'` — the
+open form the two existing overrides use — it resolved to **5.2.3**, a major
+that dropped the default export `@astrojs/internal-helpers` imports, and
+`astro build` died at module instantiation. **The audit passed while the build
+was broken:** the gate reads versions, not semantics, so an override is exactly
+as capable of breaking the tree as of fixing it. Caret-bounded to `^4.3.1` and
+verified by the build rather than by the audit. The other two overrides carry
+the same latent risk and are left alone because they are working; the note is
+in `pnpm-workspace.yaml` for whoever writes the fourth.
+
 It failed on the tree as it stood, unlike the design gates. `@prisma/client`
 is a **production** dependency of `api` and pulls the entire `prisma` CLI
 behind it, so `fast-uri` (GHSA-7p8r-x3mc-p8w7, high) was reachable in the
@@ -269,6 +286,29 @@ Three separate times on 2026-08-06 an Actions incident made these contexts
 unusable — twice red on jobs that never ran a step, once absent entirely. The
 gate is worth having; that failure rate is the argument for `enforce_admins`
 staying off, and it is a fact about the gate's design rather than bad luck.
+
+**PR #33 was merged with `--admin` on 2026-08-07, under the same conditions.**
+GitHub Actions was in `major_outage` (Actions and Pages both, per
+githubstatus.com) and **no run was created at all** for the branch — `gh run
+list --branch theme-incantation` returned empty, so neither context so much as
+appeared. That is the fourth such incident in two days.
+
+Every step of both workflows was run locally first and is listed in the PR
+body: the four design gates, `astro check`, `api typecheck`, `prisma migrate
+deploy` and the api tests against `postgres:18.4-alpine`, both `docker build`s,
+Caddyfile validation against the pinned image, `scripts/sec.sh` end to end
+(both halves), and the e2e stage at 19/19 with the RTL baseline unchanged.
+
+Two things worth carrying forward from doing that by hand. Running the sec
+stage locally is what **found** the js-yaml advisory above — an outage-driven
+manual pass caught something the automated gate would have caught a day later,
+and the tree was red before this PR touched it. And reproducing obligation 2
+locally needs a non-default port: a host Postgres bound to `127.0.0.1:5432`
+wins the loopback race against Docker's wildcard bind, so `migrate deploy`
+authenticates against the laptop's own database and fails `P1010` while the
+container sits there healthy. That is a laptop-only trap — CI's service
+container has no such conflict — but it costs twenty minutes to diagnose the
+second time as well as the first.
 
 ## 3b. Styling — Tailwind utility migration: done, in one PR
 
@@ -548,19 +588,18 @@ family names because nothing hashes them any more, which is why the bridge
 names them as plain families while the other five stay variables. IBM Plex
 Sans Hebrew needs no adjustment, so it stayed in the API.
 
-**The warm temperature has no way in, and that is now load-bearing.**
-`tokens.md` §2 gives the trigger as a global keydown buffer and `brand.md` §2
-specifies it exactly — the one hidden feature, the site's sole easter egg.
-Only the *persistence* half is built: `Base.astro` reads `localStorage.theme`
-before first paint and sets the attribute. Nothing writes it. So the warm
-palette, its four fonts and its whole type system are unreachable except from
-devtools.
+**The warm temperature had no way in, and that was load-bearing.** Only the
+*persistence* half was built: `Base.astro` read `localStorage.theme` before
+first paint and set the attribute, and nothing wrote it — so the warm palette,
+its four fonts and its whole type system were unreachable except from devtools.
 
-That was a curiosity while the theme was only colour. It is a blocker now:
-Frank Ruhl Libre's `size-adjust` cannot get the QA pass §7.4 requires until
-the theme can be entered the way a visitor would enter it. Recorded here
-because, like the fonts, it is a hole this file was silent about — the
-easter egg is fully specified and half-built, and nothing said so.
+That was a curiosity while the theme was only colour, and a blocker once the
+fonts landed: Frank Ruhl Libre's `size-adjust` could not get the QA pass §7.4
+requires until the theme could be entered the way a visitor would enter it. It
+was recorded here because, like the fonts, it was a hole this file had been
+silent about — the easter egg fully specified and half-built, with nothing
+saying so. **The other half landed 2026-08-07; see §3d.** The `REVIEW(Tal)` on
+82.2% stands until the eye pass actually happens.
 
 Heebo's preload became an explicit `<link>` in `Base.astro` as a
 consequence, since `<Font>` no longer knows about it. The URL comes from a
@@ -575,6 +614,87 @@ shorter with real fonts. The eight behavioural assertions passed throughout —
 before the re-capture and after — so the screenshot was the only thing that
 moved, which is the evidence that it moved for the stated reason. Re-run in
 compare mode afterwards: 9/9.
+
+## 3d. The theme mechanism — the trigger is built
+
+**Until 2026-08-07 only half of it existed.** `Base.astro` read
+`localStorage.theme` before first paint and set `data-theme`; nothing wrote
+that key. The warm palette, its four fonts and its whole type system were
+unreachable except from devtools. §3c recorded that as a blocker; it is one no
+longer.
+
+The whole mechanism is one `is:inline` block in `web/src/layouts/Base.astro`
+— pre-paint attribute-set, keydown buffer, persistence — because
+`performance-budgets.md` §3 budgets the three as one row and SR-10's hash-based
+CSP costs one hash per inline block. **Measured 1,852 B gzipped against the
+2.0 KB cap**, which is the whole row, with roughly 200 bytes of headroom.
+
+That headroom is the thing to know before editing it. `is:inline` ships
+byte-for-byte with no minifier — comments and indentation included — so this
+repo's ordinary commenting density would consume the budget on its own. The
+reasoning lives in `tokens.md` §2 and the script carries pointers. There is no
+`bundle` stage yet (obligation 10), so the number above was measured by hand
+and will drift silently until there is.
+
+**The decisions, all four Tal's, all recorded in `tokens.md` §2:** the literals
+ship plain rather than encoded; the console strings are the half-quote pair;
+warm fonts are warmed on a partial match; and there is an e2e spec.
+
+**The literals forced a spec amendment rather than a workaround.** Plain
+`i solemnly swear…` and `mischief managed` carry three words from
+`tokens.md` §1's banned identifier vocabulary, so obligation 7 failed on them —
+15 hits across the 9 pages. The alternatives all cleared the gate untouched
+(base64 has no word boundaries inside it; an FNV hash has no text at all), and
+were rejected on register: `brand.md` §3's standard here is "discoverable in
+the open repo by the attentive; never pointed at", and encoding makes a thing
+*hidden* rather than merely unannounced. So §1 gained a carve-out and
+`scripts/banned-vocab.ts` masks the two exact phrases before its identifier
+scan, reporting the count on every run (**27** — three per page: both literals
+and the revert log line). Every other use of those words still fails, verified
+against a control string. Filenames are deliberately not masked.
+
+**What the e2e spec is really for.** `web/tests/e2e/theme.spec.ts`, ten tests,
+no screenshots — so it has zero surface against `rtl.spec.ts`'s byte-compared
+baseline, which is the property that matters most about it. The valuable one is
+SR-23's: it injects an `<input>`, focuses it, types the whole phrase into it
+and asserts nothing happens. The public IA has no form fields, so that
+requirement is about staying harmless if one ever appears, and it is the only
+part of SR-23 a machine can check.
+
+**Three things that would have shipped broken, all silent:**
+
+- `document.fonts.load()` defaults its sample text to Latin. Both Hebrew
+  companions are scoped to the hebrew `unicode-range`, so the two calls that
+  matter would have resolved instantly having fetched nothing — a font warm-up
+  that warms nothing and reports success. They take an explicit Hebrew sample.
+- Family names could not be hardcoded: Astro mints
+  `Fraunces-963041b4c56633f0` and friends, so the script reads them from
+  `getComputedStyle`. The same hashing that §3c caught in `tokens.css` reaches
+  here too.
+- `transitionend` cannot remove the transition class. It fires per property per
+  element across every node, and under reduced motion the rule is
+  `transition: none`, so it never fires at all and the class would have stayed
+  on `<html>` forever. One `clearTimeout`-guarded timer instead, alive for
+  600ms per toggle and never at idle.
+
+`web/src/styles/global.css`'s "the theme-transition rule is NOT dead" comment
+has been rewritten: the class was a contract waiting for a switcher, and the
+switcher now exists and is named there. The buffer is a fixed-length tail
+window, so the listener starts no timer at all — `performance-budgets.md` §3's
+"zero timers at idle" holds literally rather than approximately.
+
+**What this unblocks, and what it does not.** Frank Ruhl Libre's
+`size-adjust: 82.2%` can now get the perceived-density pass `typography.md`
+§7.4 requires, because the warm theme can be entered the way a visitor enters
+it. That pass is Tal's eye and has not happened — the `REVIEW(Tal)` stands
+until it does. SR-23 and SR-24 both name a Gated review as their verification;
+the discharge lines in `security-requirements.md` record what the
+implementation does, not that the review happened.
+
+**One coupling recorded before it bites:** `deploy/Caddyfile` ships no CSP
+today, only the comment saying hash-based `script-src` is finalised at the
+Gated Caddyfile review. The hash must be taken from the *dist* bytes of the
+inline block, indentation included, and re-minted on every edit to it.
 
 ## 4. Cloud
 

@@ -74,11 +74,118 @@ const dir = locale === 'he' ? 'rtl' : 'ltr';
     {dir === 'rtl' && (
       <link rel="preload" as="font" type="font/woff2" href={heeboUrl} crossorigin />
     )}
+    {/*
+      The trigger, its persistence and the attribute-set below are one script
+      rather than two: performance-budgets.md §3 budgets them as a single row,
+      and SR-10's hash-based CSP costs one hash per inline block forever.
+
+      `is:inline` ships verbatim — comments, indentation and all, with no
+      minifier in front of it — so every line here is charged against that
+      2.0 KB row. The reasoning lives in specs/design/tokens.md §2; what is
+      left below is pointers.
+    */}
     <script is:inline>
       // Persisted theme must apply before first paint (specs/design/tokens.md §2).
       if (localStorage.getItem('theme') === 'warm') {
         document.documentElement.dataset.theme = 'warm';
       }
+
+      (function () {
+        var root = document.documentElement;
+        var on = 'i solemnly swear that i am up to no good';
+        var off = 'mischief managed';
+        var cue = on.slice(0, 12);
+        var tail = '';
+        var warmed = false;
+        var timer = 0;
+
+        // The warm faces are declared and never preloaded (§4.2), so at the
+        // flip they would arrive mid-transition — the one thing §4.2 forbids.
+        // Starting them a phrase early costs nothing on a visit that never
+        // types one. The Hebrew samples are not decoration: both companions
+        // are scoped to the hebrew unicode-range, and load()'s default sample
+        // is Latin — it would match no face and fetch nothing at all.
+        function warmFaces() {
+          warmed = true;
+          var style = getComputedStyle(root);
+          var load = function (spec, sample) {
+            // A failed load rejects, and an unhandled rejection would print —
+            // the console is a designed surface here (brand.md §2).
+            document.fonts.load(spec, sample).catch(function () {});
+          };
+          var fraunces = style.getPropertyValue('--font-fraunces');
+          load('1em ' + fraunces);
+          load('italic 1em ' + fraunces);
+          load('1em ' + style.getPropertyValue('--font-plex-mono'));
+          if (root.lang === 'he') {
+            load('1em ' + style.getPropertyValue('--font-plex-hebrew'), 'א');
+            load('1em "Frank Ruhl Libre"', 'א');
+          }
+        }
+
+        function apply(warm) {
+          // Directional, not toggling: the forward phrase while already warm
+          // is not a toggle, and logging one would be a small lie.
+          if ((root.dataset.theme === 'warm') === warm) return;
+          // Add the class first, flip in the same task. The after-change style
+          // carries the transition, which is what starts it — no reflow poke.
+          root.classList.add('theme-transition');
+          if (warm) {
+            root.dataset.theme = 'warm';
+            localStorage.setItem('theme', 'warm');
+          } else {
+            // The default temperature is the absent attribute and there is no
+            // second value to store (tokens.md §2) — reverting leaves the
+            // origin exactly as it was found.
+            root.removeAttribute('data-theme');
+            localStorage.removeItem('theme');
+          }
+          console.log(
+            warm
+              ? 'Messrs Moony, Wormtail, Padfoot & Prongs are proud to present'
+              : 'Mischief managed.',
+          );
+          // transitionend cannot take the class off: it fires per property per
+          // element across every node, and under reduced motion the rule is
+          // `transition: none` and it never fires at all. One timer, born here
+          // and gone when the swap ends — nothing runs at idle (§3). The
+          // duration is read from the token rather than restated as 600.
+          clearTimeout(timer);
+          timer = setTimeout(
+            function () {
+              timer = 0;
+              root.classList.remove('theme-transition');
+            },
+            parseFloat(getComputedStyle(root).getPropertyValue('--motion-theme')) || 600,
+          );
+        }
+
+        document.addEventListener('keydown', function (event) {
+          if (event.isComposing || event.ctrlKey || event.metaKey || event.altKey) return;
+          if (event.key.length !== 1) return;
+          // No public page has a field to type into. SR-23 asks that this stay
+          // true by construction if one ever appears.
+          var target = event.target;
+          if (
+            target instanceof HTMLElement &&
+            (target.isContentEditable || /^(?:INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
+          )
+            return;
+
+          // A tail window, not a timed buffer: bounded by construction (SR-23),
+          // never longer than the longer phrase, compared here and nowhere
+          // else, and it needs no reset — so the listener starts no timer.
+          tail = (tail + event.key).slice(-on.length);
+          if (!warmed && tail.endsWith(cue)) warmFaces();
+          if (tail.endsWith(on)) {
+            tail = '';
+            apply(true);
+          } else if (tail.endsWith(off)) {
+            tail = '';
+            apply(false);
+          }
+        });
+      })();
     </script>
   </head>
   <body>
