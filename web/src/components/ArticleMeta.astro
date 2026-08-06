@@ -34,8 +34,13 @@ const updatedLabel = lang === 'he' ? 'עודכן' : 'updated';
   <time datetime={iso(pubDate)}>{iso(pubDate)}</time>
 
   {
+    /* The span groups the label with its date so the meta line wraps between
+       facts rather than through one. It carries no class: it never had a rule
+       — not in article.css, not anywhere — and the name it used to carry was
+       swept in wave 6 rather than migrated, because there was nothing to
+       migrate. The grouping is the element's whole job. */
     updatedDate && (
-      <span class="updated">
+      <span>
         {updatedLabel} <time datetime={iso(updatedDate)}>{iso(updatedDate)}</time>
       </span>
     )

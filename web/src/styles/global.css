@@ -123,6 +123,22 @@
  * `.shell` and `.skip-link` stay OUT of the layer deliberately — they are
  * component classes, not base rules, and layering them would flip them under
  * every utility.
+ *
+ * ── the theme-transition rule is NOT dead ─────────────────────────────────
+ *
+ * `html.theme-transition` is set by no file in web/src, because the theme
+ * toggle that would set it is not built. A class-name grep therefore reports
+ * it dead, and wave 6's sweep would have deleted it with every gate staying
+ * green — nothing renders it, so nothing can notice. It is a contract, not
+ * an orphan: ADR 0002 fixes the swap at 600ms and specs/design/tokens.md §2
+ * carries the table. It stays until the toggle exists, and then it is what
+ * the toggle switches on.
+ *
+ * That is the second trap of this shape in one sweep. The first is
+ * `.note` and the two `.translator-note*` rules in article.css, applied from
+ * MDX by whoever writes an article and never from a template. Both would
+ * have been deleted by the same grep, for the same reason, with the same
+ * silence afterwards.
  */
 @layer base {
   html {
@@ -197,8 +213,27 @@
   }
 }
 
-/* The one shared measure. Chrome and page bodies align to the same column
-   (the overview prototype's 960px). */
+/*
+ * ── the two component classes that survive the migration ──────────────────
+ *
+ * These are the residue, and they are deliberate rather than the tail of a
+ * job left unfinished.
+ *
+ * `.shell` is the site's one shared measure — chrome and page bodies align to
+ * the same column (the overview prototype's 960px). It sits on three
+ * different elements in three files: <main> in Base.astro, and a <div> inside
+ * each of SiteHeader and SiteFooter. Written as utilities it would be three
+ * copies of the same three declarations with nothing holding them equal,
+ * which is the property extraction was chosen to preserve everywhere else in
+ * this migration. There is no element common to all three to make it a
+ * component instead, so it stays a class.
+ *
+ * `.skip-link` is one element on every page and it is off-screen until it is
+ * focused. That makes it the one device on the site whose entire appearance
+ * the screenshot oracle cannot see: 156 comparisons at zero diff say nothing
+ * about it either way. Migrating it would be a change verified by reading
+ * alone, for no gain, so it does not move.
+ */
 .shell {
   max-inline-size: 960px;
   margin-inline: auto;

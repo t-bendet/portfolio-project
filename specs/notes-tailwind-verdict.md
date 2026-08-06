@@ -477,7 +477,75 @@ Make the branches exclusive. Emit order is not yours to control.
 | `[direction:ltr]`, `[unicode-bidi:isolate]` | — | no utilities exist for either property in 4.3.3 |
 | `ms-`/`me-`/`ps-`/`pe-`/`border-s-` | `ml-`/`mr-`/`pl-`/`pr-`/`border-l-` | RTL-first; the inline axis flips, the block axis does not |
 
-Arbitrary **properties** used so far: 3, all in wave 2 — the two bidi ones and
-the nav link's transition, which runs two properties at `--motion-hover` and a
-third at `--motion-fast` in one shorthand. No `transition-*`/`duration-*` pair
-can express that. This is the number T5 tracked; it is small and it is real.
+Arbitrary **properties** used: **3 distinct, 5 instances**, and the three were
+all settled in wave 2 — `[direction:ltr]` and `[unicode-bidi:isolate]` (twice
+each: the header's mark and `/contact/`'s address links), and the nav link's
+transition, which runs two properties at `--motion-hover` and a third at
+`--motion-fast` in one shorthand. No `transition-*`/`duration-*` pair can
+express that. Wave 5 added two instances and no new property. This is the
+number T5 tracked; it is small and it is real.
+
+Wave 5 nearly made it 4. `.portrait`'s `block-size: auto` looked like it needed
+`[block-size:auto]` because `block-size-auto` and `bs-auto` are both absent —
+but **`block-auto` exists**, in the same logical namespace as `max-inline-*`
+and `max-block-*`. Check the namespace before reaching for a bracket; the
+spelling a reader guesses is not the one the framework registered.
+
+### 4.5 What wave 6 swept, and what it deliberately did not
+
+**The stylesheets had nothing dead in them.** Every rule left in `article.css`,
+`global.css` and `hero.css` is reachable. That is not luck: waves 1–5 deleted
+whole stylesheets rather than emptying them, so no orphans were left behind to
+find. The sweep's yield was two class *attributes* that styled nothing —
+`bio` on `/about/`'s prose column and `updated` in `ArticleMeta` — neither of
+which ever had a rule anywhere.
+
+**Two rules are dead by grep and alive by contract. Neither may be deleted.**
+
+1. `.note`, `.translator-note`, `.translator-note-label` — applied from MDX by
+   whoever writes an article, never from a template.
+2. `html.theme-transition` in `global.css` — set by nothing in `web/src`,
+   because the theme toggle is not built. ADR 0002 fixes the swap at 600ms and
+   `specs/design/tokens.md` §2 carries the table. It is what the toggle will
+   switch on.
+
+Both would delete cleanly with every gate green, because nothing renders them
+and so nothing can notice. The first was adversarial point 11. The second was
+found by this sweep and is recorded in `global.css` beside the rule itself.
+
+**Citations to the deleted stylesheets stay.** Roughly a dozen component
+comments cite `projects.css:46-49`, `entry-list.css:2-7` and `reference.css` —
+files that no longer exist. They are provenance, they read correctly as
+provenance, and they resolve in history at `625fcc7`. Rewriting them to point
+at the components that replaced those files would say less: the reason lived
+in the stylesheet, and the citation is what lets a reader go and read it.
+
+**The dead-rule measurement, and the one number that got worse.** Method:
+build twice — once empty, once with the eight fixture entries — and take the
+rules dead in *both*, so a rule that only renders with content is not counted
+as waste. Single-class selectors only; class attributes HTML-decoded first,
+or every `[&:hover]:` utility on the site reads as dead.
+
+| | `main` @ `625fcc7` | after wave 6 |
+|---|---|---|
+| shipped CSS | 40,329 B | **27,277 B** (−32%) |
+| dead rules | 16 / 1,531 B | **27 / 2,478 B** (+947 B) |
+
+The stylesheet is a third smaller and its dead fraction grew. Of the fourteen
+newly-dead rules, five are real utilities on `/about/`'s portrait and CV
+branches, which are switched off rather than wasted — they render the day
+`about.ts` stops returning `null`.
+
+The other nine are the cost of the commentary this migration was required to
+carry: `border`, `border-b`, `border-l`, `border-s`, `h-auto`,
+`tracking-normal`, `transition-colors`, `underline`, and `transition-[…]` —
+every one emitted from a comment explaining which utility *not* to write. The
+last is the sharpest: `EndMatterLink.astro` writes `transition-[…]` with a
+literal ellipsis, the scanner read it as an arbitrary value, and 4.3.3
+compiled a 202-byte rule for a property named `…`. Naming the prefixed form
+instead of the bare word (§4.4) avoids the bare-word cases and does nothing
+for these, because here the bare word IS the point being made.
+
+This is a real trade and it should be read as one: ~600 bytes of dead CSS
+bought the explanations, and the explanations were a condition of the
+migration. It is not an argument for deleting them.

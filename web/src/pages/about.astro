@@ -101,8 +101,13 @@ const background: { label: string; value: string }[] = [
     {/* Zero reference density here, by §2.3: the person carries this page,
         so no mythology, no fandom, no protocol wordplay past the eyebrow.
         Every date is a closed span — nothing here needs editing to stay
-        true. */}
-    <div class="bio article-body">
+        true.
+
+        The `bio` name that used to sit beside `article-body` here was swept in
+        wave 6: it had no rule in any stylesheet and never did, so there was
+        nothing to migrate. `article-body` is the prose treatment and it is a
+        frozen name (tests/e2e/rtl.spec.ts). */}
+    <div class="article-body">
       <p>
         I am Tal Bendet, a full stack developer in Tel Aviv. From 2021 to 2025 I worked at
         Amdocs on shared frontend infrastructure: a React and TypeScript design system and
