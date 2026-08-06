@@ -36,6 +36,9 @@ never resurrect its process.
 - The repo root is the pnpm workspace: `web/` (Astro), `api/` (Node/TS +
   Prisma), `deploy/` (Docker/Caddy/compose).
 - Branches + PRs to `main`; no direct pushes once `ci.yml` exists.
+- Local checks: `scripts/check.sh` (CI's service-free half — gates, typechecks,
+  build, vocabulary gate; `fast` skips the build) and `scripts/sec.sh`. Green
+  from either is not green from CI, which alone runs the DB and Docker stages.
 - Pin dependency versions from fresh lookups, never from memory.
 - Never commit secrets; `.env` on-instance and GitHub environment secrets
   only.
