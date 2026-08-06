@@ -2,21 +2,98 @@
 @import './tokens.css';
 @import './hero.css';
 
-html {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  scroll-behavior: smooth;
-}
+/*
+ * The element-level rules sit in `@layer base`, and that is load-bearing
+ * rather than tidiness.
+ *
+ * Tailwind is imported above, which establishes the layer order
+ * `theme, base, components, utilities`. Unlayered CSS beats every layer,
+ * regardless of specificity. So while these rules were unlayered, an
+ * unlayered `a { text-decoration: underline }` silently beat `no-underline`
+ * on any anchor carrying it: the utility was generated, matched, applied, and
+ * lost — with nothing in the markup to suggest why. The failure is silent in
+ * both directions, which is what makes it worth a comment this long.
+ *
+ * Layering them puts base rules back underneath utilities, where they belong.
+ * Nothing else moves: every rule below is an element or pseudo-class selector
+ * that already lost to any class rule on specificity, and the component
+ * stylesheets stay unlayered, so their precedence over these is unchanged.
+ *
+ * `.shell` and `.skip-link` stay OUT of the layer deliberately — they are
+ * component classes, not base rules, and layering them would flip them under
+ * every utility.
+ */
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    scroll-behavior: smooth;
+  }
 
-body {
-  min-height: 100vh;
-  font-size: var(--size-body);
-  line-height: var(--leading-body);
-}
+  body {
+    min-height: 100vh;
+    font-size: var(--size-body);
+    line-height: var(--leading-body);
+  }
 
-main {
-  padding-block-start: 72px;
+  main {
+    padding-block-start: 72px;
+  }
+
+  /* Theme swap — the one theatrical moment (600ms; instant under reduced motion). */
+  html.theme-transition,
+  html.theme-transition * {
+    transition:
+      background-color var(--motion-theme) ease,
+      color var(--motion-theme) ease,
+      border-color var(--motion-theme) ease,
+      fill var(--motion-theme) ease;
+  }
+
+  /* Code is notation, not prose — LTR unconditionally. This one has to stay a
+     rule whatever else happens: it reaches the `pre`/`code` that Shiki and the
+     markdown renderer emit, which carry no class attribute for a utility to
+     sit on, and an e2e test asserts the COMPUTED direction. */
+  pre,
+  code {
+    direction: ltr;
+    font-family: var(--font-mono);
+  }
+
+  /* Links carry --text with an underline; accents are not a link idiom
+     (specs/design/palette.md §7.4). */
+  a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--border-strong);
+    transition: text-decoration-color var(--motion-hover) ease;
+  }
+
+  a:hover {
+    color: var(--text-strong);
+    text-decoration-color: var(--text-strong);
+  }
+
+  /* Focus indication must never lag or fade in. */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    html.theme-transition,
+    html.theme-transition *,
+    a {
+      transition: none;
+    }
+  }
 }
 
 /* The one shared measure. Chrome and page bodies align to the same column
@@ -25,46 +102,6 @@ main {
   max-inline-size: 960px;
   margin-inline: auto;
   padding-inline: 24px;
-}
-
-/* Theme swap — the one theatrical moment (600ms; instant under reduced motion). */
-html.theme-transition,
-html.theme-transition * {
-  transition:
-    background-color var(--motion-theme) ease,
-    color var(--motion-theme) ease,
-    border-color var(--motion-theme) ease,
-    fill var(--motion-theme) ease;
-}
-
-/* Code is notation, not prose — LTR unconditionally. */
-pre,
-code {
-  direction: ltr;
-  font-family: var(--font-mono);
-}
-
-/* Links carry --text with an underline; accents are not a link idiom
-   (specs/design/palette.md §7.4). */
-a {
-  color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-  text-decoration-thickness: 1px;
-  text-decoration-color: var(--border-strong);
-  transition: text-decoration-color var(--motion-hover) ease;
-}
-
-a:hover {
-  color: var(--text-strong);
-  text-decoration-color: var(--text-strong);
-}
-
-/* Focus indication must never lag or fade in. */
-:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-  transition: none;
 }
 
 /* First focusable element on every page; off-screen until focused. */
@@ -85,15 +122,4 @@ a:hover {
 .skip-link:focus {
   inset-block-start: 8px;
   inset-inline-start: 8px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
-  html.theme-transition,
-  html.theme-transition *,
-  a {
-    transition: none;
-  }
 }
