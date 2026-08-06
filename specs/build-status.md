@@ -222,27 +222,40 @@ green is a habit, not an enforcement, until the `checks` context is re-added
 as required. There are now **two** contexts to require: `checks` and
 `secrets`. SR-18 is where that decision lives.
 
-## 3b. Styling — Tailwind utility migration: evaluated, NOT done
+## 3b. Styling — Tailwind utility migration: GO, not yet started
 
-**Evaluated 2026-08-06** on branch `tailwind-utility-migration`; the verdict
-was **no-go** and **no file under `web/` was changed**. The full reasoning,
-the pre-registered thresholds it was judged against, and the measurements are
-in `notes-tailwind-verdict.md`. The short version: the migration is
-mechanically achievable — the pilot hit a zero-pixel diff across 156
-comparisons with all four gates green — and there is no maintenance problem
-for it to solve. `git log -- web/src/styles` returns seven commits ever, every
-page brief is built, and the one consolidation it would enable is the one
-`projects.css:41-48` explicitly forbids.
+**Evaluated 2026-08-06** on branch `tailwind-utility-migration`. The analysis
+returned **no-go**; Tal then **reversed it to GO** the same day by ratifying
+the two things the analysis had named as the conditions that would flip it.
+Both the original verdict and the reversal are in
+`notes-tailwind-verdict.md` — §3 is the analysis, §4 is the decision, and §3
+is deliberately left unedited so the record shows what was believed before the
+call was made.
 
-Three findings outlived the verdict and are worth acting on independently:
+What Tal ratified: **the spacing scale becomes rem-based**, and **multi-site
+devices are extracted into Astro components** with utilities inside them. The
+first retires the one objection that had no engineering answer; the second
+preserves the single-definition-point property that
+`projects.css:2-8` and `entry-list.css:2-7` make a correctness requirement,
+rather than spending it. Two objections stand and are accepted as cost, not
+refuted: there is no maintenance problem being solved (seven commits ever to
+`web/src/styles`), and per-declaration commentary loses its referent — which
+is why **every extracted component must carry the prose from the rules it
+replaces**. A migration that drops the commentary is a failed migration.
 
-1. **A latent cascade bug, today.** `global.css`'s element rules (`a`, `html`,
-   `body`, `main`) are unlayered, so they beat everything in
-   `@layer utilities` regardless of specificity. Any Tailwind utility anyone
-   adds to an anchor is generated, applied, and silently loses to
+**Nothing under `web/` has changed yet.** The migration is blocked on the
+`@layer base` fix below landing first.
+
+Three findings from the evaluation are worth acting on independently:
+
+1. **A latent cascade bug, today — fixed in #27.** `global.css`'s element
+   rules (`a`, `html`, `body`, `main`) were unlayered, so they beat everything
+   in `@layer utilities` regardless of specificity. Any Tailwind utility
+   anyone adds to an anchor is generated, applied, and silently loses to
    `a { text-decoration: underline }`. Moving those rules into `@layer base`
    fixes it and changes nothing else — they already lost to every class rule
-   on specificity. Small, supervised, worth doing.
+   on specificity. **This is a prerequisite for the migration:** until it
+   lands, no utility can be adopted anywhere on the site.
 2. **Tailwind's scanner reads prose.** Writing the word *invisible* in an
    Astro comment made Tailwind emit `.invisible{visibility:hidden}` into
    shipped CSS, which failed `banned-vocab.ts` — on `hidden`, a word that

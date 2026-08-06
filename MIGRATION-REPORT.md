@@ -4,6 +4,14 @@
 **End state: A (no-go).** Branch pushed, **no PR opened**, and **no file under
 `web/` was changed**.
 
+> **SUPERSEDED, same day.** Tal reversed the verdict to **GO** after reading
+> it, by ratifying the rem-based spacing scale and component extraction —
+> the two conditions §3.4 named. The decision, what it answers, what it
+> accepts as cost, and the re-cut wave plan are in
+> `specs/notes-tailwind-verdict.md` §4. The report below is left as written:
+> it is the record of the overnight run, not the current plan. §5 in
+> particular still stands, and its first item shipped as **PR #27**.
+
 Delete this file before merging anything; it is a handover, not a spec. The
 durable output is `specs/notes-tailwind-verdict.md`.
 

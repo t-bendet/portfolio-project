@@ -14,3 +14,11 @@ node_modules/
 web/src/content/**/*-fixture.md
 web/test-results/
 web/playwright-report/
+
+# The migration's fidelity harness: its own Playwright spec and config, the
+# fixture SOURCES it installs, and ~16MB of baseline PNGs (every page x both
+# temperatures x three widths, twice over). It is a local verification tool,
+# not a checked-in oracle — the one screenshot baseline this repo does commit
+# is web/tests/e2e/__screenshots__/, and keeping the two apart is the point.
+# Without this rule a single `git add -A` commits 169 files of it.
+web/.fidelity/

@@ -283,7 +283,7 @@ Stated so the decision is reversible on evidence rather than on mood:
 None of these are close calls that were resolved against the migration. They
 are simply not true today.
 
-### 3.5 What was kept
+### 3.5 What was kept at the time of the no-go
 
 Nothing. The branch carries this memo, the `build-status.md` entry, and
 `MIGRATION-REPORT.md`; no file under `web/` was changed. The bridge and the
@@ -292,3 +292,128 @@ happen on a no-go. The fidelity harness stays untracked in `web/.fidelity/`
 and is described in the report so it can be rebuilt — it is the reusable
 result of the night, and it would be the right first step of any future
 attempt.
+
+---
+
+## 4. Reversal — GO, on Tal's decision (2026-08-06)
+
+Section 3 is left exactly as written. It is the record of what the evidence
+said before a decision was taken, and editing it to agree with the outcome
+would destroy the only thing the pre-registration bought. What follows is the
+reversal and its grounds.
+
+**Verdict: GO.** Tal ratified two things after reading §3:
+
+1. **The spacing scale becomes rem-based.** This is the ratification §3.4
+   named as flip-condition 1.
+2. **Multi-site devices are extracted into Astro components**, with utilities
+   living inside them. This is flip-condition 3.
+
+### 4.1 What each decision actually does to the analysis
+
+Being precise about which objections were *answered* and which were
+*accepted*, because they are not the same act and the difference is the whole
+value of §3.
+
+**Answered — these objections are now gone, not absorbed:**
+
+- **Point 3 (px → rem).** This was the one objection I could not engineer
+  around: the only exact translation was bracketing all 125 grid-aligned
+  values, which would have destroyed the readability case. With the scale
+  ratified, `mbs-24` is simply *correct* — `calc(var(--spacing) * 24)` at
+  `--spacing: .25rem` is the intended value, not a drift to be tolerated.
+  Spacing now scales with the user's root font size while the type scale stays
+  absolute px; that asymmetry is a known consequence and Tal's to own.
+  Consequence for the harness: the fidelity oracle runs at a 16px root, where
+  rem and px agree, so it **cannot** police this. It is ratified, not verified.
+- **Point 7 (single-definition-point).** Component extraction restores the
+  property the specs require rather than spending it. `projects.css:2-8`'s
+  "there has to be exactly one card" and `entry-list.css:2-7`'s "one
+  stylesheet so the indexes cannot drift" become *one component* instead of
+  one stylesheet. The pilot measured the alternative: 22 declarations → 100
+  utility tokens with the same 14-utility string on all five footer anchors.
+  Extraction is strictly better than the status quo here, because a component
+  enforces the shared device at the markup level, not merely by convention.
+
+**Accepted as cost — real, unrefuted, and overridden deliberately:**
+
+- **T4 / point 8 (nothing is being maintained).** Still true on the evidence:
+  seven commits ever to `web/src/styles`, every page brief built. No new fact
+  retired this; Tal has judged the value differently, which is an owner's call
+  about a portfolio's direction rather than a question the repo can answer.
+  Recorded as an override, not as a refutation.
+- **Point 6 (the reasoning loses its referent).** ~2,191 words of commentary
+  with 31 `specs/` citations currently sit against the declarations they
+  explain. Component extraction **mitigates this more than a straight
+  migration would** — a component file has a header comment, and a device's
+  rationale can live there attached to the device. It does not fully solve it:
+  per-declaration notes like `projects.css:17-22`'s "auto-fill, not auto-fit,
+  and the difference is load-bearing" still end up beside a
+  `grid-cols-[repeat(auto-fill,minmax(280px,1fr))]` token rather than beside a
+  property. **Mitigation is mandatory, not optional:** every extracted
+  component carries the prose from the rules it replaces, in its frontmatter
+  comment. A migration that drops the commentary is a failed migration, and
+  reviewers should reject it on that ground alone.
+
+Two thresholds therefore still read as tripped on evidence (T4, and T8 in
+part). The verdict flips because the decision-maker has weighed the accepted
+costs against a benefit the analysis cannot measure — not because the analysis
+changed. That distinction is the honest framing and it stays in the record.
+
+### 4.2 Revised plan
+
+The brief's §9 waves were built around stylesheet clusters. Extraction changes
+the unit to **devices**, so the waves are re-cut. Everything else from the
+brief stands: pixel-identity at `maxDiffPixels: 0`, `tokens.css` byte-frozen,
+logical utilities only on the inline axis, no new dependencies, no edits to
+`scripts/`/`.github/`/`deploy/`/the e2e baseline, one commit per wave as the
+rollback unit, revert a wave that cannot reach zero diff in two attempts.
+
+**Prerequisite: PR #27 (`@layer base`) must be merged first.** Until it is, an
+unlayered `a { text-decoration: underline }` beats every utility placed on an
+anchor. The brief's plan of doing `global.css` last would have had every
+anchor migration silently fail until wave 5.
+
+| Wave | Unit | Contents |
+|---|---|---|
+| 0 | orchestrator | Token bridge: `@theme inline` mapping `--color-*`, `--font-*`, `--text-size-*`, `--leading-*`, `--tracking-*` 1:1, plus `@custom-variant warm`. Radius/motion referenced as `rounded-(--radius-m)` / `duration-(--motion-hover)` — a theme key `--radius-s` would collide with the `rounded-s-*` **logical** namespace. Exit: zero diff, bridge alone invisible. |
+| 1 | leaf devices ×3 ∥ | `Chip`/`ChipList` (dedupes the `.chip` defined in both `article.css` and `entry-list.css`); `StackChip` (six enumerated literal accent variants — never interpolated); `RefRow`/`RefRows`. |
+| 2 | chrome ×2 ∥ | `SiteFooter` (piloted already — `FooterLink`); `SiteHeader` (`NavLink`, eyebrow, `segment-he`, mark). Renders everywhere: diff all pages. |
+| 3 | index devices ×2 ∥ | `Card` + `CardGrid` shared by `/` and `/projects/`; `EntryRow` + `PageHeader`/`Standing`/`CrossLink`/`Terms` (the `warm:` variant)/`RoutesOut` shared by `/writing/` and `/he/writing/`. |
+| 4 | article shell, serial | `article.css`'s class-attached parts only: `.article-grid`/`.with-contents`, `.article-header`, `.lede`, `.meta-line`, `.article-contents*`, `.end-matter*`, `.siblings*`, `.credit*`, `.translator-note*`. **`.article-body` and `.credit` are frozen names** (`rtl.spec.ts`). |
+| 5 | page-local ×5 ∥ | Scoped `<style>` blocks: `about`, `contact`, `colophon`, `404`, `he/404`, plus `index.astro`'s `block`/`block-title`/`block-link` trio (dissolved — bare `block` collides with the `.block` utility). |
+| 6 | orchestrator | `global.css` sweep, then dead-selector sweep. |
+
+**Stays CSS, by design** — unchanged from §2's exclusion accounting:
+`article.css`'s `.article-body …` descendant rules over markdown-generated
+HTML; `hero.css` (keyframes + the resting-state-first contract); the
+`pre`/`code` `direction: ltr` rule; `.note`/`.translator-note*` as
+content-authoring affordances.
+
+**The dead-selector sweep must exempt content-authored classes** — `note`,
+`translator-note`, `translator-note-label`. They are applied from MDX, not
+from `web/src`, so a class-name grep marks them dead, deletes them, and every
+gate stays green because no page renders a callout. This was adversarial
+point 11 and it is a real trap.
+
+### 4.3 Verification, unchanged and non-negotiable
+
+Per wave: four gates + `astro check` + build + `banned-vocab` + the full
+156-screenshot fidelity diff at `maxDiffPixels: 0` (both passes — the empty
+state that ships and the fixture-filled state), then one commit. Final:
+`run-e2e.sh` with the checked-in baseline passing **unchanged**.
+
+Two things the oracle provably cannot see, to be held in review rather than
+trusted to a green run:
+
+- **the rem change** (§4.1) — ratified, unverifiable at a 16px root;
+- **`hover:`'s `@media (hover: hover)` gate** — Tailwind v4 wraps `hover:`,
+  which would delete the site's 17 hover states on coarse-pointer devices.
+  **`[&:hover]:` is mandatory throughout.** Likewise `aria-[current]:`, since
+  the built-in `aria-current:` variant does not exist in 4.3.3.
+
+And one gate hazard worth repeating: Tailwind's scanner generates utilities
+from words in *prose*, including comments. Writing *invisible* in a comment
+emitted `.invisible{visibility:hidden}` and failed `banned-vocab.ts` on
+`hidden`. Component frontmatter comments carrying the migrated rationale
+(§4.1) are exactly where this will bite.
