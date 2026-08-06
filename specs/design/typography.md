@@ -117,17 +117,23 @@ letters, against the partner's actual `x` and `H` bounds:
 
 | Pairing | Hebrew letters | Latin x | match-x | Shipped | Standing |
 |---|---|---|---|---|---|
-| Heebo vs Syne | 0.5752 | 0.5000 | 86.93% | **90.4%** | QA pending |
+| Heebo vs Syne | 0.5752 | 0.5000 | 86.93% | **86.9%** | Tal's eye, 3 passes |
 | Heebo vs DM Mono | 0.5752 | 0.4960 | 86.23% | (same face) | — |
-| Frank Ruhl Libre vs Fraunces | 0.5860 | 0.4820 | 82.25% | **85.5%** | QA pending |
+| Frank Ruhl Libre vs Fraunces | 0.5860 | 0.4820 | 82.25% | **82.2%** | same rule, warm QA owed |
 | IBM Plex Sans Hebrew vs IBM Plex Mono | 0.6060 | 0.5160 | 85.15% | none | see below |
 
 Hebrew is unicameral: its letters sit ~15% above Latin x-height and well
-below cap-height. Matching x-height exactly reads slightly small, because a
-unicameral script carries the line alone — the shipped values target
-x-height +4%. Still ratios, still not optical matches; §7.4's pass governs.
-Known drift: Fraunces' `opsz` axis moves its x-height with size, and Syne is
-used at 400–800 while these bounds are the default instance.
+below cap-height. The plausible theory — that a unicameral script should
+therefore sit slightly *above* Latin x-height, since it carries the line
+alone — was tried at +4% and **rejected by eye at two successive values**;
+Hebrew still read large both times. The shipped values match x-height
+exactly. Recorded because the theory will occur to someone again, and it did
+not survive contact with these faces.
+
+Known drift remains: Fraunces' `opsz` axis moves its x-height with size, and
+Syne is used at 400–800 while these bounds are the default instance. The
+warm pair still owes its own look — 82.2% is the same rule applied, not an
+observation.
 
 **The Plex pair gets no rule, and the reason matters.** An earlier draft
 claimed the two faces were "metrically identical" — they are not; that was

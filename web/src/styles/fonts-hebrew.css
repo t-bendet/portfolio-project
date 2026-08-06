@@ -51,10 +51,14 @@
  *   IBM Plex Mono         0.5160   0.6980   1.3000 em
  *
  * Hebrew is unicameral, so its letters sit ~15% above Latin x-height at the
- * same font-size and well below cap-height. Matching x-height exactly
- * (86.93% for Heebo, 82.25% for Frank Ruhl Libre) reads slightly small,
- * because a unicameral script carries the line on its own. The values below
- * target x-height +4%, which is the first pass Tal's eye is correcting.
+ * same font-size and well below cap-height.
+ *
+ * The values below match Latin x-height exactly. The theory that a
+ * unicameral script should sit slightly ABOVE x-height, because it carries
+ * the line alone, was tried at +4% and rejected by eye at two successive
+ * values — Hebrew still read large. Recorded because it is a plausible idea
+ * that did not survive contact with these particular faces, and someone
+ * will think of it again.
  *
  * Still **pending the §7.4 QA pass**: a ratio is not an optical match, and
  * stroke weight and counter size still decide whether a mixed line reads as
@@ -82,7 +86,7 @@
  * --font-display/--font-body, and beside DM Mono in --font-mono. A
  * @font-face descriptor is per-face, so one `size-adjust` has to serve both.
  * It can, because Syne (0.5000) and DM Mono (0.4960) are 0.8% apart:
- * 90.4% splits them, landing within 0.4% of each. Declaring Heebo twice
+ * 86.9% splits them, landing within 0.4% of each. Declaring Heebo twice
  * under two family names would buy that 0.4% and cost a second face; it is
  * not worth it, and this is the note that says so rather than leaving the
  * next reader to re-derive it.
@@ -97,7 +101,7 @@
   font-style: normal;
   font-display: swap;
   unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
-  size-adjust: 90.4%;
+  size-adjust: 86.9%;
   ascent-override: 92.5%;
   descent-override: 27.5%;
   line-gap-override: 0%;
@@ -119,7 +123,7 @@
   font-style: normal;
   font-display: swap;
   unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
-  size-adjust: 85.5%;
+  size-adjust: 82.2%;
   ascent-override: 97.8%;
   descent-override: 25.5%;
   line-gap-override: 0%;
