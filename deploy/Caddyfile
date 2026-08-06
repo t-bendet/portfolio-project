@@ -11,7 +11,9 @@ header {
 	X-Content-Type-Options "nosniff"
 	Referrer-Policy "strict-origin-when-cross-origin"
 	# CSP with hash-based script-src for the inline theme script is finalized
-	# at the Gated Caddyfile review — hashes are stable per deploy.
+	# at the Gated Caddyfile review — hashes are stable per deploy. Take the
+	# hash from the *dist* bytes of that block, indentation included, not from
+	# the .astro source; any edit to it re-mints the hash.
 	X-Frame-Options "DENY"
 	-Server
 }

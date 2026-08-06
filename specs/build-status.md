@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-06**, at `69208e6` on `main`.
+Last checked against the repo: **2026-08-07**, at `3746cc9` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -548,19 +548,18 @@ family names because nothing hashes them any more, which is why the bridge
 names them as plain families while the other five stay variables. IBM Plex
 Sans Hebrew needs no adjustment, so it stayed in the API.
 
-**The warm temperature has no way in, and that is now load-bearing.**
-`tokens.md` §2 gives the trigger as a global keydown buffer and `brand.md` §2
-specifies it exactly — the one hidden feature, the site's sole easter egg.
-Only the *persistence* half is built: `Base.astro` reads `localStorage.theme`
-before first paint and sets the attribute. Nothing writes it. So the warm
-palette, its four fonts and its whole type system are unreachable except from
-devtools.
+**The warm temperature had no way in, and that was load-bearing.** Only the
+*persistence* half was built: `Base.astro` read `localStorage.theme` before
+first paint and set the attribute, and nothing wrote it — so the warm palette,
+its four fonts and its whole type system were unreachable except from devtools.
 
-That was a curiosity while the theme was only colour. It is a blocker now:
-Frank Ruhl Libre's `size-adjust` cannot get the QA pass §7.4 requires until
-the theme can be entered the way a visitor would enter it. Recorded here
-because, like the fonts, it is a hole this file was silent about — the
-easter egg is fully specified and half-built, and nothing said so.
+That was a curiosity while the theme was only colour, and a blocker once the
+fonts landed: Frank Ruhl Libre's `size-adjust` could not get the QA pass §7.4
+requires until the theme could be entered the way a visitor would enter it. It
+was recorded here because, like the fonts, it was a hole this file had been
+silent about — the easter egg fully specified and half-built, with nothing
+saying so. **The other half landed 2026-08-07; see §3d.** The `REVIEW(Tal)` on
+82.2% stands until the eye pass actually happens.
 
 Heebo's preload became an explicit `<link>` in `Base.astro` as a
 consequence, since `<Font>` no longer knows about it. The URL comes from a
@@ -575,6 +574,87 @@ shorter with real fonts. The eight behavioural assertions passed throughout —
 before the re-capture and after — so the screenshot was the only thing that
 moved, which is the evidence that it moved for the stated reason. Re-run in
 compare mode afterwards: 9/9.
+
+## 3d. The theme mechanism — the trigger is built
+
+**Until 2026-08-07 only half of it existed.** `Base.astro` read
+`localStorage.theme` before first paint and set `data-theme`; nothing wrote
+that key. The warm palette, its four fonts and its whole type system were
+unreachable except from devtools. §3c recorded that as a blocker; it is one no
+longer.
+
+The whole mechanism is one `is:inline` block in `web/src/layouts/Base.astro`
+— pre-paint attribute-set, keydown buffer, persistence — because
+`performance-budgets.md` §3 budgets the three as one row and SR-10's hash-based
+CSP costs one hash per inline block. **Measured 1,852 B gzipped against the
+2.0 KB cap**, which is the whole row, with roughly 200 bytes of headroom.
+
+That headroom is the thing to know before editing it. `is:inline` ships
+byte-for-byte with no minifier — comments and indentation included — so this
+repo's ordinary commenting density would consume the budget on its own. The
+reasoning lives in `tokens.md` §2 and the script carries pointers. There is no
+`bundle` stage yet (obligation 10), so the number above was measured by hand
+and will drift silently until there is.
+
+**The decisions, all four Tal's, all recorded in `tokens.md` §2:** the literals
+ship plain rather than encoded; the console strings are the half-quote pair;
+warm fonts are warmed on a partial match; and there is an e2e spec.
+
+**The literals forced a spec amendment rather than a workaround.** Plain
+`i solemnly swear…` and `mischief managed` carry three words from
+`tokens.md` §1's banned identifier vocabulary, so obligation 7 failed on them —
+15 hits across the 9 pages. The alternatives all cleared the gate untouched
+(base64 has no word boundaries inside it; an FNV hash has no text at all), and
+were rejected on register: `brand.md` §3's standard here is "discoverable in
+the open repo by the attentive; never pointed at", and encoding makes a thing
+*hidden* rather than merely unannounced. So §1 gained a carve-out and
+`scripts/banned-vocab.ts` masks the two exact phrases before its identifier
+scan, reporting the count on every run (**27** — three per page: both literals
+and the revert log line). Every other use of those words still fails, verified
+against a control string. Filenames are deliberately not masked.
+
+**What the e2e spec is really for.** `web/tests/e2e/theme.spec.ts`, ten tests,
+no screenshots — so it has zero surface against `rtl.spec.ts`'s byte-compared
+baseline, which is the property that matters most about it. The valuable one is
+SR-23's: it injects an `<input>`, focuses it, types the whole phrase into it
+and asserts nothing happens. The public IA has no form fields, so that
+requirement is about staying harmless if one ever appears, and it is the only
+part of SR-23 a machine can check.
+
+**Three things that would have shipped broken, all silent:**
+
+- `document.fonts.load()` defaults its sample text to Latin. Both Hebrew
+  companions are scoped to the hebrew `unicode-range`, so the two calls that
+  matter would have resolved instantly having fetched nothing — a font warm-up
+  that warms nothing and reports success. They take an explicit Hebrew sample.
+- Family names could not be hardcoded: Astro mints
+  `Fraunces-963041b4c56633f0` and friends, so the script reads them from
+  `getComputedStyle`. The same hashing that §3c caught in `tokens.css` reaches
+  here too.
+- `transitionend` cannot remove the transition class. It fires per property per
+  element across every node, and under reduced motion the rule is
+  `transition: none`, so it never fires at all and the class would have stayed
+  on `<html>` forever. One `clearTimeout`-guarded timer instead, alive for
+  600ms per toggle and never at idle.
+
+`web/src/styles/global.css`'s "the theme-transition rule is NOT dead" comment
+has been rewritten: the class was a contract waiting for a switcher, and the
+switcher now exists and is named there. The buffer is a fixed-length tail
+window, so the listener starts no timer at all — `performance-budgets.md` §3's
+"zero timers at idle" holds literally rather than approximately.
+
+**What this unblocks, and what it does not.** Frank Ruhl Libre's
+`size-adjust: 82.2%` can now get the perceived-density pass `typography.md`
+§7.4 requires, because the warm theme can be entered the way a visitor enters
+it. That pass is Tal's eye and has not happened — the `REVIEW(Tal)` stands
+until it does. SR-23 and SR-24 both name a Gated review as their verification;
+the discharge lines in `security-requirements.md` record what the
+implementation does, not that the review happened.
+
+**One coupling recorded before it bites:** `deploy/Caddyfile` ships no CSP
+today, only the comment saying hash-based `script-src` is finalised at the
+Gated Caddyfile review. The hash must be taken from the *dist* bytes of the
+inline block, indentation included, and re-minted on every edit to it.
 
 ## 4. Cloud
 

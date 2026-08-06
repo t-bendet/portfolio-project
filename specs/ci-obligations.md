@@ -18,6 +18,9 @@ retired with the workshop.
    - no horizontal overflow.
    Also assert the **real 404 status** (not just the page body) for both
    `/404` and `/he/404` once the Caddy image is in the loop.
+   The stage carries a second spec since 2026-08-07 — `theme.spec.ts`, the
+   theme mechanism, which takes no screenshots so it has no surface against
+   this one's baseline. Same runner, same command; not a new obligation.
 5. Contrast gate over `design/palette.md` §5's pairs at **full precision**
    (thinnest margin is 4.50 — rounding can pass a failing pair). The old
    workshop had `scripts/contrast.ts` for this; restore it from git history
@@ -27,7 +30,10 @@ retired with the workshop.
 7. Banned-vocabulary grep over shipped CSS/JS/HTML — **whole identifier
    tokens, not substrings** (`design/tokens.md` §1; `sitemap.xml` and
    `[hidden]` are the recorded non-violations). Include the mythology
-   figure-name and "let's connect" greps from `brand.md`.
+   figure-name and "let's connect" greps from `brand.md`. One further
+   non-violation since 2026-08-07: the two incantations, masked before the
+   identifier scan and counted in the run summary (`design/tokens.md` §1's
+   carve-out, SR-24). Filenames are not masked.
 8. No-raw-hex lint — tokens only (`design/tokens.md` §4.4).
 
 *(9 is dormant — "Dormant" below. The gap is deliberate; the numbers are
