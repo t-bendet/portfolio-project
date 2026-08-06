@@ -6,9 +6,22 @@
 // lang="he" dir="rtl" come from the locale via the layout — this page sets
 // neither (specs/content-model.md §5 rule 1). Its empty state is deliberately
 // NOT a translation of the English one (§4).
+//
+// The archetype's devices are the same components /writing/ uses, which is how
+// §5's "not second-class" stops being a promise and becomes a fact about the
+// markup. IndexHeader.astro carries the reasoning; every one of them lays its
+// edges out on the inline axis, so dir="rtl" needs no special case here.
 import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import '../../../styles/entry-list.css';
+import ChipList from '../../../components/ChipList.astro';
+import IndexHeader from '../../../components/IndexHeader.astro';
+import Standing from '../../../components/Standing.astro';
+import CrossLink from '../../../components/CrossLink.astro';
+import EntryList from '../../../components/EntryList.astro';
+import EntryRow from '../../../components/EntryRow.astro';
+import SectionTerms from '../../../components/SectionTerms.astro';
+import RoutesOut from '../../../components/RoutesOut.astro';
+import RouteOutLink from '../../../components/RouteOutLink.astro';
 
 const entries = (await getCollection('translations', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -27,95 +40,81 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   section="תרגומים"
   sectionLang="he"
 >
-  <header class="page-header">
-    <h1>תרגומים</h1>
-
+  <IndexHeader title="תרגומים">
     {/* (a) what this section holds. */}
-    <p class="standing">
+    <Standing>
       כאן מתפרסמים תרגומים לעברית של מאמרים טכניים שנכתבו באנגלית בידי מחברים אחרים.
-    </p>
+    </Standing>
 
     {/* (b) credit is not optional, and the page says so before anyone clicks. */}
-    <p class="standing">
+    <Standing>
       כל תרגום נושא את שם המחבר המקורי וקישור למאמר באנגלית, בהרשאתו או תחת רישיון
       שמתיר תרגום.
-    </p>
+    </Standing>
 
     {/* (c) the invitation — it does real work in the empty state, because it
         is something to act on that is true whether or not the list is full. */}
-    <p class="standing">
+    <Standing>
       אם יש מאמר שלדעתכם שווה קריאה בעברית, אפשר להציע אותו ב־
       <a href="/contact/" lang="en">contact</a>.
-    </p>
+    </Standing>
 
     {/* The scope pointer — the seam, shown. Tal's own writing is in English,
         and the label says so in English before the click is made. */}
-    <p class="cross-link">
+    <CrossLink>
       מה שאני כותב בעצמי מתפרסם באנגלית ב־<a href="/writing/" lang="en">writing</a>.
-    </p>
-  </header>
+    </CrossLink>
+  </IndexHeader>
 
   {
     entries.length > 0 ? (
-      <ul class="entries">
+      <EntryList>
         {entries.map((entry) => (
-          <li class="entry">
-            <a class="entry-title" href={`/he/writing/${entry.id}/`}>
-              {entry.data.title}
-            </a>
-            <p class="entry-desc">{entry.data.description}</p>
-            <p class="entry-meta">
-              <time datetime={iso(entry.data.pubDate)}>{iso(entry.data.pubDate)}</time>
-              {entry.data.updatedDate && (
-                <span>
-                  עודכן{' '}
-                  <time datetime={iso(entry.data.updatedDate)}>
-                    {iso(entry.data.updatedDate)}
-                  </time>
-                </span>
-              )}
-              {/* Developers follow authors: the Latin author name is this
-                  list's strongest scanning signal, and it makes the list
-                  legible as translation work (§2.1). A Latin run inside an
-                  RTL row — isolated so it cannot misorder (§2.2). */}
-              <bdi lang="en">{entry.data.original.author}</bdi>
-              {entry.data.tags.length > 0 && (
-                <ul class="chips">
-                  {entry.data.tags.map((tag) => (
-                    <li class="chip">{tag}</li>
-                  ))}
-                </ul>
-              )}
-            </p>
-          </li>
+          <EntryRow
+            href={`/he/writing/${entry.id}/`}
+            title={entry.data.title}
+            description={entry.data.description}
+          >
+            <time datetime={iso(entry.data.pubDate)}>{iso(entry.data.pubDate)}</time>
+            {entry.data.updatedDate && (
+              <span>
+                עודכן{' '}
+                <time datetime={iso(entry.data.updatedDate)}>
+                  {iso(entry.data.updatedDate)}
+                </time>
+              </span>
+            )}
+            {/* Developers follow authors: the Latin author name is this
+                list's strongest scanning signal, and it makes the list
+                legible as translation work (§2.1). A Latin run inside an
+                RTL row — isolated so it cannot misorder (§2.2). */}
+            <bdi lang="en">{entry.data.original.author}</bdi>
+            {entry.data.tags.length > 0 && <ChipList tags={entry.data.tags} />}
+          </EntryRow>
         ))}
-      </ul>
+      </EntryList>
     ) : (
       <>
         {/* The section's terms. Not a translation of /writing/'s empty state
             — the two sections are not symmetric, and translating that copy
             would produce exactly the flat Hebrew this section exists to be
             better than (§4). No schedule, no counter. */}
-        <div class="terms">
+        <SectionTerms>
           <p>
             מה מתורגם כאן: כתיבה טכנית ארוכה ששווה קריאה בעברית, ורק בהרשאת המחבר או תחת
             רישיון שמתיר תרגום.
           </p>
           <p>מה לא: חדשות, הודעות על גרסאות, וטקסטים שיהיו לא נכונים בעוד חודש.</p>
-        </div>
+        </SectionTerms>
 
-        <ul class="routes-out">
-          <li>
-            <a href="/writing/" lang="en">
-              writing
-            </a>
-          </li>
-          <li>
-            <a href="/projects/" lang="en">
-              projects
-            </a>
-          </li>
-        </ul>
+        <RoutesOut>
+          <RouteOutLink href="/writing/" lang="en">
+            writing
+          </RouteOutLink>
+          <RouteOutLink href="/projects/" lang="en">
+            projects
+          </RouteOutLink>
+        </RoutesOut>
       </>
     )
   }

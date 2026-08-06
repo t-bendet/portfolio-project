@@ -1,0 +1,40 @@
+---
+// The tag chips, as one component. Until this extraction the same `.chips` /
+// `.chip` pair was written out twice — once in `styles/article.css` for the
+// article meta line, once in `styles/entry-list.css` for the writing indexes —
+// byte-for-byte identical in both. Two copies of one device is two places to
+// drift, so the device now lives here and the CSS copies are gone.
+//
+// Tags are chips, not links: a chip that looks interactive and is not would be
+// worse than a chip that does not (specs/pages/writing-index.md §2). So the
+// item is an <li> and never an <a>, and it is styled so it does not imply a
+// destination — tag routes are deferred (specs/routes/sitemap.md §4).
+//
+// An empty tag array renders nothing at all — no empty chip group
+// (specs/pages/writing-article.md §5). Every call site already guards on
+// `tags.length > 0` before reaching for this component; the guard below is the
+// same condition held here as well, so the component is safe to call
+// unconditionally in future.
+//
+// Padding is 3px on the block axis, which is off the 4px spacing scale on
+// purpose: it is what the prototype measures, and snapping it to 4px would
+// change the chip's height.
+
+interface Props {
+  tags: string[];
+  /** Placement only — the chip's own look is not the caller's business */
+  class?: string;
+}
+
+const { tags, class: className } = Astro.props;
+---
+
+{
+  tags.length > 0 && (
+    <ul class:list={['flex flex-wrap gap-1.5 list-none m-0 p-0', className]}>
+      {tags.map((tag) => (
+        <li class="font-mono text-size-label tracking-label text-muted bg-chip-bg pbs-[3px] pbe-[3px] ps-2 pe-2 rounded-(--radius-s)">{tag}</li>
+      ))}
+    </ul>
+  )
+}

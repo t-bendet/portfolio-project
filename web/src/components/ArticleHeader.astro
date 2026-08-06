@@ -1,0 +1,63 @@
+---
+// The masthead of the deep-dive editorial archetype: the h1, the lede under
+// it, and a rule closing the block. Five routes render it — the three article
+// templates, /about/ and /colophon/ — because About and Colophon are the same
+// archetype as an article rather than an index (specs/routes/sitemap.md §2).
+//
+// Title and lede are props rather than slots because the rules they replace
+// were `.article-header h1` and `.lede`: exactly one h1, exactly one lede,
+// in that order, on every one of the five. A slot would let a call site put
+// two headings in that position and lose the rule with nothing in the markup
+// to say why. That is Section.astro's argument and it holds here too.
+//
+// The lede is the entry's `description` on the three article routes — the
+// same string the index row and the meta description use
+// (specs/content-model.md §3.1). `max-inline-[56ch]` is the archetype's lede
+// measure, the same one Standing.astro pins on the index pages.
+//
+// Whatever follows the lede is the caller's: the meta line on the two writing
+// routes, the stack chips plus the destination links on a case study, the
+// review date on /colophon/, nothing at all on /about/.
+//
+// ── placement ─────────────────────────────────────────────────────────────
+//
+// `hasContents` puts the header across both columns on row 1 of the article
+// grid; see ArticleGrid.astro for the whole layout. It defaults to false, and
+// that default is what /about/ and /colophon/ rely on: they render this header
+// outside any grid, so the placement utilities must not be emitted on them at
+// all. `min-[900px]:col-span-full` compiles to `grid-column: 1 / -1`, the
+// exact declaration the stylesheet wrote; `min-[900px]:row-start-1` leaves
+// grid-row-end at its initial value, which is what the `grid-row: 1`
+// shorthand did.
+//
+// Both are named here in their prefixed form on purpose. Tailwind's scanner
+// reads these comments, and the unprefixed spelling of either would emit a
+// second rule that nothing on the site uses (verdict §4.4).
+
+interface Props {
+  /** The page's only h1. Plain text. */
+  title: string;
+  /** The one-sentence standfirst under it. Plain text. */
+  lede: string;
+  /**
+   * True only inside an ArticleGrid whose article earned a contents list.
+   * False (the default) means this header is not a grid item at all.
+   */
+  hasContents?: boolean;
+}
+
+const { title, lede, hasContents = false } = Astro.props;
+---
+
+<header
+  class:list={[
+    'mbe-12 pbe-8 border-be border-be-border',
+    hasContents && 'min-[900px]:col-span-full min-[900px]:row-start-1',
+  ]}
+>
+  <h1
+    class="font-display text-size-h1 font-bold leading-display tracking-display text-text-strong"
+  >{title}</h1>
+  <p class="mbs-5 text-size-lede leading-tight text-muted max-inline-[56ch]">{lede}</p>
+  <slot />
+</header>

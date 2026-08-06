@@ -1,0 +1,20 @@
+---
+// The meta row of the deep-dive archetype: a wrapping mono line of small
+// facts under a heading or above the way out. Two devices render it — the
+// article meta line (date, update date, tags) and the destination links of a
+// case study — and they must go on rendering the same one, which is why the
+// declarations sit here once rather than twice.
+//
+// `gap: 8px 16px` is row then column, so it is `gap-y-2 gap-x-4`: the wider
+// gap separates items on a line, the narrower one separates wrapped rows.
+// Reading those two the wrong way round is a change nobody would call a bug
+// and nobody would call intended either.
+//
+// A `<p>` and not a `<ul>`, deliberately: a `<ul>` start tag closes an open
+// `<p>`, and the chips this line carries are a list nested inside it. Anything
+// a caller puts here must be phrasing content for the same reason.
+---
+
+<p
+  class="flex flex-wrap items-center gap-x-4 gap-y-2 mbs-6 font-mono text-size-eyebrow text-muted"
+><slot /></p>

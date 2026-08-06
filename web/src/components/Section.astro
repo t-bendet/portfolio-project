@@ -1,0 +1,29 @@
+---
+// The section device the reference register is filed under: 72px of air, a
+// display heading, and a rule beneath it. Used by the authored static pages
+// /about/ and /colophon/; transcribed, like the rows, from the config-row
+// device in specs/design/prototypes/build-tools-overview.html.
+//
+// The heading is a prop rather than a slot because the rule it replaces was
+// `.section > h2` — a child combinator, meaning exactly one h2, first, always.
+// A slot would let a call site put two headings or none in that position and
+// lose the rule with nothing to read in the markup that says why.
+//
+// Block-axis spacing is written logically (`mbs`, `pbe`, `border-be`) for the
+// same reason the inline axis is: these pages are LTR today and the device
+// should not be what has to change if that stops being true.
+
+interface Props {
+  /** The section's only heading. Plain text — it renders as the h2. */
+  heading: string;
+}
+
+const { heading } = Astro.props;
+---
+
+<section class="mbs-18">
+  <h2
+    class="font-display text-size-h2 font-semibold tracking-display text-text-strong pbe-3 border-be border-be-border"
+  >{heading}</h2>
+  <slot />
+</section>

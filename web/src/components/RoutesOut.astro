@@ -1,0 +1,40 @@
+---
+// The routes out, part one of two — the row they sit in. Device 7 of 8 of the
+// overview index idiom; see RouteOutLink.astro for the link itself and
+// IndexHeader.astro for the family rationale.
+//
+// It is also rendered by /404 and /he/404, which are the minimal archetype
+// and not indexes at all. That is one device reused, not an archetype
+// boundary crossed by accident. Both 404 pages had this row written out by
+// hand in a scoped <style> block, and both matched what this component emits
+// declaration for declaration: the same 8px/24px gaps read the same way
+// round, the same 32px block start, the same list reset. Agreement that exact
+// between files nobody was diffing is what one prototype device transcribed
+// twice looks like. The row does the same job on either archetype — a set of
+// places to go — and on /404 that job is the whole page, since recovery in
+// one click is the requirement its brief opens with
+// (specs/pages/not-found.md §1–2).
+//
+// /404 and /he/404 are a drift pair in the same way /writing/ and
+// /he/writing/ are: one composition in two locales, which has to stay one
+// shape in both or the Hebrew page quietly becomes a different page. That is
+// what makes a component the right answer here rather than two more copies of
+// the string. The one thing that differs on the 404s: their two destinations
+// are fixed by sitemap.md §2 row 11 rather than computed, so the paragraph
+// below describes the indexes only.
+//
+// What there is to read right now — computed at build time from what actually
+// exists. A list of what is, not of what is missing: every index builds this
+// row by asking its sibling collections whether they have anything, so a
+// destination is offered because it has content and never because the page
+// would look bare without it. /projects/ keeps /about/ unconditional, which is
+// what holds specs/navigation.md §7.2's no-dead-ends rule true while both
+// collections are empty — the state the site is in today.
+//
+// `gap: 8px 24px` is row then column, so it is `gap-y-2 gap-x-6`: the wide gap
+// is the one between links on a line, the narrow one is between wrapped rows.
+// Reading those two the wrong way round is a change nobody would call a bug
+// and nobody would call intended either.
+---
+
+<ul class="flex flex-wrap gap-x-6 gap-y-2 list-none m-0 p-0 mbs-8"><slot /></ul>

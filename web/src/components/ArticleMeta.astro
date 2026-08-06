@@ -7,6 +7,11 @@
 // group (§5). If the dynamic layer is ever switched on, the view count
 // appends as the LAST child of this line and carries its own separator
 // (INV-2); nothing here reserves space for it (INV-1).
+//
+// The row itself — the wrapping mono line these facts sit in — is MetaLine,
+// shared with the destination links of a case study.
+import ChipList from './ChipList.astro';
+import MetaLine from './MetaLine.astro';
 
 interface Props {
   pubDate: Date;
@@ -25,24 +30,21 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const updatedLabel = lang === 'he' ? 'עודכן' : 'updated';
 ---
 
-<p class="meta-line">
+<MetaLine>
   <time datetime={iso(pubDate)}>{iso(pubDate)}</time>
 
   {
+    /* The span groups the label with its date so the meta line wraps between
+       facts rather than through one. It carries no class: it never had a rule
+       — not in article.css, not anywhere — and the name it used to carry was
+       swept in wave 6 rather than migrated, because there was nothing to
+       migrate. The grouping is the element's whole job. */
     updatedDate && (
-      <span class="updated">
+      <span>
         {updatedLabel} <time datetime={iso(updatedDate)}>{iso(updatedDate)}</time>
       </span>
     )
   }
 
-  {
-    tags.length > 0 && (
-      <ul class="chips">
-        {tags.map((tag) => (
-          <li class="chip">{tag}</li>
-        ))}
-      </ul>
-    )
-  }
-</p>
+  {tags.length > 0 && <ChipList tags={tags} />}
+</MetaLine>

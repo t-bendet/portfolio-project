@@ -1,0 +1,21 @@
+---
+// The overview index idiom, device 3 of 8: the scope pointer between the two
+// writing sections. See IndexHeader.astro for the family rationale.
+//
+// The seam, shown rather than smoothed over (specs/routes/sitemap.md §3).
+// entry-list.css said that with a single-word antonym of "shown" which this
+// file may not contain: Tailwind's scanner reads .astro comments, that word is
+// a utility name, and the rule it emits ships a selector that fails
+// banned-vocab.ts (notes-tailwind-verdict.md §4.4). The sentence survived the
+// rephrase; a red build would not have survived anything.
+//
+// The link itself is the caller's, along with its lang attribute — /writing/
+// points at תרגומים with lang="he", /he/writing/ points back at writing with
+// lang="en". The destination's language is disclosed before the click
+// (specs/navigation.md §2.2), and only the call site knows which way it goes.
+//
+// Meta size and --muted: this is a pointer, not one of the standing
+// statements above it, and it should not read as a fourth one.
+---
+
+<p class="mbs-5 text-size-meta text-muted"><slot /></p>

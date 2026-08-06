@@ -1,11 +1,25 @@
 ---
 // Global footer — feed · colophon · direct links · the Hebrew link.
 // specs/navigation.md §4. Content-independent (N-1), and identical on all
-// twelve routes including both 404s (§7.3).
+// twelve routes including both 404s (§7.3). That last property is what makes
+// this file cheap to get wrong quietly: one rule here renders on every route,
+// so a defect confined to a single route — as the aria-current one was — is
+// the only kind that is hard to notice. FooterLink.astro records that story.
+//
+// The scoped stylesheet this file used to carry is gone; its four rules are
+// utilities now. `.site-footer`, `.footer-row` and `.links` went with it —
+// nothing else in the repo referenced them. `.shell` is NOT one of those:
+// it is global.css's one shared measure (960px + the inline padding), shared
+// with every page body, and it stays a class.
+//
+// Block-axis spacing is logical throughout — `mbs`, `pbs`/`pbe`,
+// `border-bs`. The inline axis is where the RTL rule bites, but writing the
+// block axis the same way costs nothing and keeps one habit instead of two.
 
 // The same three links /contact/ lists, from one module so the two surfaces
 // cannot drift — including the address (src/lib/links.ts).
 import { email, github, linkedin } from '../lib/links';
+import FooterLink from './FooterLink.astro';
 
 const locale = Astro.currentLocale ?? 'en';
 const path = Astro.url.pathname;
@@ -18,71 +32,23 @@ const feed = locale === 'he' ? '/he/rss.xml' : '/rss.xml';
 const colophonCurrent = path === '/colophon/' ? 'page' : undefined;
 ---
 
-<footer class="site-footer">
-  <div class="shell footer-row">
-    <ul class="links">
-      <li><a href={feed}>rss</a></li>
-      <li><a href="/colophon/" aria-current={colophonCurrent}>colophon</a></li>
+<footer class="border-bs border-bs-border mbs-24">
+  <div class="shell flex flex-wrap gap-x-10 gap-y-3 pbs-8 pbe-12">
+    <ul class="flex flex-wrap gap-x-5 gap-y-2 list-none m-0 p-0">
+      <li><FooterLink href={feed}>rss</FooterLink></li>
+      <li><FooterLink href="/colophon/" ariaCurrent={colophonCurrent}>colophon</FooterLink></li>
     </ul>
 
-    <ul class="links">
-      <li><a href={email}>email</a></li>
-      <li><a href={github} rel="noopener">github</a></li>
-      <li><a href={linkedin} rel="noopener">linkedin</a></li>
+    <ul class="flex flex-wrap gap-x-5 gap-y-2 list-none m-0 p-0">
+      <li><FooterLink href={email}>email</FooterLink></li>
+      <li><FooterLink href={github} rel="noopener">github</FooterLink></li>
+      <li><FooterLink href={linkedin} rel="noopener">linkedin</FooterLink></li>
     </ul>
 
-    <ul class="links">
+    <ul class="flex flex-wrap gap-x-5 gap-y-2 list-none m-0 p-0">
       <li>
-        <a href="/he/writing/" lang={locale === 'he' ? undefined : 'he'}>תרגומים</a>
+        <FooterLink href="/he/writing/" lang={locale === 'he' ? undefined : 'he'}>תרגומים</FooterLink>
       </li>
     </ul>
   </div>
 </footer>
-
-<style>
-  .site-footer {
-    border-block-start: 1px solid var(--border);
-    margin-block-start: 96px;
-  }
-
-  .footer-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px 40px;
-    padding-block: 32px 48px;
-  }
-
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .links a {
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    color: var(--muted);
-    text-decoration: none;
-    transition: color var(--motion-hover) ease;
-  }
-
-  .links a:hover {
-    color: var(--text);
-  }
-
-  /* Not carried by color alone. */
-  .links a[aria-current] {
-    color: var(--text-strong);
-    text-decoration: underline;
-    text-underline-offset: 0.3em;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .links a {
-      transition: none;
-    }
-  }
-</style>

@@ -1,0 +1,38 @@
+---
+// The reference register, part two of two: one row — a label and the fact it
+// labels. See RefRows.astro for why the register is one component and where
+// its values were transcribed from.
+//
+// Logical properties throughout: `pbs`/`pbe`, `border-be`, never `pb` or
+// `border-b`. These three pages are LTR today, but the device is not what
+// should have to change if that stops being true.
+//
+// Under 700px the row is a single column and the label sits above its value;
+// from 700px up it is a 160px label track with the two baselines aligned. The
+// breakpoint belongs to the device rather than to the site — it is where the
+// label track stops earning its width — which is why it is written inline as
+// `min-[700px]:` rather than pulled into a named screen.
+//
+// `last:border-be-0` is reference.css's `.ref-row:last-child` rule: the rows
+// are separated by rules, so the list must not draw one under itself.
+//
+// The label and value are NOT wrapped here. Their elements differ per page
+// (<dt>/<dd>, <span>/<span>, <span>/<a>), which is the same semantics `as`
+// exists to protect, so their utilities are written at the three call sites
+// and read:
+//   label   font-mono text-size-label tracking-label uppercase text-muted
+//   value   m-0 text-size-meta leading-body text-text
+// Those two lines are the register's remaining copy-paste. Change one, change
+// all three.
+
+interface Props {
+  /** The row element. `div` inside a <dl>, `li` inside a <ul>. */
+  as?: 'li' | 'div';
+}
+
+const { as: Tag = 'li' } = Astro.props;
+---
+
+<Tag
+  class="grid grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-1 pbs-4 pbe-4 border-be border-be-border last:border-be-0 min-[700px]:grid-cols-[160px_minmax(0,1fr)] min-[700px]:items-baseline"
+><slot /></Tag>

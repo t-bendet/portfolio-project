@@ -1,0 +1,59 @@
+---
+// The routes out, part two of two — one destination. Device 8 of 8 of the
+// overview index idiom; see RoutesOut.astro for the row and for where these
+// links come from.
+//
+// Also rendered by /404 and /he/404, which are the minimal archetype rather
+// than indexes — one device reused, not an archetype boundary crossed by
+// accident. Both 404 pages had this anchor's rule written out by hand in a
+// scoped <style> block, and it matched this component declaration for
+// declaration: every value the next paragraph describes, plus the transition
+// and its reduced-motion branch. Agreement that exact between files nobody
+// was diffing is what one prototype device transcribed twice looks like. The
+// job is identical on both archetypes — name a destination and let it read as
+// a route rather than as prose — and on /404 that job is the whole page,
+// since recovery in one click is the requirement its brief opens with
+// (specs/pages/not-found.md §1–2).
+//
+// /404 and /he/404 are a drift pair in the same way /writing/ and
+// /he/writing/ are: one composition in two locales. That is what makes a
+// component the right answer here rather than two more copies of the class
+// string below.
+//
+// Mono, meta size, no underline, and a 2px --border-strong edge on the inline
+// start with 12px of padding after it: the link reads as an entry in a list of
+// routes rather than as prose with a link in it. The edge is `border-s-`, so
+// on /he/writing/ it draws on the right and the padding falls between it and
+// the text, the same shape the LTR indexes get. projects.css §"routes out"
+// draws the distinction these links sit on: these stay on the site, the
+// end-matter links leave it.
+//
+// `lang` is optional and the call sites use it in both directions — /writing/
+// offers תרגומים with lang="he", /he/writing/ offers writing and projects with
+// lang="en". Astro omits the attribute when the prop is absent, so an
+// unmarked link is genuinely unmarked rather than carrying an empty value.
+//
+// The hover is a colour move from --text to --text-strong over
+// --motion-hover, and the three transition utilities spell out one shorthand:
+// `transition-[color]` and never `transition-colors`, which would declare ten
+// properties where the rule transitions one. `[&:hover]:` and never `hover:`,
+// which Tailwind v4 wraps in `@media (hover: hover)` and would therefore drop
+// on touch. `motion-reduce:transition-none` is the stylesheet's
+// prefers-reduced-motion block, which existed for this one rule.
+
+interface Props {
+  href: string;
+  /** Set when the destination's language differs from the page's (specs/navigation.md §2.2). */
+  lang?: string;
+}
+
+const { href, lang } = Astro.props;
+---
+
+<li>
+  <a
+    class="font-mono text-size-meta text-text no-underline border-s-2 border-s-border-strong ps-3 transition-[color] duration-(--motion-hover) ease-[ease] motion-reduce:transition-none [&:hover]:text-text-strong"
+    href={href}
+    lang={lang}
+  ><slot /></a>
+</li>

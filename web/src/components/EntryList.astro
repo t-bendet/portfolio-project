@@ -1,0 +1,17 @@
+---
+// The overview index idiom, device 4 of 8: the list the entries sit in.
+// See IndexHeader.astro for the family rationale.
+//
+// Four utilities and no children of its own, which is precisely why it is a
+// component: `list-none m-0 p-0 mbs-10` restated at both indexes is two places
+// for the English and Hebrew lists to start disagreeing about their top
+// margin, and a Hebrew index that sat 8px higher is the kind of second-class
+// detail specs/pages/translations-index.md §5 exists to forbid.
+//
+// `m-0` before `mbs-10` is not a coincidence of writing order — Tailwind sorts
+// the margin shorthand ahead of the block-start longhand, so the 40px survives
+// the reset. Verified against the emitted CSS in 4.3.3 rather than assumed;
+// the reverse order would have zeroed it silently. Same for `p-0`.
+---
+
+<ul class="list-none m-0 p-0 mbs-10"><slot /></ul>

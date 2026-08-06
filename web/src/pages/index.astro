@@ -6,9 +6,30 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import HeroMark from '../components/HeroMark.astro';
 // The card is one device wherever it appears (specs/pages/projects-index.md
-// §2.2); the stylesheet and the destination rule are shared with /projects/.
-import { destination } from '../lib/projects';
-import '../styles/projects.css';
+// §2.2), and now one component: Card.astro carries the markup, the disclosure
+// wiring and the destination rule that / and /projects/ used to spell out
+// twice each.
+import Card from '../components/Card.astro';
+import CardGrid from '../components/CardGrid.astro';
+
+// ── what this page's scoped stylesheet used to say ────────────────────────
+//
+// It is gone; its rules are utilities on the markup below. Three of its
+// classes had to go rather than merely move: they were named `block`,
+// `block-title` and `block-link`, and the first is a bare Tailwind utility
+// name. Tailwind generates `.block { display: block }` for any bare token it
+// finds in a class attribute, so the custom rule and the generated one shared
+// a selector and only the cascade decided which won. It happened to be
+// harmless here; the same collision on the article's in-page heading list was
+// not, and cost that column its grid placement (specs/build-status.md §3).
+// Nothing that survives on this page is named after a bare utility word.
+//
+// The section device that replaced the trio is spelled out at each of its two
+// call sites rather than extracted. The rule that makes the index devices
+// components — one definition point, because two copies of a device drift
+// (IndexHeader.astro) — is a rule about copies in DIFFERENT files. Both of
+// these are in this one, forty lines apart, and a reader comparing them can
+// see both at once.
 
 const writing = (await getCollection('writing', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -28,30 +49,75 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 >
   <HeroMark />
 
-  {/* One opacity step at completion; visible without JavaScript (home.md §3.1) */}
+  {/* One opacity step at completion; visible without JavaScript (home.md §3.1).
+      `hero-reveal` stays a class — it is hero.css's animation, and that
+      stylesheet keeps its keyframes and its resting-state-first contract
+      (specs/design/hero-and-motion.md §1). */}
   <div class="hero-reveal">
-    <p class="tagline">
+    <p class="mbs-6 text-size-lede text-text max-inline-[44ch]">
       I build interfaces and the systems under them, then write down what each choice cost.
     </p>
 
     {
       writing.length > 0 && (
-        <section class="block">
-          <h2 class="block-title">recent writing</h2>
-          <ul class="rows">
+        <section class="mbs-18">
+          {/* The overview archetype's section header device: mono caps at
+              --size-meta (specs/design/typography.md §4), with the rule under
+              it. `font-medium` is the 500 the mono faces top out at. */}
+          <h2 class="font-mono text-size-meta font-medium tracking-label uppercase text-muted pbe-3 border-be border-be-border">
+            recent writing
+          </h2>
+          {/* ── the recent-writing list is NOT EntryRow ────────────────────
+              It looks like the writing index's row and it is a different
+              device, deliberately: 20px of block padding against the index's
+              24px, 6px under the title against 8px, no tightened leading and
+              no 64ch measure on the description. Three entries in a column
+              that has a hero above it are set closer than fifty entries that
+              are the whole page. Transcribed from the overview prototype;
+              the differences are the prototype's, not drift, and unifying
+              the two by eye would move this page. */}
+          <ul class="list-none m-0 p-0">
             {writing.map((entry) => (
-              <li class="row">
-                <a class="row-title" href={`/writing/${entry.id}/`}>
+              <li class="pbs-5 pbe-5 border-be border-be-border">
+                {/* The hover is `text-decoration: underline`, a SHORTHAND —
+                    it also puts decoration colour back to currentcolor and
+                    thickness back to auto, over the base `a` rule's
+                    --border-strong at 1px. The `underline` utility is a
+                    longhand and sets the line alone, so the two resets are
+                    written out beside it. Dropping them costs a hairline of
+                    underline weight at 22px bold (verdict §4.4, failure 1).
+                    `[&:hover]:` and never `hover:`, which v4 wraps in
+                    `@media (hover: hover)` and so drops on touch. */}
+                <a
+                  class="inline-block text-size-lede font-bold text-text-strong no-underline [&:hover]:underline [&:hover]:decoration-current [&:hover]:decoration-auto [&:hover]:underline-offset-[0.2em]"
+                  href={`/writing/${entry.id}/`}
+                >
                   {entry.data.title}
                 </a>
-                <p class="row-desc">{entry.data.description}</p>
-                <time class="row-meta" datetime={isoDate(entry.data.pubDate)}>
+                <p class="mbs-1.5 text-size-meta text-muted">{entry.data.description}</p>
+                <time
+                  class="block mbs-2 font-mono text-size-eyebrow text-muted"
+                  datetime={isoDate(entry.data.pubDate)}
+                >
                   {isoDate(entry.data.pubDate)}
                 </time>
               </li>
             ))}
           </ul>
-          <a class="block-link" href="/writing/">
+          {/* The section's link out. RouteOutLink.astro's shape — mono meta,
+              no underline, a 2px --border-strong edge on the inline start —
+              in the overview archetype's quieter colour register: it rests at
+              --muted and moves to --text, where the index's routes rest at
+              --text and move to --text-strong. Same three transition
+              utilities as that component, and for its reasons:
+              `transition-[color]` because the rule transitions one property
+              and the stock colour utility declares ten, and
+              `motion-reduce:transition-none` for the stylesheet's
+              reduced-motion block, which existed for this rule alone. */}
+          <a
+            class="inline-block mbs-5 font-mono text-size-meta text-muted no-underline border-s-2 border-s-border-strong ps-3 transition-[color] duration-(--motion-hover) ease-[ease] motion-reduce:transition-none [&:hover]:text-text"
+            href="/writing/"
+          >
             writing
           </a>
         </section>
@@ -60,43 +126,23 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
     {
       projects.length > 0 && (
-        <section class="block">
-          <h2 class="block-title">selected projects</h2>
-          <ul class="cards">
-            {projects.map((project) => {
-              const { href, host } = destination(project);
-              // aria-describedby, so the host reaches a reader navigating by
-              // links — §2.2's test is what a visitor can tell before the
-              // click, and a span outside the anchor tells only sighted ones.
-              const hostId = `card-host-${project.id}`;
-              return (
-                <li class="card">
-                  <a
-                    class="card-title"
-                    href={href}
-                    rel={host === null ? undefined : 'noopener'}
-                    aria-describedby={host === null ? undefined : hostId}
-                  >
-                    {project.data.title}
-                  </a>
-                  <p class="card-desc">{project.data.description}</p>
-                  {host !== null && (
-                    <span class="card-host" id={hostId}>
-                      {host}
-                    </span>
-                  )}
-                  {project.data.stack.length > 0 && (
-                    <ul class="stack-chips">
-                      {project.data.stack.map((item, index) => (
-                        <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-          <a class="block-link" href="/projects/">
+        <section class="mbs-18">
+          <h2 class="font-mono text-size-meta font-medium tracking-label uppercase text-muted pbe-3 border-be border-be-border">
+            selected projects
+          </h2>
+          {/* The card and its grid are shared with /projects/ — one component,
+              because §2.2's disclosure test is written across the site. Both
+              pages used to hold a copy of this markup, kept identical by
+              agreement. */}
+          <CardGrid>
+            {projects.map((project) => (
+              <Card entry={project} />
+            ))}
+          </CardGrid>
+          <a
+            class="inline-block mbs-5 font-mono text-size-meta text-muted no-underline border-s-2 border-s-border-strong ps-3 transition-[color] duration-(--motion-hover) ease-[ease] motion-reduce:transition-none [&:hover]:text-text"
+            href="/projects/"
+          >
             projects
           </a>
         </section>
@@ -104,103 +150,8 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
     }
 
     {/* Carries no biography — About owns that (home.md §2, section 6). */}
-    <p class="person-line">
+    <p class="mbs-18 text-size-body text-muted">
       There is a person behind this — <a href="/about/">about</a>
     </p>
   </div>
 </Base>
-
-<style>
-  .tagline {
-    margin-block-start: 24px;
-    font-size: var(--size-lede);
-    color: var(--text);
-    max-inline-size: 44ch;
-  }
-
-  .block {
-    margin-block-start: 72px;
-  }
-
-  /* The overview archetype's section header device: mono caps at --size-meta
-     (specs/design/typography.md §4). */
-  .block-title {
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    font-weight: 500;
-    letter-spacing: var(--track-label);
-    text-transform: uppercase;
-    color: var(--muted);
-    padding-block-end: 12px;
-    border-block-end: 1px solid var(--border);
-  }
-
-  /* The card grid, the stack chip and the destination host live in
-     src/styles/projects.css — one device across / and /projects/. What is
-     left here is the home page's own composition. */
-  .rows {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .row {
-    padding-block: 20px;
-    border-block-end: 1px solid var(--border);
-  }
-
-  .row-title {
-    display: inline-block;
-    font-size: var(--size-lede);
-    font-weight: 700;
-    color: var(--text-strong);
-    text-decoration: none;
-  }
-
-  .row-title:hover {
-    text-decoration: underline;
-    text-underline-offset: 0.2em;
-  }
-
-  .row-desc {
-    margin-block-start: 6px;
-    font-size: var(--size-meta);
-    color: var(--muted);
-  }
-
-  .row-meta {
-    display: block;
-    margin-block-start: 8px;
-    font-family: var(--font-mono);
-    font-size: var(--size-eyebrow);
-    color: var(--muted);
-  }
-
-  .block-link {
-    display: inline-block;
-    margin-block-start: 20px;
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    color: var(--muted);
-    text-decoration: none;
-    border-inline-start: 2px solid var(--border-strong);
-    padding-inline-start: 12px;
-    transition: color var(--motion-hover) ease;
-  }
-
-  .block-link:hover {
-    color: var(--text);
-  }
-
-  .person-line {
-    margin-block-start: 72px;
-    font-size: var(--size-body);
-    color: var(--muted);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .block-link {
-      transition: none;
-    }
-  }
-</style>

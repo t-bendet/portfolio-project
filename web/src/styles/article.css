@@ -1,174 +1,42 @@
 /*
- * The deep-dive editorial archetype: sticky in-page contents + long-form
- * column, and the prose components an article body is built from.
+ * The prose an article body is built from: the elements the markdown renderer
+ * generates, plus the three authored blocks that sit among them as direct
+ * children of the body.
  *
- * One stylesheet, both article routes, both directions. Every directional
- * property here binds logically (specs/content-model.md §5 rule 4) — the
- * contents column lands on the right under dir="rtl" without a special case.
- * Values transcribed from specs/design/prototypes/tooling-deepdive.html.
+ * One stylesheet, both article routes, both directions, and /about/ and
+ * /colophon/ too — they are the same editorial archetype as an article. Every
+ * directional property here binds logically (specs/content-model.md §5
+ * rule 4). Values transcribed from
+ * specs/design/prototypes/tooling-deepdive.html.
+ *
+ * The shell around this — the grid, the masthead, the contents column, the
+ * meta line, the end matter — is components now: ArticleGrid, ArticleHeader,
+ * Contents, MetaLine, EndMatter, EndMatterLink, Siblings. What is left here
+ * stayed for one of two reasons.
+ *
+ * 1. Most of it has nowhere to go. `h2`, `blockquote`, `pre`, `td` and the
+ *    rest are emitted by the markdown renderer and carry no class attribute,
+ *    so there is no element in any template to write a utility on. That is a
+ *    missing mechanism, not a preference.
+ *
+ * 2. `.article-body > * + *` and `.closing-credit` are a matched pair and
+ *    have to stay together. The first puts 20px between every child of the
+ *    body; the second overrides that with 56px. They tie on specificity and
+ *    the closing credit wins because it is written second, here, in this
+ *    file. Utilities have no source order to rely on — they land in one layer
+ *    where the framework's own sort decides ties — so moving either half out
+ *    would silently resolve to the wrong margin on the translated route.
+ *    `.credit` and `.credit-label` come with it: they are the same block seen
+ *    from the other end of the page.
+ *
+ * The body element may still be given grid placement from the template, and
+ * only that: grid-column-start and grid-row-start are properties nothing in
+ * this file touches.
+ *
+ * `.note`, `.translator-note` and `.translator-note-label` stay for a third
+ * reason — they are applied by whoever writes the MDX, never by a template,
+ * so there is no component for them to move into.
  */
-
-/* ── shell ─────────────────────────────────────────────────────────────── */
-
-/* Single column by default. The contents column only exists when the article
-   earned one (>=3 h2s, specs/pages/writing-article.md §2.2). */
-.article-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  row-gap: 0;
-}
-
-@media (min-width: 900px) {
-  .article-grid.with-contents {
-    grid-template-columns: 200px minmax(0, 1fr);
-    column-gap: 48px;
-  }
-
-  .with-contents > .article-header {
-    grid-column: 1 / -1;
-    grid-row: 1;
-  }
-
-  /* Sticky in-page navigation — not site navigation, which is why the global
-     header is not sticky and this is (specs/navigation.md §1). */
-  .with-contents > .article-contents {
-    grid-column: 1;
-    grid-row: 2;
-    position: sticky;
-    inset-block-start: 24px;
-    align-self: start;
-    max-block-size: calc(100vh - 48px);
-    overflow-y: auto;
-  }
-
-  .with-contents > .article-body {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
-  .with-contents > .end-matter {
-    grid-column: 2;
-    grid-row: 3;
-  }
-}
-
-/* ── article header ────────────────────────────────────────────────────── */
-
-.article-header {
-  margin-block-end: 48px;
-  padding-block-end: 32px;
-  border-block-end: 1px solid var(--border);
-}
-
-.article-header h1 {
-  font-family: var(--font-display);
-  font-size: var(--size-h1);
-  font-weight: 700;
-  line-height: var(--leading-display);
-  letter-spacing: var(--track-display);
-  color: var(--text-strong);
-}
-
-/* The lede is the entry's `description` — the same string the index row and
-   the meta description use (specs/content-model.md §3.1). */
-.lede {
-  margin-block-start: 20px;
-  font-size: var(--size-lede);
-  line-height: var(--leading-tight);
-  color: var(--muted);
-  max-inline-size: 56ch;
-}
-
-.meta-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 16px;
-  margin-block-start: 24px;
-  font-family: var(--font-mono);
-  font-size: var(--size-eyebrow);
-  color: var(--muted);
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-/* Non-linking, and styled so they do not imply a destination — tag routes are
-   deferred (specs/routes/sitemap.md §4). */
-.chip {
-  font-family: var(--font-mono);
-  font-size: var(--size-label);
-  letter-spacing: var(--track-label);
-  color: var(--muted);
-  background-color: var(--chip-bg);
-  padding: 3px 8px;
-  border-radius: var(--radius-s);
-}
-
-/* ── contents ──────────────────────────────────────────────────────────── */
-
-/* Below the sidebar breakpoint this renders inline, above the body, in its
-   source position — no disclosure widget (§2.2).
-
-   The prefix is not decoration. Tailwind generates a utility for every bare
-   token it finds in a class attribute, so a component class named `contents`
-   is silently shadowed by `.contents { display: contents }` — the element
-   stops being a grid item, its children get auto-placed, and the sticky
-   column comes apart. That is what shipped until the RTL stage's screenshot
-   showed the heading list stranded at the foot of the page. Component classes
-   here do not use bare utility words. */
-.article-contents {
-  margin-block-end: 40px;
-}
-
-.article-contents-title {
-  font-family: var(--font-mono);
-  font-size: var(--size-label);
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--muted);
-  padding-block-end: 12px;
-  border-block-end: 1px solid var(--border);
-}
-
-.article-contents-title-he {
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.article-contents-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  margin-block-start: 12px;
-}
-
-/* No scroll-spy: an active-section indicator needs a scroll listener, which
-   is JavaScript on the reading path (§2.2). The list shows the article's
-   shape, not the reader's position in it. */
-.article-contents-items a {
-  display: block;
-  font-family: var(--font-mono);
-  font-size: var(--size-meta);
-  line-height: var(--leading-tight);
-  color: var(--muted);
-  text-decoration: none;
-  padding-block: 6px;
-  padding-inline-start: 12px;
-  border-inline-start: 2px solid var(--border);
-  transition: color var(--motion-hover) ease;
-}
-
-.article-contents-items a:hover {
-  color: var(--text);
-  border-inline-start-color: var(--border-strong);
-}
 
 /* ── body ──────────────────────────────────────────────────────────────── */
 
@@ -382,73 +250,4 @@
   font-family: var(--font-mono);
   font-size: var(--size-label);
   color: var(--accent-4);
-}
-
-/* ── end matter ────────────────────────────────────────────────────────── */
-
-.end-matter {
-  margin-block-start: 72px;
-  padding-block-start: 32px;
-  border-block-start: 1px solid var(--border);
-}
-
-.end-matter-link {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: var(--size-meta);
-  color: var(--muted);
-  text-decoration: none;
-  border-inline-start: 2px solid var(--border-strong);
-  padding-inline-start: 12px;
-  transition: color var(--motion-hover) ease;
-}
-
-.end-matter-link:hover {
-  color: var(--text);
-}
-
-.siblings {
-  margin-block-start: 40px;
-}
-
-.siblings-title {
-  font-family: var(--font-mono);
-  font-size: var(--size-label);
-  letter-spacing: var(--track-label);
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.siblings-title-he {
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.siblings-items {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  margin-block-start: 12px;
-}
-
-.siblings-items li + li {
-  margin-block-start: 12px;
-}
-
-.siblings-items a {
-  font-size: var(--size-body);
-  color: var(--text-strong);
-  text-decoration: none;
-}
-
-.siblings-items a:hover {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .article-contents-items a,
-  .end-matter-link {
-    transition: none;
-  }
 }

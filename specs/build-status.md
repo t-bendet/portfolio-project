@@ -222,6 +222,204 @@ green is a habit, not an enforcement, until the `checks` context is re-added
 as required. There are now **two** contexts to require: `checks` and
 `secrets`. SR-18 is where that decision lives.
 
+## 3b. Styling — Tailwind utility migration: done, in one PR
+
+**Evaluated and executed 2026-08-06** on branch `tailwind-utility-migration`,
+in seven commits: a token bridge and six waves, each one a rollback unit that
+had to reach zero pixel diff before the next began.
+
+### What shipped
+
+| | `main` @ `625fcc7` | after wave 6 |
+|---|---|---|
+| `web/src/styles/` | 7 files, 1,283 lines | **4 files, 819 lines** |
+| scoped `<style>` blocks | 8 files, 445 lines | **0** |
+| components | 7 | **30** |
+| `class=` attributes | 168 | **120** |
+| shipped CSS | 40,329 B | **27,277 B** (−32%) |
+
+`entry-list.css`, `projects.css` and `reference.css` are gone. `global.css`
+grew (125 → 261) because it gained the `@theme inline` bridge and the record of
+why several things are the way they are. `tokens.css` is byte-identical to
+`main` and was verified so after every wave.
+
+**What stays CSS, by design** — this list is the exclusion accounting from
+`notes-tailwind-verdict.md` §2, unchanged by the outcome:
+
+- `article.css`'s `.article-body …` descendant rules. The markdown renderer
+  emits `h2`, `blockquote`, `pre`, `td` with no class attribute, so there is
+  no element in any template for a utility to sit on. A missing mechanism, not
+  a preference.
+- `.closing-credit` and `.article-body > * + *` are a matched pair — 20px
+  between body children, overridden to 56px for the closing credit, resolved
+  by source order in one file. Utilities have no source order to rely on.
+- `hero.css` — keyframes and the resting-state-first reduced-motion contract.
+- `pre`/`code` forced `direction: ltr`, in `@layer base`. An e2e test asserts
+  the computed value and Shiki's output carries no class.
+- `.note`/`.translator-note*`, applied from MDX by whoever writes an article.
+- `.shell` and `.skip-link`, the two surviving component classes. `.shell` is
+  the one shared 960px measure on three different elements in three files;
+  `.skip-link` is off-screen until focused, which puts it outside what the
+  screenshot oracle can check.
+
+### What it cost
+
+Two objections from the analysis stand, and were accepted rather than refuted.
+There was **no maintenance problem being solved** — seven commits ever to
+`web/src/styles` — and **per-declaration commentary lost its referent**, which
+is why every extracted component carries the prose from the rules it replaced.
+
+That commentary has a measurable price. Tailwind's scanner reads `.astro` and
+`.ts` whole, comments included, so the dead-rule count went **up** while the
+stylesheet shrank by a third: 16 rules / 1,531 B on `main` against 27 / 2,478 B
+now. Five of the new ones are real utilities on `/about/`'s portrait and CV
+branches, switched off rather than wasted. The other nine were emitted from
+comments explaining which utility *not* to write — including a 202-byte rule
+for a property named `…`, compiled from `transition-[…]` in a comment.
+Roughly 600 bytes bought the explanations. Method and full table in
+`notes-tailwind-verdict.md` §4.5.
+
+### Two things a green run does not prove
+
+- **The spacing scale is now rem-based** (`mbs-18` where the rule said 72px).
+  Tal ratified this. The oracle runs at a 16px root, where rem and px agree,
+  so it cannot police the change — accepted, not overlooked.
+- **`/about/`'s portrait and CV never render**, because `web/src/lib/about.ts`
+  returns `null` for both. Their utilities were checked by hand against the
+  declarations they replace. The oracle covers 94.8% of authored class names;
+  this is the rest.
+
+Likewise `[&:hover]:` is mandatory throughout and `hover:` is banned — v4
+wraps `hover:` in `@media (hover: hover)`, which would have deleted the site's
+hover states on every touch device, and no screenshot reports that either.
+
+### The fidelity harness, if it is still on disk
+
+`web/.fidelity/` is untracked and gitignored (see `.gitignore` for what it
+holds and why). It is a local tool, not part of the build — but while it
+exists it is the only thing that can prove a CSS change moved nothing.
+
+```bash
+node web/.fidelity/run.mjs --mode=compare    # both passes, 156 screenshots
+```
+
+**Never run it with `--mode=capture` on a branch.** Capture writes the
+baselines rather than checking against them, so it overwrites the reference
+images with screenshots of whatever is currently checked out. Every comparison
+after that is the change measured against itself, and passes. Nothing reports
+this — a destroyed oracle and a correct one both print the same green.
+
+The baselines on disk were captured from clean `main`. If they are ever
+genuinely lost, recapturing means checking out `main` first, and it is worth
+saying out loud before doing it. This is not hypothetical: an early version of
+the harness named its snapshots with a `/`, which `toHaveScreenshot` rewrites
+to `-`, so it silently wrote baselines instead of comparing them for a full
+run. The names are flat now.
+
+### The record
+
+`notes-tailwind-verdict.md` is the durable document. §1–2 are the thresholds,
+pre-registered before any estimating. §3 is the no-go analysis and is
+**deliberately left unedited** — it shows what was believed before the call was
+made. §4 is Tal's reversal, the wave plan, the house rules (§4.4) and what
+wave 6 swept (§4.5).
+
+---
+
+Everything below this line is the evaluation as it was written, and is kept
+because its three findings are what the migration was built on.
+
+**Evaluated 2026-08-06** on branch `tailwind-utility-migration`. The analysis
+returned **no-go**; Tal then **reversed it to GO** the same day by ratifying
+the two things the analysis had named as the conditions that would flip it.
+Both the original verdict and the reversal are in
+`notes-tailwind-verdict.md` — §3 is the analysis, §4 is the decision, and §3
+is deliberately left unedited so the record shows what was believed before the
+call was made.
+
+What Tal ratified: **the spacing scale becomes rem-based**, and **multi-site
+devices are extracted into Astro components** with utilities inside them. The
+first retires the one objection that had no engineering answer; the second
+preserves the single-definition-point property that
+`projects.css:2-8` and `entry-list.css:2-7` make a correctness requirement,
+rather than spending it. Two objections stand and are accepted as cost, not
+refuted: there is no maintenance problem being solved (seven commits ever to
+`web/src/styles`), and per-declaration commentary loses its referent — which
+is why **every extracted component must carry the prose from the rules it
+replaces**. A migration that drops the commentary is a failed migration.
+
+At the time of writing, nothing under `web/` had changed and the migration was
+blocked on the `@layer base` fix below landing first. It landed as #27.
+
+Three findings from the evaluation are worth acting on independently:
+
+1. **A latent cascade bug, today — fixed in #27.** `global.css`'s element
+   rules (`a`, `html`, `body`, `main`) were unlayered, so they beat everything
+   in `@layer utilities` regardless of specificity. Any Tailwind utility
+   anyone adds to an anchor is generated, applied, and silently loses to
+   `a { text-decoration: underline }`. Moving those rules into `@layer base`
+   fixes it and changes nothing else — they already lost to every class rule
+   on specificity. **This is a prerequisite for the migration:** until it
+   lands, no utility can be adopted anywhere on the site.
+2. **Tailwind scans `.astro` and `.ts` files whole — comments included — and
+   never scans `.css` files at all.** Measured with `@tailwindcss/oxide`'s
+   `Scanner` on a controlled fixture: candidates are extracted from `.astro`
+   frontmatter comments, JSX `{/* */}` comments, HTML comments, the `<style>`
+   block's own CSS (`max-inline-size:` yields the candidate `inline`), and
+   `.ts` comments — but nothing in a `.css` file, neither its comments nor its
+   declarations. `position: sticky` appears four times in `article.css` and
+   produces no rule; the word `sticky` in `SiteHeader.astro`'s comment does.
+
+   The consequence is a **build failure, not a byte cost**: writing the word
+   *invisible* in an Astro comment made Tailwind emit
+   `.invisible{visibility:hidden}` into shipped CSS, which failed
+   `banned-vocab.ts` on `hidden` — a word appearing nowhere in the source.
+   So `hidden` and `invisible` are banned from `.astro`/`.ts` files, comments
+   included. This is the sibling of the `.contents` incident below and it
+   extends the same rule: **component classes never use bare utility words,
+   and `.astro` comments never write them either.** Obligation 7 catches the
+   dangerous subset on its own, which is the case for leaving it as the guard
+   rather than adding a gate.
+
+   The rest is only bytes, and mostly not prose: of the dead rules in the
+   shipped CSS, `filter` comes from `headings.filter(…)` (real code), and
+   `inline`/`underline`/`transition` from CSS inside scoped `<style>` blocks —
+   which disappear as those blocks are migrated.
+3. **The design gates and the RTL stage held up under a real change.** All
+   four gates plus the checked-in screenshot baseline passed unmodified
+   through a bridge commit and a component migration, and the baseline caught
+   the one genuine fidelity defect (61 pixels on `/colophon/`, from a
+   longhand/shorthand reset difference).
+
+Everything below this paragraph describes the evaluation as it was run.
+
+Tailwind
+v4.3.3 has been wired since the scaffold (`@tailwindcss/vite` in
+`web/astro.config.mjs`, `@import 'tailwindcss'` at `web/src/styles/global.css:1`)
+and **no utility is used in markup** — all styling is hand-written
+custom-class CSS. That was true when this was written and is what the
+migration above changed.
+
+The verdict protocol and its pre-registered thresholds are in
+`specs/notes-tailwind-verdict.md`. The constraint that governed everything:
+rendered output must not change by one pixel, verified by a full-site
+screenshot diff at `maxDiffPixels: 0` against a baseline captured from `main`.
+`web/src/styles/tokens.css` is byte-frozen — the four design gates textually
+parse it, so the Tailwind theme *bridges* to it (`@theme inline`, one line per
+token, values never restated) rather than absorbing it.
+
+**The fidelity oracle had to be built before anything could move.** The
+checked-in RTL screenshot baseline (§3) covers one page. Worse, all three
+content collections are empty, so `astro build` emits 9 pages and the card
+grid, the entry rows, the article body, the in-page contents, the siblings
+block and the project detail template **render nowhere** — a screenshot diff
+over the shipped site cannot see the majority of the markup being migrated.
+The harness therefore runs twice, over two fixture sets: once on the empty
+state that ships today, and once on a filled set that forces every route and
+every device to render. Both live in untracked `web/.fidelity/`; the content
+files are named `*-fixture.md`, which `.gitignore` and `.dockerignore` already
+match by name, so they cannot be committed and cannot reach an image.
+
 ## 4. Cloud
 
 **Nothing is provisioned.** Both gates in `scaffold-plan.md` §6 are still

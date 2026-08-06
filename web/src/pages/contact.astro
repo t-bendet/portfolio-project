@@ -16,10 +16,26 @@
 // affordance depend on a script and would not defeat modern harvesting.
 import Base from '../layouts/Base.astro';
 import { email, emailAddress, github, linkedin } from '../lib/links';
+// The page header, taken from the index family rather than restated here. The
+// rule this file wrote by hand was byte-identical to IndexHeader.astro's —
+// 32px of padding under the title, a 1px --border rule, and the same five
+// type declarations and colour on the h1, value for value. Two rules that
+// merely resembled each other would differ somewhere; these did not differ
+// anywhere, which is evidence both were transcribed from one prototype device
+// rather than authored twice.
+//
+// So this is one device being reused, not the minimal archetype quietly
+// becoming an index. Nothing else in that family comes with it: no entry
+// list, no empty state, no card grid. If this page's header ever has to
+// differ, it stops calling this component and says why.
+import IndexHeader from '../components/IndexHeader.astro';
 // The label/value row, shared with /about/ and /colophon/. The minimal
 // archetype takes the register but not the deep-dive shell: no article.css,
-// no sidebar, no prose components — there is no prose to compose here.
-import '../styles/reference.css';
+// no sidebar, no prose components — there is no prose to compose here. The
+// section device is not taken either: this page has one list and no headings
+// to file it under, so Section.astro is absent rather than empty.
+import RefRows from '../components/RefRows.astro';
+import RefRow from '../components/RefRow.astro';
 
 // Shown as what they are, not as icons (§2, section 4). The label is the
 // account name a visitor would recognize; the link text is the destination.
@@ -35,74 +51,57 @@ const links = [
   description="How to reach Tal Bendet: email, GitHub, LinkedIn."
   section="contact"
 >
-  <header class="page-header">
-    <h1>contact</h1>
-  </header>
+  <IndexHeader title="contact" />
 
   {/* The openness statement (§2, section 3) — the sentence that earns this
       route existing. No response-time promise, no availability badge: when
       availability changes, this text changes. No Hebrew paragraph here; that
-      audience is addressed natively in Hebrew on /he/writing/ (§2.4). */}
-  <p class="openness">
+      audience is addressed natively in Hebrew on /he/writing/ (§2.4).
+
+      Its 52ch measure is arbitrary because it is not a scale value: it is a
+      lede measure, set narrower than the 64ch the index descriptions use and
+      the 68ch of an article body, because two sentences under a title are
+      read at a glance rather than down a column. */}
+  <p class="mbs-8 text-size-lede leading-tight text-text max-inline-[52ch]">
     I am open to frontend and full-stack work in Israel. I also take translation requests:
     if an English article helped you and belongs in Hebrew, send it.
   </p>
 
-  <ul class="ref-rows direct">
+  {/* The row's value slot is a link here rather than prose — mono, because it
+      is an address, and isolated because an address is an LTR run wherever it
+      sits. `[direction:ltr]` and `[unicode-bidi:isolate]` are arbitrary
+      PROPERTIES: neither property has a utility in Tailwind 4.3.3, verified
+      against the installed package, and SiteHeader.astro writes the same pair
+      around the mark for the same reason.
+
+      The hover rule this replaced was `text-decoration: underline`, and that
+      is a SHORTHAND — it also put text-decoration-color back to currentcolor
+      and text-decoration-thickness back to auto, over the base `a` rule's 1px
+      --border-strong in global.css. The `underline` utility is a longhand and
+      sets the line alone, so `decoration-current` and `decoration-auto` are
+      that reset written back by hand. They are not garnish: dropping them is
+      the defect that already shipped once in this migration and cost 61
+      pixels on /colophon/ (specs/notes-tailwind-verdict.md §4.4, failure 1).
+
+      `[&:hover]:` and never `hover:`. Tailwind v4 wraps `hover:` in
+      `@media (hover: hover)`, which would delete the state on every
+      coarse-pointer device — and no screenshot reports that. */}
+  <RefRows class="mbs-10">
     {
       links.map((link) => (
-        <li class="ref-row">
-          <span class="ref-label">{link.label}</span>
-          <a class="direct-link" href={link.href} rel={link.external ? 'noopener' : undefined}>
+        <RefRow>
+          <span class="font-mono text-size-label tracking-label uppercase text-muted">
+            {link.label}
+          </span>
+          <a
+            class="font-mono text-size-meta text-text-strong no-underline [direction:ltr] [unicode-bidi:isolate] [&:hover]:underline [&:hover]:decoration-current [&:hover]:decoration-auto [&:hover]:underline-offset-[0.3em]"
+            href={link.href}
+            rel={link.external ? 'noopener' : undefined}
+          >
             {link.text}
           </a>
-        </li>
+        </RefRow>
       ))
     }
-  </ul>
+  </RefRows>
 </Base>
-
-<style>
-  .page-header {
-    padding-block-end: 32px;
-    border-block-end: 1px solid var(--border);
-  }
-
-  .page-header h1 {
-    font-family: var(--font-display);
-    font-size: var(--size-h1);
-    font-weight: 700;
-    line-height: var(--leading-display);
-    letter-spacing: var(--track-display);
-    color: var(--text-strong);
-  }
-
-  .openness {
-    margin-block-start: 32px;
-    font-size: var(--size-lede);
-    line-height: var(--leading-tight);
-    color: var(--text);
-    max-inline-size: 52ch;
-  }
-
-  .direct {
-    margin-block-start: 40px;
-  }
-
-  /* The row's value slot is a link here rather than prose — mono, because it
-     is an address, and isolated because an address is an LTR run. */
-  .direct-link {
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    color: var(--text-strong);
-    text-decoration: none;
-    /* An address is an LTR run wherever it sits. */
-    direction: ltr;
-    unicode-bidi: isolate;
-  }
-
-  .direct-link:hover {
-    text-decoration: underline;
-    text-underline-offset: 0.3em;
-  }
-</style>

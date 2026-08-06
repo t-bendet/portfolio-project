@@ -1,0 +1,34 @@
+---
+// The end matter of the deep-dive archetype: a rule, then the way out of the
+// article. What goes in it differs by route and the order is deliberate —
+// /writing/[id]/ and /he/writing/[id]/ put the way back first and the sibling
+// list second; a case study inverts that, because acting on a project's links
+// is the natural end of reading it and returning to the index is the fallback
+// (specs/pages/project-detail.md §2 row 6).
+//
+// 72px of air above it and 32px below the rule: this is the archetype's
+// largest gap, and it is doing the work of saying the article is over. The
+// block axis does not flip with direction, but it is still written logically
+// (`mbs`, `pbs`, `border-bs`) so that the device does not have to change if
+// vertical writing ever does.
+//
+// `hasContents` places it in column 2, row 3 of the article grid — under the
+// body, clear of the contents column, which is why it is a sibling of the
+// body rather than a child of it. See ArticleGrid.astro for the whole layout.
+
+interface Props {
+  /** Whether the surrounding ArticleGrid has a contents column. */
+  hasContents: boolean;
+}
+
+const { hasContents } = Astro.props;
+---
+
+<footer
+  class:list={[
+    'mbs-18 pbs-8 border-bs border-bs-border',
+    hasContents && 'min-[900px]:col-start-2 min-[900px]:row-start-3',
+  ]}
+>
+  <slot />
+</footer>

@@ -9,8 +9,16 @@
 // aria-live region announcing nothing (§4).
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import ArticleGrid from '../../components/ArticleGrid.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import ArticleMeta from '../../components/ArticleMeta.astro';
 import Contents from '../../components/Contents.astro';
+import EndMatter from '../../components/EndMatter.astro';
+import EndMatterLink from '../../components/EndMatterLink.astro';
+import Siblings from '../../components/Siblings.astro';
+// The prose rules for the rendered MDX. The shell around it is components now;
+// what is left in this stylesheet styles elements markdown generates, which
+// carry no class attribute for a utility to sit on.
 import '../../styles/article.css';
 
 export async function getStaticPaths() {
@@ -46,43 +54,52 @@ const siblings = others.length >= 2 ? others.slice(0, 2) : [];
   description={entry.data.description}
   section="writing"
 >
-  <div class:list={['article-grid', { 'with-contents': hasContents }]}>
-    <header class="article-header">
-      <h1>{entry.data.title}</h1>
-      <p class="lede">{entry.data.description}</p>
+  <ArticleGrid hasContents={hasContents}>
+    <ArticleHeader
+      title={entry.data.title}
+      lede={entry.data.description}
+      hasContents={hasContents}
+    >
       <ArticleMeta
         pubDate={entry.data.pubDate}
         updatedDate={entry.data.updatedDate}
         tags={entry.data.tags}
         lang="en"
       />
-    </header>
+    </ArticleHeader>
 
     {/* Source order: after the header, before the body — where a linear
         reader meets a contents list (§2.2). */}
     {hasContents && <Contents headings={sections} lang="en" />}
 
-    <article class="article-body">
+    {/* The body keeps its class: its rules reach markdown-generated elements
+        that have nowhere to carry a utility. Only its placement in the grid
+        is a utility, and only when there is a second column to place it
+        beside (ArticleGrid.astro). */}
+    <article
+      class:list={[
+        'article-body',
+        hasContents && 'min-[900px]:col-start-2 min-[900px]:row-start-2',
+      ]}
+    >
       <Content />
     </article>
 
-    <footer class="end-matter">
-      <a class="end-matter-link" href="/writing/">writing</a>
+    <EndMatter hasContents={hasContents}>
+      <EndMatterLink href="/writing/">writing</EndMatterLink>
 
       {
         siblings.length > 0 && (
-          <section class="siblings">
-            <h2 class="siblings-title">more writing</h2>
-            <ul class="siblings-items">
-              {siblings.map((sibling) => (
-                <li>
-                  <a href={`/writing/${sibling.id}/`}>{sibling.data.title}</a>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <Siblings
+            heading="more writing"
+            lang="en"
+            items={siblings.map((sibling) => ({
+              href: `/writing/${sibling.id}/`,
+              title: sibling.data.title,
+            }))}
+          />
         )
       }
-    </footer>
-  </div>
+    </EndMatter>
+  </ArticleGrid>
 </Base>

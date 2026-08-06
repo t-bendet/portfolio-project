@@ -1,0 +1,57 @@
+---
+// The overview index idiom, device 5 of 8: one entry — its title, its
+// description, and the meta line under them. See IndexHeader.astro for the
+// family rationale.
+//
+// Both writing indexes render this row and they must go on rendering the same
+// one. Title and description are props because they are the same two strings
+// on both pages; the meta line's CONTENTS are a slot because they are not.
+// /writing/ puts a date, an optional "updated" date and the tags there;
+// /he/writing/ adds the original author's Latin name in a <bdi>, because for
+// translation work the author is the strongest scanning signal in the list
+// (specs/pages/translations-index.md §2.1). The <p> those children sit in —
+// its flex row, its wrap, its 8px/16px gaps, its mono eyebrow — belongs to the
+// device and stays here.
+//
+// ── the title's hover ─────────────────────────────────────────────────────
+//
+// entry-list.css wrote `text-decoration: none` on the anchor and
+// `text-decoration: underline` on its hover. The second is a SHORTHAND, and
+// its reset half is load-bearing: it also puts text-decoration-color back to
+// currentcolor and text-decoration-thickness back to auto, over the base `a`
+// rule's --border-strong at 1px. The `underline` utility is a longhand and
+// sets the line alone, so `decoration-current` and `decoration-auto` are
+// written out beside it — they are the shorthand's reset, not decoration.
+// Dropping them costs a hairline of underline weight at 22px bold, which is
+// exactly the class of change that ships unnoticed (verdict §4.4, failure 1).
+//
+// `[&:hover]:` and never `hover:`: Tailwind v4 wraps `hover:` in
+// `@media (hover: hover)`, which would delete this affordance on every
+// touch device.
+//
+// The resting `no-underline` and the hover branch are the same property, and
+// the emitted order decides which wins. Checked in 4.3.3's own output rather
+// than trusted: variants sort after the unvariated utilities, so the hover
+// rule lands second. `underline-offset-[0.2em]` matches the base `a` rule's
+// value and is written anyway, so the offset is the device's own statement
+// rather than something it inherits and could lose.
+
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+}
+
+const { href, title, description } = Astro.props;
+---
+
+<li class="pbs-6 pbe-6 border-be border-be-border">
+  <a
+    class="inline-block text-size-lede font-bold text-text-strong no-underline [&:hover]:underline [&:hover]:decoration-current [&:hover]:decoration-auto [&:hover]:underline-offset-[0.2em]"
+    href={href}
+  >{title}</a>
+  <p class="mbs-2 text-size-meta leading-tight text-muted max-inline-[64ch]">{description}</p>
+  <p class="flex flex-wrap items-center gap-x-4 gap-y-2 mbs-3 font-mono text-size-eyebrow text-muted">
+    <slot />
+  </p>
+</li>

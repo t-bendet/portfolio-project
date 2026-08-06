@@ -11,7 +11,29 @@
 // "coming soon" (§3, "Repo only" / "Live only"; §4). With neither set the
 // component renders nothing at all, which is why the two call sites do not
 // each need that condition.
+//
+// ── why these keep the global underline ────────────────────────────────────
+//
+// The treatment used to be `.destination` / `.destination-host` in
+// src/styles/projects.css, which is where the reason was written and it comes
+// with them. It lived in projects.css rather than in article.css because that
+// file is shared with /writing/[id]/ and /he/writing/[id]/, which never render
+// this device — and now it lives in the component, which is a better answer to
+// the same question.
+//
+// These links keep global.css's underline rather than the borderless mono
+// treatment of `.routes-out a` and `.end-matter-link`. Those links stay on the
+// site; these leave it, and §2.2's whole posture is that leaving must not be
+// the quiet case. So there is no `no-underline` here, deliberately: the mono
+// face, the eyebrow size and the --text colour are all this device sets, and
+// the anchor's own decoration does the rest.
+//
+// `underline-offset-[0.2em]` restates the offset global.css already gives
+// every anchor, exactly as the CSS rule did. It is kept rather than dropped
+// because the offset is part of what this device pins, not something it is
+// content to inherit.
 import { host } from '../lib/projects';
+import MetaLine from './MetaLine.astro';
 
 interface Props {
   repoUrl?: string;
@@ -19,21 +41,29 @@ interface Props {
 }
 
 const { repoUrl, liveUrl } = Astro.props;
+
+// One string each, named once, rather than the same class attribute typed out
+// on both anchors. `.destination` and `.destination-host` were single
+// definition points and they stay single definition points; two verbatim
+// copies inside one file is the same drift the card extraction exists to
+// prevent, only at a smaller scale and easier to miss.
+const link = 'font-mono text-size-eyebrow text-text underline-offset-[0.2em]';
+const hostLabel = 'text-muted ps-2';
 ---
 
 {
   (repoUrl || liveUrl) && (
-    <p class="meta-line">
+    <MetaLine>
       {repoUrl && (
-        <a class="destination" href={repoUrl} rel="noopener">
-          repo<span class="destination-host">{host(repoUrl)}</span>
+        <a class={link} href={repoUrl} rel="noopener">
+          repo<span class={hostLabel}>{host(repoUrl)}</span>
         </a>
       )}
       {liveUrl && (
-        <a class="destination" href={liveUrl} rel="noopener">
-          live<span class="destination-host">{host(liveUrl)}</span>
+        <a class={link} href={liveUrl} rel="noopener">
+          live<span class={hostLabel}>{host(liveUrl)}</span>
         </a>
       )}
-    </p>
+    </MetaLine>
   )
 }

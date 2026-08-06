@@ -2,10 +2,67 @@
 // In-page contents: the article's own h2s as anchors.
 // specs/pages/writing-article.md §2.2.
 //
+// A table of contents over two headings is noise, so the callers only render
+// this once an article has three — the filtering and the threshold are
+// theirs, and by the time this component mounts the condition is already
+// spent. That is why the grid placement below is unconditional: an article
+// with no contents list has no Contents element to place.
+//
 // Rendered in the sticky column on wide viewports and inline above the body
-// below the breakpoint (article.css) — one component, one source position,
-// no disclosure widget. The column binds to the inline start, so it lands on
-// the right under dir="rtl".
+// below the breakpoint — one component, one source position, no disclosure
+// widget. The column binds to the inline start, so it lands on the right
+// under dir="rtl".
+//
+// Sticky IN-PAGE navigation, which is not site navigation — and that
+// distinction is why the global header is not sticky and this is
+// (specs/navigation.md §1). It pins 24px below the viewport edge, is capped
+// at the viewport minus that gap top and bottom, and scrolls inside itself
+// when an article has more headings than fit. `min-[900px]:self-start` is how
+// a grid item keeps its own height instead of stretching to fill the row: it
+// compiles to `align-self: flex-start`, and outside a flex formatting context
+// that keyword behaves as `start`, which is what the stylesheet wrote. Named
+// in its prefixed form because the scanner reads this comment and the
+// unprefixed spelling would emit a rule nothing uses (verdict §4.4).
+//
+// No scroll-spy: an active-section indicator needs a scroll listener, which
+// is JavaScript on the reading path (§2.2). The list shows the article's
+// shape, not the reader's position in it.
+//
+// ── why the class names were prefixed, and why it still matters ───────────
+//
+// The prefix on the old class names was not decoration. Tailwind generates a
+// utility for every bare token it finds in a class attribute, so a component
+// class named after a utility word is silently shadowed by the generated
+// rule — and one of those words sets `display: contents`, which takes an
+// element out of the box tree entirely. Its children get auto-placed, and the
+// sticky column comes apart. That is what shipped until the RTL stage's
+// screenshot showed the heading list stranded at the foot of the page.
+//
+// The classes are gone now and the hazard is not: the reason the generated
+// rule won was that it was generated at all, so the same collision is one
+// unprefixed component class away on any element on the site.
+//
+// ── the Hebrew heading ────────────────────────────────────────────────────
+//
+// Hebrew is unicameral: no text-transform, and letter-spacing at the keyword
+// `normal` rather than at a computed zero (specs/design/typography.md §6,
+// specs/navigation.md N-7). Written as two exclusive branches rather than as
+// a base with a Hebrew override — utilities land in one layer where Tailwind's
+// sort decides ties, so an element carrying both `uppercase` and
+// `normal-case` would resolve by a rule this file does not control.
+//
+// ── the items ─────────────────────────────────────────────────────────────
+//
+// The edge and the 12px beside it are `border-s-2` and `ps-3`, bound to the
+// inline axis and never to the left. This component renders on the Hebrew
+// article route under dir="rtl", where both belong on the right; a physical
+// utility would put the edge on the far side of every heading and the LTR
+// screenshots would go on passing. `py-1.5` is padding-block, which does not
+// flip and is not meant to.
+//
+// `[&:hover]:` and never `hover:`: Tailwind v4 wraps `hover:` in
+// `@media (hover: hover)`, which would delete the hover state on every touch
+// device.
 
 import type { MarkdownHeading } from 'astro';
 
@@ -20,20 +77,27 @@ const { headings, lang } = Astro.props;
 const title = lang === 'he' ? 'תוכן העניינים' : 'contents';
 ---
 
-<nav class="article-contents" aria-labelledby="contents-title">
-  {/* Hebrew is unicameral: no text-transform, letter-spacing normal
-      (specs/design/typography.md §6). */}
+<nav
+  class="mbe-10 min-[900px]:col-start-1 min-[900px]:row-start-2 min-[900px]:sticky min-[900px]:inset-bs-6 min-[900px]:self-start min-[900px]:max-block-[calc(100vh-48px)] min-[900px]:overflow-y-auto"
+  aria-labelledby="contents-title"
+>
   <p
-    class:list={['article-contents-title', { 'article-contents-title-he': lang === 'he' }]}
+    class:list={[
+      'font-mono text-size-label text-muted pbe-3 border-be border-be-border',
+      lang === 'he' ? 'normal-case tracking-[normal]' : 'uppercase tracking-label',
+    ]}
     id="contents-title"
   >
     {title}
   </p>
-  <ol class="article-contents-items">
+  <ol class="list-none m-0 p-0 mbs-3">
     {
       headings.map((heading) => (
         <li>
-          <a href={`#${heading.slug}`}>{heading.text}</a>
+          <a
+            class="block font-mono text-size-meta leading-tight text-muted no-underline py-1.5 ps-3 border-s-2 border-s-border transition-[color] duration-(--motion-hover) ease-[ease] motion-reduce:transition-none [&:hover]:text-text [&:hover]:border-s-border-strong"
+            href={`#${heading.slug}`}
+          >{heading.text}</a>
         </li>
       ))
     }

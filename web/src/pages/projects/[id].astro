@@ -16,10 +16,17 @@
 // articles accumulate; a curated project set does not.
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import ArticleGrid from '../../components/ArticleGrid.astro';
+import ArticleHeader from '../../components/ArticleHeader.astro';
 import Contents from '../../components/Contents.astro';
+import EndMatter from '../../components/EndMatter.astro';
+import EndMatterLink from '../../components/EndMatterLink.astro';
 import ProjectDestinations from '../../components/ProjectDestinations.astro';
+import StackChips from '../../components/StackChips.astro';
+// The prose rules for the rendered MDX. The shell around it is components now;
+// what is left in this stylesheet styles elements markdown generates, which
+// carry no class attribute for a utility to sit on.
 import '../../styles/article.css';
-import '../../styles/projects.css';
 
 export async function getStaticPaths() {
   const entries = await getCollection('projects', ({ data }) => !data.draft);
@@ -58,39 +65,42 @@ const hasContents = sections.length >= 3;
   description={entry.data.description}
   section="projects"
 >
-  <div class:list={['article-grid', { 'with-contents': hasContents }]}>
-    <header class="article-header">
-      <h1>{entry.data.title}</h1>
-      <p class="lede">{entry.data.description}</p>
-
-      {/* Chips sit directly in the header rather than inside a .meta-line: a
+  <ArticleGrid hasContents={hasContents}>
+    <ArticleHeader
+      title={entry.data.title}
+      lede={entry.data.description}
+      hasContents={hasContents}
+    >
+      {/* Chips sit directly in the header rather than inside a MetaLine: a
           <ul> start tag closes an open <p>, so a wrapped list would be hoisted
-          straight back out by the parser. */}
-      {
-        entry.data.stack.length > 0 && (
-          <ul class="stack-chips">
-            {entry.data.stack.map((item, index) => (
-              <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
-            ))}
-          </ul>
-        )
-      }
+          straight back out by the parser. mbs-6 puts them on the rhythm the
+          meta line takes here — placement is the caller's (StackChips.astro). */}
+      <StackChips stack={entry.data.stack} class="mbs-6" />
 
       <ProjectDestinations repoUrl={entry.data.repoUrl} liveUrl={entry.data.liveUrl} />
-    </header>
+    </ArticleHeader>
 
     {hasContents && <Contents headings={sections} lang="en" />}
 
-    <article class="article-body">
+    {/* The body keeps its class: its rules reach markdown-generated elements
+        that have nowhere to carry a utility. Only its placement in the grid
+        is a utility, and only when there is a second column to place it
+        beside (ArticleGrid.astro). */}
+    <article
+      class:list={[
+        'article-body',
+        hasContents && 'min-[900px]:col-start-2 min-[900px]:row-start-2',
+      ]}
+    >
       <Content />
     </article>
 
     {/* The destinations come first and the way back second — §2 row 6's order,
         which inverts writing/[id].astro's. Acting on the links is the natural
         end of a case study; returning to the index is the fallback. */}
-    <footer class="end-matter">
+    <EndMatter hasContents={hasContents}>
       <ProjectDestinations repoUrl={entry.data.repoUrl} liveUrl={entry.data.liveUrl} />
-      <a class="end-matter-link" href="/projects/">projects</a>
-    </footer>
-  </div>
+      <EndMatterLink href="/projects/">projects</EndMatterLink>
+    </EndMatter>
+  </ArticleGrid>
 </Base>

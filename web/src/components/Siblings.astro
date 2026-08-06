@@ -1,0 +1,79 @@
+---
+// "More writing" — the two most recent other pieces, at the foot of an
+// article. specs/pages/writing-article.md §2.3.
+//
+// Not "related": a similarity list computed from shared tags is a taxonomy
+// pretending to be relevance. The caller decides what the two are and whether
+// there are enough of them to show any (the threshold is two others); this
+// component decides only how they look. On /he/writing/[id]/ the set is
+// translations only, which is that template's argument, not this one's.
+//
+// Two most recent, never more: past that the end matter stops being end
+// matter and becomes a second index.
+//
+// ── the Hebrew heading ────────────────────────────────────────────────────
+//
+// Hebrew is unicameral, so the uppercase-plus-tracking label treatment has
+// nothing to act on and letter-spacing on a Hebrew run is a defect rather
+// than a style (specs/design/typography.md §6, specs/navigation.md N-7).
+//
+// The two treatments are written as exclusive branches, not as a base with a
+// Hebrew override. The stylesheet could do base-plus-override because
+// `.siblings-title-he` was written second and won a source-order tie at equal
+// specificity; utilities all land in one layer where Tailwind's own sort
+// decides, and an element carrying both `uppercase` and `normal-case` would
+// resolve by a rule this file does not control.
+//
+// `tracking-[normal]` and never `tracking-normal`: the latter resolves to
+// `0em`, a computed zero. What the specs pin on a Hebrew run is the KEYWORD
+// `normal`, which is the font's own spacing and not an override of it.
+//
+// ── the list ──────────────────────────────────────────────────────────────
+//
+// The stylesheet spaced these with `li + li`. Here the gap is put on every
+// item after the first by index instead: same set of elements, and it avoids
+// an arbitrary variant, which Tailwind sorts after everything else and which
+// would therefore be the one rule in the list whose precedence is not obvious
+// from reading it.
+//
+// The links drop the global underline at rest and take it back on hover,
+// which is why `decoration-current` and `decoration-auto` are spelled out
+// beside `underline`: the declaration this replaced was the `text-decoration`
+// SHORTHAND, and its reset half is load-bearing. It also put decoration
+// colour back to currentcolor and thickness back to auto over the base `a`
+// rule's --border-strong at 1px. The `underline` utility is a longhand and
+// sets the line alone. Dropping the pair costs a hairline of underline
+// weight — exactly the class of change that ships unnoticed.
+
+interface Props {
+  /** The section's heading. */
+  heading: string;
+  /** The page's locale, which decides the heading treatment. */
+  lang: 'en' | 'he';
+  /** Already sliced to the two most recent by the caller. */
+  items: { href: string; title: string }[];
+}
+
+const { heading, lang, items } = Astro.props;
+---
+
+<section class="mbs-10">
+  <h2
+    class:list={[
+      'font-mono text-size-label text-muted',
+      lang === 'he' ? 'normal-case tracking-[normal]' : 'uppercase tracking-label',
+    ]}
+  >{heading}</h2>
+  <ul class="list-none m-0 p-0 mbs-3">
+    {
+      items.map((item, index) => (
+        <li class:list={[index > 0 && 'mbs-3']}>
+          <a
+            class="text-size-body text-text-strong no-underline [&:hover]:underline [&:hover]:decoration-current [&:hover]:decoration-auto [&:hover]:underline-offset-[0.2em]"
+            href={item.href}
+          >{item.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+</section>

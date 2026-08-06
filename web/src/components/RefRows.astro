@@ -1,0 +1,30 @@
+---
+// The reference register, part one of two: the list. RefRow.astro is the row,
+// Section.astro is the heading device the lists sit under.
+//
+// One component rather than one per page, for the reason this was one
+// stylesheet before it was components: the rows on /about/, /colophon/ and
+// /contact/ are the same object holding different facts, and two copies of it
+// would drift the way two copies of a card would.
+//
+// Values transcribed from the config-row device in
+// specs/design/prototypes/build-tools-overview.html.
+//
+// `as` exists because the three pages disagree about markup, and each is
+// right. /about/ is a definition list — <dl> of <div>/<dt>/<dd>, a label that
+// defines its value. /colophon/ and /contact/ are plain lists — <ul> of
+// <li>/<span>, pointers that happen to be labelled. Forcing one shape on all
+// three would change what a screen reader announces in order to save a prop,
+// so the tag is the caller's and the styling is the same either way.
+
+interface Props {
+  /** The list element. `dl` on /about/, where label and value are a definition pair. */
+  as?: 'ul' | 'dl';
+  /** Placement utilities from the call site — the margin above the list, so far. */
+  class?: string;
+}
+
+const { as: Tag = 'ul', class: className }: Props = Astro.props;
+---
+
+<Tag class:list={['list-none m-0 p-0', className]}><slot /></Tag>

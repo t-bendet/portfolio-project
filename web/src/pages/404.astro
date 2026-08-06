@@ -2,7 +2,22 @@
 // Not found (/404) — specs/pages/not-found.md. Minimal archetype: a
 // statement and two links, inside the same chrome as every other page (§5).
 // No wink, no joke, no list of sections.
+//
+// The row of links is RoutesOut + RouteOutLink, the pair the writing and
+// projects indexes render. This page's scoped <style> block had written that
+// row out by hand — fifteen declarations across `.routes`, `.routes a`, its
+// hover and its reduced-motion branch — and every one of them matched what
+// the two components emit, value for value. Both components carry the
+// reasoning for those values now; the comparison that licensed deleting the
+// block is recorded in RoutesOut.astro and RouteOutLink.astro rather than
+// repeated here.
+//
+// /he/404 is the same composition in the other locale (not-found.md §5) and
+// the two must not drift, so the markup below is written to match it line for
+// line: same components, same order, same three utilities on the paragraph.
 import Base from '../layouts/Base.astro';
+import RoutesOut from '../components/RoutesOut.astro';
+import RouteOutLink from '../components/RouteOutLink.astro';
 ---
 
 <Base
@@ -11,48 +26,18 @@ import Base from '../layouts/Base.astro';
   section="404"
 >
   {/* A statement, not a bit: the protocol register is native here, but the
-      page's whole job is recovery in one click (not-found.md §1–2). */}
-  <p class="statement">This address does not resolve to anything.</p>
+      page's whole job is recovery in one click (not-found.md §1–2).
 
-  <ul class="routes">
-    <li><a href="/writing/">writing</a></li>
-    <li><a href="/">home</a></li>
-  </ul>
+      `.statement` was three declarations — --size-lede, --text, and a 44ch
+      measure — and it is three utilities, not a component. Extracting a
+      component for three utilities would cost an import and a file to keep
+      the same string in one place, which is what writing it identically on
+      both pages already does. The identical string is on /he/404's paragraph;
+      if one of them changes the other changes with it. */}
+  <p class="text-size-lede text-text max-inline-[44ch]">This address does not resolve to anything.</p>
+
+  <RoutesOut>
+    <RouteOutLink href="/writing/">writing</RouteOutLink>
+    <RouteOutLink href="/">home</RouteOutLink>
+  </RoutesOut>
 </Base>
-
-<style>
-  .statement {
-    font-size: var(--size-lede);
-    color: var(--text);
-    max-inline-size: 44ch;
-  }
-
-  .routes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-    margin-block-start: 32px;
-    list-style: none;
-    padding: 0;
-  }
-
-  .routes a {
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    color: var(--text);
-    text-decoration: none;
-    border-inline-start: 2px solid var(--border-strong);
-    padding-inline-start: 12px;
-    transition: color var(--motion-hover) ease;
-  }
-
-  .routes a:hover {
-    color: var(--text-strong);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .routes a {
-      transition: none;
-    }
-  }
-</style>

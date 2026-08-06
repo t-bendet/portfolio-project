@@ -14,9 +14,13 @@
 // filtering by stack, status badges, view counts, GitHub stars.
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import { destination } from '../../lib/projects';
-import '../../styles/entry-list.css';
-import '../../styles/projects.css';
+import Card from '../../components/Card.astro';
+import CardGrid from '../../components/CardGrid.astro';
+import IndexHeader from '../../components/IndexHeader.astro';
+import Standing from '../../components/Standing.astro';
+import SectionTerms from '../../components/SectionTerms.astro';
+import RoutesOut from '../../components/RoutesOut.astro';
+import RouteOutLink from '../../components/RouteOutLink.astro';
 
 // `order`, not a date: projects are a curated set, not a timeline
 // (specs/content-model.md §3.3).
@@ -34,57 +38,32 @@ const translations = await getCollection('translations', ({ data }) => !data.dra
   description="A short list of things Tal Bendet built and finished far enough that someone else can run them or read the source."
   section="projects"
 >
-  <header class="page-header">
-    <h1>projects</h1>
-
+  {/* The header, the standing line, the terms and the routes out are the
+      overview archetype's shared devices — the same components /writing/ and
+      /he/writing/ render. IndexHeader.astro carries why they are components. */}
+  <IndexHeader title="projects">
     {/* Permanent content: it renders identically at zero entries and at
         twenty (§2, section 3). */}
-    <p class="standing">
+    <Standing>
       Things built far enough that someone else can run them or read the source. A short
       list rather than everything ever started — what is here was chosen, and each one
       says where it actually lives.
-    </p>
-  </header>
+    </Standing>
+  </IndexHeader>
 
   {
     entries.length > 0 ? (
-      /* DOM order and class names are byte-identical to the home page's card
-         (src/pages/index.astro), deliberately: §2.2's disclosure test — no two
-         cards with visually identical affordances produce different navigation
-         outcomes — is written across the site, so there has to be one card. */
-      <ul class="cards">
-        {entries.map((entry) => {
-          const { href, host } = destination(entry);
-          const hostId = `card-host-${entry.id}`;
-          return (
-            <li class="card">
-              <a
-                class="card-title"
-                href={href}
-                rel={host === null ? undefined : 'noopener'}
-                aria-describedby={host === null ? undefined : hostId}
-              >
-                {entry.data.title}
-              </a>
-              <p class="card-desc">{entry.data.description}</p>
-              {/* The outbound card names where it goes; the inward card has
-                  nothing extra to disclose (§2.2). */}
-              {host !== null && (
-                <span class="card-host" id={hostId}>
-                  {host}
-                </span>
-              )}
-              {entry.data.stack.length > 0 && (
-                <ul class="stack-chips">
-                  {entry.data.stack.map((item, index) => (
-                    <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
-                  ))}
-                </ul>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+      /* This page and the home page used to hold byte-identical copies of the
+         card's markup, deliberately, under a comment saying so: §2.2's
+         disclosure test — no two cards with visually identical affordances
+         produce different navigation outcomes — is written across the site, so
+         there has to be one card. The copies are now one component, and the
+         test holds because there is nothing left to keep in agreement. */
+      <CardGrid>
+        {entries.map((entry) => (
+          <Card entry={entry} />
+        ))}
+      </CardGrid>
     ) : (
       <>
         {/* One line, no promise and no date. Never a placeholder card, a
@@ -92,30 +71,22 @@ const translations = await getCollection('translations', ({ data }) => !data.dra
             project list — §4 names that last one as the tempting wrong move.
             Thinner than /writing/'s empty state on purpose: this one is a
             formality (§4). */}
-        <div class="terms">
+        <SectionTerms>
           <p>Nothing is listed here yet.</p>
-        </div>
+        </SectionTerms>
 
-        <ul class="routes-out">
-          {writing.length > 0 && (
-            <li>
-              <a href="/writing/">writing</a>
-            </li>
-          )}
+        <RoutesOut>
+          {writing.length > 0 && <RouteOutLink href="/writing/">writing</RouteOutLink>}
           {translations.length > 0 && (
-            <li>
-              <a href="/he/writing/" lang="he">
-                תרגומים
-              </a>
-            </li>
+            <RouteOutLink href="/he/writing/" lang="he">
+              תרגומים
+            </RouteOutLink>
           )}
           {/* Unconditional, because a static page is what keeps R-4 (no dead
               ends, specs/navigation.md §7.2) true while both collections are
               empty — the state the site is in today. */}
-          <li>
-            <a href="/about/">about</a>
-          </li>
-        </ul>
+          <RouteOutLink href="/about/">about</RouteOutLink>
+        </RoutesOut>
       </>
     )
   }

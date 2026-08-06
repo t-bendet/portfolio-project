@@ -1,0 +1,80 @@
+---
+// One item of the primary nav (navigation.md §2). Extracted from SiteHeader
+// because the nav-link idiom is eleven declarations plus two states, and the
+// loop that renders the items would otherwise carry all of it five times over
+// — including the accent-edge rule below, which is the one line here that
+// must never drift.
+//
+// The accent edge is bound with `border-inline-start` (palette.md §8.1) and
+// never with `border-left`, so that it lands on the reading-start side under
+// dir="rtl". `border-s-2`, `border-s-transparent` and `border-s-text-strong`
+// are the logical utilities for it. Getting this wrong breaks the Hebrew
+// pages silently: the edge simply appears on the wrong side of a word, and
+// the LTR screenshots go on passing.
+//
+// Current state is carried by the edge and the surface step as well as by
+// color — never by color alone (navigation.md §2.3). The three move together
+// or the state stops being legible without color vision, so they are written
+// as one branch rather than as three independent utilities.
+//
+// ── the transition ────────────────────────────────────────────────────────
+//
+// An arbitrary PROPERTY rather than a `transition-*` plus `duration-*` pair,
+// and it has to be. The declaration runs `color` and `border-color` at
+// --motion-hover but `background-color` at --motion-fast, and `duration-*`
+// sets ONE duration for every property in the transition. No combination of
+// `transition-*` and `duration-*` can express two durations in one shorthand,
+// so the shorthand is written out literally, underscores standing in for its
+// spaces. It compiles to the declaration it replaced, comma for comma.
+//
+// ── why resting and current are mutually exclusive ────────────────────────
+//
+// They are two complete branches rather than a base plus an override, and
+// that is load-bearing twice:
+//
+//   1. `border-s-transparent` and `border-s-text-strong` are plain utilities
+//      of equal specificity, and Tailwind emits the pair sorted by value,
+//      which puts `transparent` second. A current link carrying both would
+//      hand the cascade to `transparent` and erase its accent edge — on every
+//      page, in both temperatures.
+//   2. The rules this replaced were `.nav-link:hover` and `.nav-link.current`
+//      — equal specificity again, with `.current` written second, so hovering
+//      the current item changed nothing at all. But `[&:hover]:text-text`
+//      compiles to a `.class:hover` selector, which OUT-specifies a resting
+//      `.text-text-strong` and would flip the current item's color on hover.
+//      Withholding the hover utilities from the current item is what
+//      reproduces the old behaviour exactly.
+//
+// `[&:hover]:` and never `hover:`: Tailwind v4 wraps `hover:` in
+// `@media (hover: hover)`, which drops the hover state entirely on touch
+// devices. No screenshot can catch that.
+
+interface Props {
+  href: string;
+  /**
+   * The aria-current value: 'page' on an exact URL match, 'true' on a child
+   * route of the section, undefined when neither (navigation.md §2.3). Any
+   * defined value also draws the current treatment — the caller decides which
+   * of the two it is, this component only asks whether there is one.
+   */
+  current?: 'page' | 'true';
+  /** Set only when the item's language differs from the page's (navigation.md §2.2). */
+  lang?: string;
+}
+
+const { href, current, lang } = Astro.props;
+---
+
+<a
+  class:list={[
+    'block font-mono text-size-meta no-underline pbs-1.5 pbe-1.5 ps-3 pe-3 border-s-2',
+    '[transition:color_var(--motion-hover)_ease,border-color_var(--motion-hover)_ease,background-color_var(--motion-fast)_ease]',
+    'motion-reduce:transition-none',
+    current === undefined
+      ? 'text-muted border-s-transparent [&:hover]:text-text [&:hover]:bg-surface-2'
+      : 'text-text-strong bg-surface-2 border-s-text-strong',
+  ]}
+  href={href}
+  lang={lang}
+  aria-current={current}><slot /></a
+>

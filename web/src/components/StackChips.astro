@@ -1,0 +1,72 @@
+---
+// The stack chip: a project's technologies as small mono tags, rendered on the
+// home page, /projects/ and /projects/[id]/.
+// specs/pages/projects-index.md §2.1, specs/design/palette.md §7.2.
+//
+// This is the one sanctioned accent-tint pattern on the site — a --badge-N
+// fill under --accent-N text (palette.md §7.2). Nothing else on the site tints
+// a surface with an accent, which is why the six pairings are enumerated here,
+// once, instead of being restated at each of the three call sites.
+//
+// They are enumerated as six COMPLETE literal strings, chosen by index. The
+// three templates previously wrote `accent-${(index % 6) + 1}`, which Tailwind
+// cannot follow: its scanner is static text extraction over the source, so a
+// name assembled at runtime is a name it never sees and never emits a rule
+// for — the chips would have rendered untinted with nothing failing loudly. A
+// seventh pairing, if one is ever sanctioned, is added to this array whole;
+// it is never composed from a prefix and a number.
+//
+// The device was called .stack-chip and not .chip, and that reasoning still
+// binds anyone who gives it a class again: entry-list.css and article.css each
+// own a .chip carrying the neutral --chip-bg fill, which contradicts the
+// --badge-N fill this device requires, and /projects/ imports the first of
+// those sheets while /projects/[id]/ imports the second, both alongside
+// projects.css. Astro's plain-CSS imports are global, so a shared name would
+// have made the rendering depend on bundle order.
+//
+// Not links, deliberately: there is no stack-index route to send them to
+// (projects-index.md §2.1). A chip here is a label and reads as one.
+//
+// Placement is the caller's now. projects.css carried `.card .stack-chips` and
+// `.article-header .stack-chips` and called that reaching-in awkward in its own
+// comment; with the class gone those selectors had nothing left to match, so
+// the spacing moved out to the call sites that own the context — mbs-3 (12px)
+// in a card, mbs-6 (24px) in the article header, the same two values as before.
+//
+// An empty stack renders nothing at all, so the three call sites do not each
+// need that condition (the posture ProjectDestinations.astro takes).
+
+interface Props {
+  stack: string[];
+  /** Placement utility supplied by the context: mbs-3 in a card, mbs-6 in the article header */
+  class?: string;
+}
+
+const { stack, class: className } = Astro.props;
+
+const tints = [
+  'text-accent-1 bg-badge-1',
+  'text-accent-2 bg-badge-2',
+  'text-accent-3 bg-badge-3',
+  'text-accent-4 bg-badge-4',
+  'text-accent-5 bg-badge-5',
+  'text-accent-6 bg-badge-6',
+];
+---
+
+{
+  stack.length > 0 && (
+    <ul class:list={['flex flex-wrap gap-1.5 list-none m-0 p-0', className]}>
+      {stack.map((item, index) => (
+        <li
+          class:list={[
+            'font-mono text-size-label tracking-label pbs-[3px] pbe-[3px] ps-2 pe-2 rounded-(--radius-s)',
+            tints[index % 6],
+          ]}
+        >
+          {item}
+        </li>
+      ))}
+    </ul>
+  )
+}
