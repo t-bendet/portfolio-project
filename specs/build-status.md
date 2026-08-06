@@ -229,6 +229,23 @@ stays in `ci.yml`, where the lockfile is already covered. Both halves are
   `--ignore-registry-errors`; a gate that passes because it could not reach
   the registry is worse than a red run.
 
+**A third override landed 2026-08-07, from a different chain.**
+GHSA-5p4m-2wfm-xmqj (js-yaml <4.3.1, quadratic CPU on `!!omap`) is reachable
+through `web > @astrojs/mdx > @astrojs/internal-helpers` — production, high,
+eleven paths, so the audit half of the gate went red on a tree nobody had
+touched. It is unrelated to whatever PR happens to be open when an advisory
+publishes, which is the point of the gate.
+
+The instructive part is the first attempt. Written as `js-yaml: '>=4.3.1'` — the
+open form the two existing overrides use — it resolved to **5.2.3**, a major
+that dropped the default export `@astrojs/internal-helpers` imports, and
+`astro build` died at module instantiation. **The audit passed while the build
+was broken:** the gate reads versions, not semantics, so an override is exactly
+as capable of breaking the tree as of fixing it. Caret-bounded to `^4.3.1` and
+verified by the build rather than by the audit. The other two overrides carry
+the same latent risk and are left alone because they are working; the note is
+in `pnpm-workspace.yaml` for whoever writes the fourth.
+
 It failed on the tree as it stood, unlike the design gates. `@prisma/client`
 is a **production** dependency of `api` and pulls the entire `prisma` CLI
 behind it, so `fast-uri` (GHSA-7p8r-x3mc-p8w7, high) was reachable in the

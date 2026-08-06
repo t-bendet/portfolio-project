@@ -1,19 +1,37 @@
 packages:
   - web
   - api
-# Both entries patch the same chain: `@prisma/client` is a production
-# dependency of `api` and pulls the whole `prisma` CLI behind it, so an
-# advisory anywhere under `@prisma/dev` lands in the runtime image. Drop each
-# override once prisma ships a patched chain.
+# Every entry here clears a high advisory that is reachable from *production*
+# dependencies, which is the CI `sec` stage's fail condition
+# (security-requirements.md SR-21). These are fixes, not suppressions — an
+# override that hides a finding rather than raising past it belongs nowhere.
+# Drop each one once its upstream ships a patched chain.
 #
-# Dependabot #1: find-my-way <=9.6.0 (HTTP/2 DDoS).
-# GHSA-7p8r-x3mc-p8w7: fast-uri <3.1.5 (host confusion via a backslash
-# authority introducer), reached through @prisma/streams-local > ajv. High, in
-# production dependencies — which is the CI `sec` stage's fail condition
-# (security-requirements.md SR-21), so this is a fix, not a suppression.
+# Two chains, not one.
+#
+# `@prisma/client` is a production dependency of `api` and pulls the whole
+# `prisma` CLI behind it, so an advisory anywhere under `@prisma/dev` lands in
+# the runtime image:
+#   Dependabot #1: find-my-way <=9.6.0 (HTTP/2 DDoS).
+#   GHSA-7p8r-x3mc-p8w7: fast-uri <3.1.5 (host confusion via a backslash
+#   authority introducer), reached through @prisma/streams-local > ajv.
+#
+# `@astrojs/mdx` is a production dependency of `web` and carries its own:
+#   GHSA-5p4m-2wfm-xmqj: js-yaml <4.3.1 (quadratic CPU on !!omap resolution;
+#   the CVE-2026-59870 fix was not backported), reached through
+#   @astrojs/internal-helpers. Eleven paths, all under mdx.
+#
+# js-yaml is caret-bounded, and the other two are not, for a reason worth
+# keeping: an open `>=` override crosses majors. `>=4.3.1` resolved to js-yaml
+# 5.2.3, which dropped the default export that @astrojs/internal-helpers
+# imports, and `astro build` died at module instantiation. The audit passed
+# while the build was broken — the gate reads versions, not semantics. Bound a
+# new override to the range that carries the fix, and let the build be what
+# proves it.
 overrides:
   find-my-way: '>=9.7.0'
   fast-uri: '>=3.1.5'
+  js-yaml: '^4.3.1'
 
 # pnpm blocks dependency build scripts by default; these need theirs
 # (native builds / Prisma engine downloads). sharp comes from astro's image
