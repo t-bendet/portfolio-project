@@ -3,6 +3,107 @@
 @import './hero.css';
 
 /*
+ * ── the token bridge ─────────────────────────────────────────────────────
+ *
+ * tokens.css stays the single source of truth and is byte-frozen: three of
+ * the four design gates textually parse it, locating the literal `:root` and
+ * `[data-theme='warm']` blocks and reading `--name: value;` per line. A token
+ * moved in here would break `token-parity.ts` and `contrast.ts` at once. So
+ * this block MAPS, never restates — every line is `var(--existing-token)`,
+ * and no value appears twice in the repository.
+ *
+ * `inline` is load-bearing. It makes `bg-bg` compile to
+ * `background-color: var(--bg)` rather than to a copy of the token's value,
+ * so the runtime `[data-theme='warm']` swap keeps working: the utility
+ * resolves through tokens.css at paint time, exactly as the hand-written
+ * rules did. Without `inline`, every utility would bake the dark value in and
+ * the warm temperature would stop existing.
+ *
+ * What is deliberately NOT bridged, and why:
+ *   --radius-*  a theme key named `--radius-s` collides with the `rounded-s-*`
+ *               LOGICAL utility namespace (inline-start radius), which the RTL
+ *               rules need to keep available. Referenced as
+ *               `rounded-(--radius-s)` instead: still a token reference,
+ *               still no value restated.
+ *   --motion-*  same shape; referenced as `duration-(--motion-hover)`.
+ *   --astro-code-*  Shiki's own aliases. Nothing in markup addresses them.
+ *
+ * The `--leading-*` and `--font-*` entries deliberately share their names with
+ * Tailwind's own theme keys. Under `inline` the variable is not emitted, so
+ * `leading-body` compiles to `line-height: var(--leading-body)` and resolves
+ * against tokens.css rather than against Tailwind's default.
+ */
+@theme inline {
+  /* structure */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-inset: var(--surface-inset);
+  --color-chip-bg: var(--chip-bg);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  /* text */
+  --color-text-strong: var(--text-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+
+  /* accents */
+  --color-accent-1: var(--accent-1);
+  --color-accent-2: var(--accent-2);
+  --color-accent-3: var(--accent-3);
+  --color-accent-4: var(--accent-4);
+  --color-accent-5: var(--accent-5);
+  --color-accent-6: var(--accent-6);
+  --color-badge-1: var(--badge-1);
+  --color-badge-2: var(--badge-2);
+  --color-badge-3: var(--badge-3);
+  --color-badge-4: var(--badge-4);
+  --color-badge-5: var(--badge-5);
+  --color-badge-6: var(--badge-6);
+  --color-focus: var(--focus);
+
+  /* code panels */
+  --color-code-bg: var(--code-bg);
+  --color-code-text: var(--code-text);
+
+  /* type — the three stacks. Both temperatures swap fonts, not just colors,
+     which is why these are bridged rather than hardcoded anywhere. */
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+
+  /* The eleven size steps, prefixed `size-` so that `text-size-body` (a font
+     size) cannot be confused with `text-text` (a color). */
+  --text-size-micro: var(--size-micro);
+  --text-size-label: var(--size-label);
+  --text-size-eyebrow: var(--size-eyebrow);
+  --text-size-code: var(--size-code);
+  --text-size-meta: var(--size-meta);
+  --text-size-body: var(--size-body);
+  --text-size-lede: var(--size-lede);
+  --text-size-h4: var(--size-h4);
+  --text-size-h3: var(--size-h3);
+  --text-size-h2: var(--size-h2);
+  --text-size-h1: var(--size-h1);
+
+  --leading-display: var(--leading-display);
+  --leading-tight: var(--leading-tight);
+  --leading-body: var(--leading-body);
+  --leading-code: var(--leading-code);
+
+  --tracking-display: var(--track-display);
+  --tracking-eyebrow: var(--track-eyebrow);
+  --tracking-label: var(--track-label);
+}
+
+/* The theme swap as a variant, so `[data-theme='warm'] .terms` becomes
+   `warm:bg-badge-2` on the element itself. The attribute still lives on
+   <html>, set before first paint by the inline script in Base.astro. */
+@custom-variant warm ([data-theme='warm'] &);
+
+/*
  * The element-level rules sit in `@layer base`, and that is load-bearing
  * rather than tidiness.
  *
