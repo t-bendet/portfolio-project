@@ -142,6 +142,30 @@ preceded it:
   auto-placed at the foot of the page. Renamed `.article-contents`; component
   classes do not use bare utility words.
 
+**A cascade-layer defect the RTL stage could not have caught**, fixed
+separately from the work that found it. `web/src/styles/global.css` imports
+Tailwind, which establishes the layer order `theme, base, components,
+utilities`. Its own element rules — `html`, `body`, `main`, `a`, `pre`/`code`,
+`:focus-visible`, the theme-transition rule — were **unlayered**, and
+unlayered CSS beats every layer regardless of specificity. So any Tailwind
+utility placed on an anchor (`no-underline`, `text-muted`, …) was generated,
+matched, applied, and then silently lost to `a { text-decoration: underline }`.
+Nothing in the markup would have suggested why, and no gate looks at
+precedence.
+
+Those rules now sit in `@layer base`, which puts them back underneath the
+utilities. Nothing else moves: each one already lost to any class rule on
+specificity, and the component stylesheets stay unlayered, so their precedence
+over base is unchanged. `.shell` and `.skip-link` stay unlayered deliberately
+— they are component classes, and layering them would flip them under every
+utility. Verified behaviour-neutral: all four gates, `astro check`, the RTL
+stage with its checked-in baseline **unchanged**, and a 156-screenshot
+full-site diff (every page × both temperatures × 480/800/1280) at
+`maxDiffPixels: 0`.
+
+This matters now because it is a prerequisite: it is not possible to adopt a
+single Tailwind utility anywhere on the site until it is true.
+
 **The four design gates (5–8)** are dependency-free scripts in `scripts/`, run
 by `node`'s own type stripping — no new action to allowlist, nothing installed.
 They pass on the tree as it stands; this was enforcement arriving, not
