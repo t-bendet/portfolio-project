@@ -73,10 +73,21 @@
  * risks, against a budget of 0.02 — effectively zero
  * (performance-budgets.md §2).
  *
- * REVIEW(Tal): the two `size-adjust` values. Render a mixed-script page at
- * both `dir` values and adjust until the scripts read as one voice; §7.4
- * names the comparison to make for the warm pair. The overrides should not
- * need to move.
+ * ── standing ─────────────────────────────────────────────────────────────
+ *
+ * **Heebo's 86.9% is verified**, 2026-08-06, by Tal against `/he/writing/`
+ * over three passes (94.3% → 90.4% → 86.9%, "bigger" each time until this
+ * one). That is §7.4's required QA step, discharged for the dark pair. It is
+ * no longer a starting point, and moving it needs the same kind of look that
+ * settled it — not a recalculation.
+ *
+ * **Frank Ruhl Libre's 82.2% is not verified.** It is the same rule applied
+ * to measured numbers, and the warm temperature has never been looked at: it
+ * has no toggle, and reaching it means setting `localStorage.theme = 'warm'`
+ * by hand. Fraunces' `opsz` axis makes it the likeliest of the two to be
+ * wrong, since its x-height moves with size.
+ *
+ * REVIEW(Tal): the warm pair, when the warm theme is reachable.
  */
 
 /*

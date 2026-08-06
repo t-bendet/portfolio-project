@@ -117,9 +117,9 @@ letters, against the partner's actual `x` and `H` bounds:
 
 | Pairing | Hebrew letters | Latin x | match-x | Shipped | Standing |
 |---|---|---|---|---|---|
-| Heebo vs Syne | 0.5752 | 0.5000 | 86.93% | **86.9%** | Tal's eye, 3 passes |
+| Heebo vs Syne | 0.5752 | 0.5000 | 86.93% | **86.9%** | **verified** 2026-08-06 |
 | Heebo vs DM Mono | 0.5752 | 0.4960 | 86.23% | (same face) | — |
-| Frank Ruhl Libre vs Fraunces | 0.5860 | 0.4820 | 82.25% | **82.2%** | same rule, warm QA owed |
+| Frank Ruhl Libre vs Fraunces | 0.5860 | 0.4820 | 82.25% | **82.2%** | rule applied, QA owed |
 | IBM Plex Sans Hebrew vs IBM Plex Mono | 0.6060 | 0.5160 | 85.15% | none | see below |
 
 Hebrew is unicameral: its letters sit ~15% above Latin x-height and well
@@ -133,7 +133,14 @@ not survive contact with these faces.
 Known drift remains: Fraunces' `opsz` axis moves its x-height with size, and
 Syne is used at 400–800 while these bounds are the default instance. The
 warm pair still owes its own look — 82.2% is the same rule applied, not an
-observation.
+observation, and Fraunces' `opsz` axis makes it the likelier of the two to
+be wrong. The warm theme has no toggle; reaching it means setting
+`localStorage.theme = 'warm'` by hand.
+
+**§7.4 is discharged for the dark pair**, 2026-08-06: three passes at 94.3%,
+90.4% and 86.9%, Hebrew reading large at each of the first two. The value is
+verified rather than derived, which is what this spec asks for — and worth
+noting, the two rejected values were the ones with a theory behind them.
 
 **The Plex pair gets no rule, and the reason matters.** An earlier draft
 claimed the two faces were "metrically identical" — they are not; that was
