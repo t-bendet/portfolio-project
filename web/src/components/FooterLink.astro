@@ -1,0 +1,72 @@
+---
+// One footer link, as a component. The five anchors in SiteFooter.astro all
+// carried the utility string below verbatim when the footer was first
+// migrated inline — five places to drift standing in for the one CSS rule
+// they replaced. So the anchor is a component and the string is written once.
+//
+// ── the reset that is no longer written for you ─────────────────────────
+//
+// The rule this replaced was `text-decoration: underline`, and that is a
+// SHORTHAND: it also resets text-decoration-color to currentcolor and
+// text-decoration-thickness to auto. The `underline` utility is a longhand
+// and sets text-decoration-line alone, so the underline kept the base `a`
+// rule's 1px --border-strong from global.css and the row rendered wrong.
+// That was the whole failure of the first attempt: 61 pixels, on /colophon/
+// only, because that is the single route where this link carries
+// aria-current. `decoration-current` and `decoration-auto` are those two
+// resets written back by hand. They are not garnish — drop either and the
+// defect comes back, on one page out of twelve, which is exactly the shape
+// of defect a one-page check does not see.
+//
+// `aria-[current]:` and never `aria-current:`. The built-in variant does not
+// exist in Tailwind 4.3.3, and even where it does it matches only the literal
+// value "true"; this attribute carries "page". It would compile and silently
+// never match. What it carries is the requirement that the current page is
+// **not carried by color alone** (specs/navigation.md §2.3) — so a silent
+// miss here is an accessibility regression, and no screenshot reports it.
+//
+// `[&:hover]:` and never `hover:`. Tailwind wraps `hover:` in
+// `@media (hover: hover)`, which deletes the hover state on coarse-pointer
+// devices. Also unobservable to a screenshot.
+//
+// The `:not([aria-current])` inside that hover variant is the second half of
+// the same class of bug as the decoration reset, found by compiling these
+// exact strings and reading the output. The two rules this replaced —
+// `.links a:hover` and `.links a[aria-current]` — had EQUAL specificity, so
+// source order decided them and the marked link kept --text-strong while the
+// pointer was over it. As utilities they are both in @layer utilities, where
+// Tailwind's own variant order decides instead, and it sorts arbitrary
+// variants last: a bare `[&:hover]:text-text` would out-rank
+// `aria-[current]:text-text-strong` and dim the marked link on hover. The
+// `:not()` restores the original outcome by saying the thing the old cascade
+// only implied — hover recolors the links that are not the current page.
+// Nothing observes this but a person with a pointer; no screenshot does.
+//
+// The transition names one property on purpose. Tailwind's stock
+// colour-transition utility declares ten, which is not what the rule this
+// replaced did — so the property is spelled out in brackets instead.
+//
+// (That utility's name is left unwritten here deliberately: Tailwind's scanner
+// treats words in comments as class candidates, so naming it would emit its
+// 335-byte rule into the shipped stylesheet for no one to use. Same reason the
+// display-none utility is described rather than named anywhere in this repo.)
+
+interface Props {
+  href: string;
+  /** 'page' on the one link that owns the current route; absent on every other. */
+  ariaCurrent?: 'page';
+  /** Set only when the link's text is in a language the page is not. */
+  lang?: string;
+  rel?: string;
+}
+
+const { href, ariaCurrent, lang, rel } = Astro.props;
+---
+
+<a
+  href={href}
+  aria-current={ariaCurrent}
+  lang={lang}
+  rel={rel}
+  class="font-mono text-size-meta text-muted no-underline transition-[color] duration-(--motion-hover) ease-[ease] motion-reduce:transition-none [&:not([aria-current]):hover]:text-text aria-[current]:text-text-strong aria-[current]:underline aria-[current]:decoration-current aria-[current]:decoration-auto aria-[current]:underline-offset-[0.3em]"
+><slot /></a>

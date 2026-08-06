@@ -2,6 +2,50 @@
 // Global header — eyebrow (with the mark) · primary nav.
 // specs/navigation.md §1–3. Content-independent (N-1): nothing here varies
 // with how much the site contains.
+//
+// Not sticky — a deliberate decision, not an omission (navigation.md §1).
+// The header scrolls away with the page and always has; a reader who pins it
+// is reversing a decision, not filling a gap.
+//
+// ── the eyebrow ───────────────────────────────────────────────────────────
+//
+// ADR 0001: identity, not decoration (typography.md §6). The mono face, the
+// 11px step and the 0.2em tracking are the mark's own typography, which is
+// why they sit on the <p> and are inherited rather than restated per span.
+//
+// Linking the mark must not alter its resting appearance (navigation.md §3.3
+// rule 3), so the anchor re-declares `text-muted` against global.css's base
+// `a { color: var(--text) }` and drops the underline. Only the hover step
+// distinguishes it from the surrounding eyebrow text.
+//
+// The mark is an LTR run inside a line that is RTL on the Hebrew pages, and
+// `direction` / `unicode-bidi` have no utilities in Tailwind 4.3.3 — none,
+// verified against the installed package. They are written as arbitrary
+// PROPERTIES, `[direction:ltr]` and `[unicode-bidi:isolate]`. Without the
+// isolation the bidi algorithm reorders `T://bendet` around the colon and
+// slashes when the paragraph direction flips.
+//
+// Hebrew is unicameral; 0.2em tracking is a Latin-caps idiom (typography.md
+// §6, navigation.md §3.3 rule 4). The Hebrew segment therefore cancels both
+// inherited values — and `tracking-[normal]` is deliberate, NOT
+// `tracking-normal`. Tailwind's `tracking-normal` resolves through
+// `--tracking-normal` to `0em`, a computed zero, where navigation.md N-7 and
+// typography.md §6 pin the KEYWORD `normal` on Hebrew runs. The brackets are
+// what emit the keyword. (`normal-case` needs no such care — it already
+// compiles to `text-transform: none`.)
+//
+// The two cancelling utilities sit on the <span> while `uppercase` and
+// `tracking-eyebrow` sit on the <p>, so this is inheritance being overridden
+// on a descendant, not two utilities racing in one cascade — the emitted
+// order of the pair is irrelevant.
+//
+// ── the nav ───────────────────────────────────────────────────────────────
+//
+// `flex-wrap` is the narrow-viewport behaviour: wrap, no disclosure menu.
+// The items reflow onto a second line and stay reachable; nothing collapses
+// behind a control. The link idiom itself lives in NavLink.astro.
+
+import NavLink from './NavLink.astro';
 
 interface Props {
   /** Eyebrow section segment — one of the eight in navigation.md §3.2 */
@@ -36,133 +80,37 @@ function currentState(href: string): 'page' | 'true' | undefined {
 }
 ---
 
-<header class="site-header">
-  <div class="shell header-row">
-    <p class="eyebrow">
-      <a class="mark" href="/" aria-current={path === '/' ? 'page' : undefined}>T://bendet</a>
-      <span class="separator" aria-hidden="true">·</span>
+<header class="border-be border-be-border">
+  <div class="shell flex flex-wrap items-center justify-between gap-x-8 gap-y-3 pbs-5 pbe-5">
+    <p class="font-mono text-size-eyebrow tracking-eyebrow uppercase text-muted">
+      <a
+        class="text-muted no-underline [direction:ltr] [unicode-bidi:isolate] [&:hover]:text-text"
+        href="/"
+        aria-current={path === '/' ? 'page' : undefined}>T://bendet</a
+      >
+      <span class="ms-[0.4em] me-[0.4em]" aria-hidden="true">·</span>
       <span
-        class:list={['segment', { 'segment-he': sectionLang === 'he' }]}
+        class:list={[{ 'normal-case tracking-[normal]': sectionLang === 'he' }]}
         lang={sectionLang === locale ? undefined : sectionLang}>{section}</span
       >
     </p>
 
     <nav aria-label="primary">
-      <ul class="nav-items">
+      <ul class="flex flex-wrap items-center gap-x-2 gap-y-1 list-none m-0 p-0">
         {
-          items.map((item) => {
-            const current = currentState(item.href);
-            return (
-              <li>
-                <a
-                  class:list={['nav-link', { current: current !== undefined }]}
-                  href={item.href}
-                  lang={item.lang === locale ? undefined : item.lang}
-                  aria-current={current}
-                >
-                  {item.label}
-                </a>
-              </li>
-            );
-          })
+          items.map((item) => (
+            <li>
+              <NavLink
+                href={item.href}
+                current={currentState(item.href)}
+                lang={item.lang === locale ? undefined : item.lang}
+              >
+                {item.label}
+              </NavLink>
+            </li>
+          ))
         }
       </ul>
     </nav>
   </div>
 </header>
-
-<style>
-  /* Not sticky — a deliberate decision, not an omission (navigation.md §1). */
-  .site-header {
-    border-block-end: 1px solid var(--border);
-  }
-
-  .header-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px 32px;
-    padding-block: 20px;
-  }
-
-  /* ADR 0001: identity, not decoration (typography.md §6). */
-  .eyebrow {
-    font-family: var(--font-mono);
-    font-size: var(--size-eyebrow);
-    letter-spacing: var(--track-eyebrow);
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  /* Linking the mark must not alter its resting appearance
-     (navigation.md §3.3 rule 3). */
-  .mark {
-    color: var(--muted);
-    text-decoration: none;
-    /* The mark is an LTR run inside an RTL line. */
-    direction: ltr;
-    unicode-bidi: isolate;
-  }
-
-  .mark:hover {
-    color: var(--text);
-  }
-
-  .separator {
-    margin-inline: 0.4em;
-  }
-
-  /* Hebrew is unicameral; 0.2em tracking is a Latin-caps idiom
-     (typography.md §6, navigation.md §3.3 rule 4). */
-  .segment-he {
-    text-transform: none;
-    letter-spacing: normal;
-  }
-
-  .nav-items {
-    display: flex;
-    flex-wrap: wrap; /* the narrow-viewport behaviour: wrap, no disclosure menu */
-    align-items: center;
-    gap: 4px 8px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* The nav-link idiom: accent edge bound with border-inline-start
-     (palette.md §8.1), so it lands on the reading-start side under dir="rtl". */
-  .nav-link {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    color: var(--muted);
-    text-decoration: none;
-    padding-block: 6px;
-    padding-inline: 12px;
-    border-inline-start: 2px solid transparent;
-    transition:
-      color var(--motion-hover) ease,
-      border-color var(--motion-hover) ease,
-      background-color var(--motion-fast) ease;
-  }
-
-  .nav-link:hover {
-    color: var(--text);
-    background-color: var(--surface-2);
-  }
-
-  /* Current state is carried by the edge and the surface step as well as by
-     color — never by color alone (navigation.md §2.3). */
-  .nav-link.current {
-    color: var(--text-strong);
-    background-color: var(--surface-2);
-    border-inline-start-color: var(--text-strong);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .nav-link {
-      transition: none;
-    }
-  }
-</style>
