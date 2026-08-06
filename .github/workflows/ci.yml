@@ -2,11 +2,14 @@
 # Implemented so far: typecheck, api tests against Postgres with migrations,
 # web build, docker image builds (not pushed), the four static design gates
 # (contrast, token parity, banned vocabulary, no raw hex), the Playwright RTL
-# stage, and the dependency-audit half of the sec stage. Remaining obligations
-# (workflow paths-lint, perf/bundle) land with the features they check.
+# stage, and the dependency-audit half of the sec stage. The remaining
+# obligation (perf/bundle) lands with the feature it checks.
 #
-# The secrets-scan half of §11 is in sec.yml, deliberately outside this
-# workflow: it must run on every PR, and this one is paths-filtered.
+# No `paths:` filter, deliberately: `checks` is a required status context on
+# main, and a required context that never reports blocks a PR forever rather
+# than skipping it. A doc-only PR pays a full run — build-status.md §3 has the
+# guard-job alternative that was rejected. The secrets-scan half of §11 stays
+# in sec.yml, which has never had a filter and must never gain one.
 #
 # Repo settings require SHA-pinned actions and allow only github-owned
 # actions — pnpm comes via corepack, docker builds are plain `docker build`.
@@ -16,30 +19,8 @@ name: ci
 
 on:
   pull_request:
-    paths:
-      - 'web/**'
-      - 'api/**'
-      - 'deploy/**'
-      # The design gates read specs/ as their source of truth (palette.md §5 is
-      # the contrast gate's pair list), so a spec edit has to re-run CI too.
-      - 'scripts/**'
-      - 'specs/**'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.github/workflows/ci.yml'
   push:
     branches: [main]
-    paths:
-      - 'web/**'
-      - 'api/**'
-      - 'deploy/**'
-      # The design gates read specs/ as their source of truth (palette.md §5 is
-      # the contrast gate's pair list), so a spec edit has to re-run CI too.
-      - 'scripts/**'
-      - 'specs/**'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - '.github/workflows/ci.yml'
 
 permissions:
   contents: read
@@ -61,7 +42,7 @@ jobs:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci
           POSTGRES_DB: ci
-        ports: ['5432:5432']
+        ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U ci"
           --health-interval 5s
