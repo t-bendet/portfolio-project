@@ -256,11 +256,30 @@ Three findings from the evaluation are worth acting on independently:
    fixes it and changes nothing else — they already lost to every class rule
    on specificity. **This is a prerequisite for the migration:** until it
    lands, no utility can be adopted anywhere on the site.
-2. **Tailwind's scanner reads prose.** Writing the word *invisible* in an
-   Astro comment made Tailwind emit `.invisible{visibility:hidden}` into
-   shipped CSS, which failed `banned-vocab.ts` — on `hidden`, a word that
-   appears nowhere in the source. The `.contents` incident below is the same
-   mechanism; it is live, and obligation 7 does catch the dangerous cases.
+2. **Tailwind scans `.astro` and `.ts` files whole — comments included — and
+   never scans `.css` files at all.** Measured with `@tailwindcss/oxide`'s
+   `Scanner` on a controlled fixture: candidates are extracted from `.astro`
+   frontmatter comments, JSX `{/* */}` comments, HTML comments, the `<style>`
+   block's own CSS (`max-inline-size:` yields the candidate `inline`), and
+   `.ts` comments — but nothing in a `.css` file, neither its comments nor its
+   declarations. `position: sticky` appears four times in `article.css` and
+   produces no rule; the word `sticky` in `SiteHeader.astro`'s comment does.
+
+   The consequence is a **build failure, not a byte cost**: writing the word
+   *invisible* in an Astro comment made Tailwind emit
+   `.invisible{visibility:hidden}` into shipped CSS, which failed
+   `banned-vocab.ts` on `hidden` — a word appearing nowhere in the source.
+   So `hidden` and `invisible` are banned from `.astro`/`.ts` files, comments
+   included. This is the sibling of the `.contents` incident below and it
+   extends the same rule: **component classes never use bare utility words,
+   and `.astro` comments never write them either.** Obligation 7 catches the
+   dangerous subset on its own, which is the case for leaving it as the guard
+   rather than adding a gate.
+
+   The rest is only bytes, and mostly not prose: of the dead rules in the
+   shipped CSS, `filter` comes from `headings.filter(…)` (real code), and
+   `inline`/`underline`/`transition` from CSS inside scoped `<style>` blocks —
+   which disappear as those blocks are migrated.
 3. **The design gates and the RTL stage held up under a real change.** All
    four gates plus the checked-in screenshot baseline passed unmodified
    through a bridge commit and a component migration, and the baseline caught

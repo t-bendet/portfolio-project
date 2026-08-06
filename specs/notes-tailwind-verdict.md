@@ -412,8 +412,72 @@ trusted to a green run:
   **`[&:hover]:` is mandatory throughout.** Likewise `aria-[current]:`, since
   the built-in `aria-current:` variant does not exist in 4.3.3.
 
-And one gate hazard worth repeating: Tailwind's scanner generates utilities
-from words in *prose*, including comments. Writing *invisible* in a comment
-emitted `.invisible{visibility:hidden}` and failed `banned-vocab.ts` on
-`hidden`. Component frontmatter comments carrying the migrated rationale
-(§4.1) are exactly where this will bite.
+### 4.4 House rules for the migration
+
+Everything below was paid for once. The list exists so it is not paid for
+twice — by a later wave, a reviewer, or a fresh session with no memory of
+this one. Each item is a fact about Tailwind 4.3.3 verified against the
+installed package, not a preference.
+
+**What the scanner reads** (measured with `@tailwindcss/oxide`'s `Scanner` on
+a controlled fixture, 2026-08-06):
+
+| Where | Scanned? |
+|---|---|
+| `.astro` — frontmatter `//` and `/* */`, JSX `{/* */}`, HTML `<!-- -->` | **yes** |
+| `.astro` — the `<style>` block's own CSS, property names included | **yes** |
+| `.ts` — comments and identifiers | **yes** |
+| **`.css` files — anything at all, comments or declarations** | **no** |
+
+So the same sentence is inert in `article.css` and generates a rule in
+`about.astro`. `max-inline-size:` in a scoped `<style>` block yields the
+candidate `inline`; the identical line in a `.css` file yields nothing. An
+earlier draft of this memo said "words in prose, including comments" without
+that distinction, which was wrong in both directions — `filter` in the
+shipped CSS came from `headings.filter(…)`, real code, not a comment.
+
+Consequence, and it is a **hard ban, not style**: never write the words
+`hidden` or `invisible` in an `.astro` or `.ts` file, comments included. They
+generate rules whose CSS body contains `hidden`, which fails `banned-vocab.ts`
+(obligation 7) — a red build, not a byte cost. That is a live incident: this
+migration hit it. Beyond those two, prefer not to write bare utility names in
+`.astro` comments unless naming one is the point; it is only bytes, and the
+explanation usually survives a rephrase.
+
+**The characteristic failure mode: source order becomes sort order.** The old
+CSS resolved ties by *source order within one specificity tier*. Utilities put
+everything in one layer where Tailwind's own sort decides, so ties invert.
+Three instances so far, none visible to the screenshot oracle:
+
+1. `text-decoration: underline` is a **shorthand** that also resets decoration
+   colour to `currentcolor` and thickness to `auto`. The `underline` utility
+   sets the line only. Cost: 61 pixels on `/colophon/`. Fix: pair it with
+   `decoration-current decoration-auto`.
+2. `.links a:hover` and `.links a[aria-current]` tie at (0,2,1); the aria rule
+   was written second and won. As utilities Tailwind sorts arbitrary variants
+   **last**, so hover would win instead and dim the marked link. Verified in
+   the build: aria rule at byte 13629, hover rule at 14509. Fix:
+   `[&:not([aria-current]):hover]`.
+3. Same-property utilities sort **by value**, so an element carrying both
+   `border-s-transparent` and `border-s-text-strong` resolves to transparent —
+   erasing the nav's current-item accent edge. Fix: resting and current are
+   mutually exclusive branches, never base plus override.
+
+The general rule: **never express a state as base + override in utilities.**
+Make the branches exclusive. Emit order is not yours to control.
+
+**Mandatory forms** (each replaces the obvious utility, which is wrong here):
+
+| Write | Never | Why |
+|---|---|---|
+| `[&:hover]:` | `hover:` | v4 wraps `hover:` in `@media (hover: hover)`; deletes hover on touch |
+| `aria-[current]:` | `aria-current:` | the built-in variant does not exist in 4.3.3, and would match only `"true"` — this attribute carries `"page"` |
+| `transition-[color]` | `transition-colors` | the latter declares ten properties; the rules here transition one |
+| `tracking-[normal]` | `tracking-normal` | resolves to `0em`, a computed zero, not the keyword `normal` that navigation.md N-7 pins on Hebrew runs |
+| `[direction:ltr]`, `[unicode-bidi:isolate]` | — | no utilities exist for either property in 4.3.3 |
+| `ms-`/`me-`/`ps-`/`pe-`/`border-s-` | `ml-`/`mr-`/`pl-`/`pr-`/`border-l-` | RTL-first; the inline axis flips, the block axis does not |
+
+Arbitrary **properties** used so far: 3, all in wave 2 — the two bidi ones and
+the nav link's transition, which runs two properties at `--motion-hover` and a
+third at `--motion-fast` in one shorthand. No `transition-*`/`duration-*` pair
+can express that. This is the number T5 tracked; it is small and it is real.
