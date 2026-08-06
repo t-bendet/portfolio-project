@@ -222,7 +222,89 @@ green is a habit, not an enforcement, until the `checks` context is re-added
 as required. There are now **two** contexts to require: `checks` and
 `secrets`. SR-18 is where that decision lives.
 
-## 3b. Styling — Tailwind utility migration: GO, not yet started
+## 3b. Styling — Tailwind utility migration: done, in one PR
+
+**Evaluated and executed 2026-08-06** on branch `tailwind-utility-migration`,
+in seven commits: a token bridge and six waves, each one a rollback unit that
+had to reach zero pixel diff before the next began.
+
+### What shipped
+
+| | `main` @ `625fcc7` | after wave 6 |
+|---|---|---|
+| `web/src/styles/` | 7 files, 1,283 lines | **4 files, 819 lines** |
+| scoped `<style>` blocks | 8 files, 445 lines | **0** |
+| components | 7 | **30** |
+| `class=` attributes | 168 | **120** |
+| shipped CSS | 40,329 B | **27,277 B** (−32%) |
+
+`entry-list.css`, `projects.css` and `reference.css` are gone. `global.css`
+grew (125 → 261) because it gained the `@theme inline` bridge and the record of
+why several things are the way they are. `tokens.css` is byte-identical to
+`main` and was verified so after every wave.
+
+**What stays CSS, by design** — this list is the exclusion accounting from
+`notes-tailwind-verdict.md` §2, unchanged by the outcome:
+
+- `article.css`'s `.article-body …` descendant rules. The markdown renderer
+  emits `h2`, `blockquote`, `pre`, `td` with no class attribute, so there is
+  no element in any template for a utility to sit on. A missing mechanism, not
+  a preference.
+- `.closing-credit` and `.article-body > * + *` are a matched pair — 20px
+  between body children, overridden to 56px for the closing credit, resolved
+  by source order in one file. Utilities have no source order to rely on.
+- `hero.css` — keyframes and the resting-state-first reduced-motion contract.
+- `pre`/`code` forced `direction: ltr`, in `@layer base`. An e2e test asserts
+  the computed value and Shiki's output carries no class.
+- `.note`/`.translator-note*`, applied from MDX by whoever writes an article.
+- `.shell` and `.skip-link`, the two surviving component classes. `.shell` is
+  the one shared 960px measure on three different elements in three files;
+  `.skip-link` is off-screen until focused, which puts it outside what the
+  screenshot oracle can check.
+
+### What it cost
+
+Two objections from the analysis stand, and were accepted rather than refuted.
+There was **no maintenance problem being solved** — seven commits ever to
+`web/src/styles` — and **per-declaration commentary lost its referent**, which
+is why every extracted component carries the prose from the rules it replaced.
+
+That commentary has a measurable price. Tailwind's scanner reads `.astro` and
+`.ts` whole, comments included, so the dead-rule count went **up** while the
+stylesheet shrank by a third: 16 rules / 1,531 B on `main` against 27 / 2,478 B
+now. Five of the new ones are real utilities on `/about/`'s portrait and CV
+branches, switched off rather than wasted. The other nine were emitted from
+comments explaining which utility *not* to write — including a 202-byte rule
+for a property named `…`, compiled from `transition-[…]` in a comment.
+Roughly 600 bytes bought the explanations. Method and full table in
+`notes-tailwind-verdict.md` §4.5.
+
+### Two things a green run does not prove
+
+- **The spacing scale is now rem-based** (`mbs-18` where the rule said 72px).
+  Tal ratified this. The oracle runs at a 16px root, where rem and px agree,
+  so it cannot police the change — accepted, not overlooked.
+- **`/about/`'s portrait and CV never render**, because `web/src/lib/about.ts`
+  returns `null` for both. Their utilities were checked by hand against the
+  declarations they replace. The oracle covers 94.8% of authored class names;
+  this is the rest.
+
+Likewise `[&:hover]:` is mandatory throughout and `hover:` is banned — v4
+wraps `hover:` in `@media (hover: hover)`, which would have deleted the site's
+hover states on every touch device, and no screenshot reports that either.
+
+### The record
+
+`notes-tailwind-verdict.md` is the durable document. §1–2 are the thresholds,
+pre-registered before any estimating. §3 is the no-go analysis and is
+**deliberately left unedited** — it shows what was believed before the call was
+made. §4 is Tal's reversal, the wave plan, the house rules (§4.4) and what
+wave 6 swept (§4.5).
+
+---
+
+Everything below this line is the evaluation as it was written, and is kept
+because its three findings are what the migration was built on.
 
 **Evaluated 2026-08-06** on branch `tailwind-utility-migration`. The analysis
 returned **no-go**; Tal then **reversed it to GO** the same day by ratifying
@@ -243,8 +325,8 @@ refuted: there is no maintenance problem being solved (seven commits ever to
 is why **every extracted component must carry the prose from the rules it
 replaces**. A migration that drops the commentary is a failed migration.
 
-**Nothing under `web/` has changed yet.** The migration is blocked on the
-`@layer base` fix below landing first.
+At the time of writing, nothing under `web/` had changed and the migration was
+blocked on the `@layer base` fix below landing first. It landed as #27.
 
 Three findings from the evaluation are worth acting on independently:
 
@@ -292,7 +374,8 @@ Tailwind
 v4.3.3 has been wired since the scaffold (`@tailwindcss/vite` in
 `web/astro.config.mjs`, `@import 'tailwindcss'` at `web/src/styles/global.css:1`)
 and **no utility is used in markup** — all styling is hand-written
-custom-class CSS. That remains true.
+custom-class CSS. That was true when this was written and is what the
+migration above changed.
 
 The verdict protocol and its pre-registered thresholds are in
 `specs/notes-tailwind-verdict.md`. The constraint that governed everything:
