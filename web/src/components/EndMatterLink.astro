@@ -1,0 +1,36 @@
+---
+// The way back out of an article: one mono link with an accent edge on its
+// reading-start side. Rendered by all three article routes — back to
+// /writing/, to /he/writing/, to /projects/.
+//
+// The edge is bound with `border-s-2` and `border-s-border-strong`, never with
+// a left border, and the 12px of air beside it is `ps-3`, never a left
+// padding. /he/writing/[id]/ renders this device under dir="rtl", where both
+// belong on the right; a physical utility would move the edge to the far side
+// of the word and every LTR screenshot would go on passing.
+//
+// No underline here, unlike the destination links of a case study: these stay
+// on the site, and specs/pages/projects-index.md §2.2's posture is that only
+// leaving it should be loud. The mono face and the muted colour are the whole
+// treatment; the edge carries the affordance.
+//
+// `[&:hover]:` and never `hover:`: Tailwind v4 wraps `hover:` in
+// `@media (hover: hover)`, which would delete this state on every touch
+// device — and no screenshot would show it.
+//
+// The transition is one property at one duration, so it is a `transition-[…]`
+// plus `duration-…` plus `ease-…` triple and not `transition-colors`, which
+// would declare ten properties where the stylesheet declared one.
+
+interface Props {
+  /** The index this article belongs to. */
+  href: string;
+}
+
+const { href } = Astro.props;
+---
+
+<a
+  class="inline-block font-mono text-size-meta text-muted no-underline border-s-2 border-s-border-strong ps-3 transition-[color] duration-(--motion-hover) ease-[ease] motion-reduce:transition-none [&:hover]:text-text"
+  href={href}><slot /></a
+>

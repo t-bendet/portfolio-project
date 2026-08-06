@@ -33,6 +33,7 @@
 // because the offset is part of what this device pins, not something it is
 // content to inherit.
 import { host } from '../lib/projects';
+import MetaLine from './MetaLine.astro';
 
 interface Props {
   repoUrl?: string;
@@ -52,7 +53,7 @@ const hostLabel = 'text-muted ps-2';
 
 {
   (repoUrl || liveUrl) && (
-    <p class="meta-line">
+    <MetaLine>
       {repoUrl && (
         <a class={link} href={repoUrl} rel="noopener">
           repo<span class={hostLabel}>{host(repoUrl)}</span>
@@ -63,6 +64,6 @@ const hostLabel = 'text-muted ps-2';
           live<span class={hostLabel}>{host(liveUrl)}</span>
         </a>
       )}
-    </p>
+    </MetaLine>
   )
 }

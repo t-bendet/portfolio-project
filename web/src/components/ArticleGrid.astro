@@ -1,0 +1,66 @@
+---
+// The deep-dive editorial shell: the grid that the three article routes lay
+// their four regions out on — header, contents, body, end matter.
+// Transcribed from specs/design/prototypes/tooling-deepdive.html.
+//
+// One column by default. The second column only exists when the article
+// earned a contents list (>=3 h2s, specs/pages/writing-article.md §2.2), and
+// only from 900px up; below that the contents render inline, above the body,
+// in their source position.
+//
+// Every directional property binds logically (specs/content-model.md §5
+// rule 4), so the contents column lands on the right under dir="rtl" with no
+// special case. `min-[900px]:gap-x-12` is the COLUMN gap and it flips with
+// the axis; `gap-y-0` is the row gap and does not. A single-value gap utility
+// in place of the pair would put 48px between every region as well, which is
+// not what the prototype does.
+//
+// ── where the placement rules went ────────────────────────────────────────
+//
+// The stylesheet expressed this as `.with-contents > .article-header` and
+// three siblings: a CHILD styled from a class on its PARENT. There is no
+// utility for that, and the parent-state variants are the wrong tool anyway —
+// the templates already compute `hasContents` before they render anything, so
+// the flag is passed to each region and each region carries its own placement.
+// The condition stays where it was decided instead of being re-derived from
+// the DOM.
+//
+// The four placements, so the whole layout is readable in one place even
+// though the utilities live on four elements:
+//
+//   header        both columns, row 1   ArticleHeader.astro
+//   contents      column 1, row 2       Contents.astro (always placed — the
+//                                       component only renders when there IS
+//                                       a contents list, so the condition is
+//                                       already spent by the time it mounts)
+//   body          column 2, row 2       the three article templates, on the
+//                                       <article class="article-body"> that
+//                                       wraps the rendered MDX
+//   end matter    column 2, row 3       EndMatter.astro
+//
+// The body is the one region with no component of its own. `article-body` is
+// a frozen class name (tests/e2e/rtl.spec.ts) and its prose rules stay in
+// article.css, because they style markdown-generated elements that carry no
+// class attribute. Placement is safe to add on top of it: grid-column-start
+// and grid-row-start are disjoint from the two properties that rule set owns
+// on the element itself (max-inline-size, and the margin it gives its
+// children). Checked, not assumed — a utility that touched margin there would
+// land in the same layer as `.article-body > * + *` and the cascade would
+// stop being decided by source order.
+
+interface Props {
+  /** Whether this article earned a contents list — the second column exists only then. */
+  hasContents: boolean;
+}
+
+const { hasContents } = Astro.props;
+---
+
+<div
+  class:list={[
+    'grid grid-cols-[minmax(0,1fr)] gap-y-0',
+    hasContents && 'min-[900px]:grid-cols-[200px_minmax(0,1fr)] min-[900px]:gap-x-12',
+  ]}
+>
+  <slot />
+</div>

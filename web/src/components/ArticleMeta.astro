@@ -7,7 +7,11 @@
 // group (§5). If the dynamic layer is ever switched on, the view count
 // appends as the LAST child of this line and carries its own separator
 // (INV-2); nothing here reserves space for it (INV-1).
+//
+// The row itself — the wrapping mono line these facts sit in — is MetaLine,
+// shared with the destination links of a case study.
 import ChipList from './ChipList.astro';
+import MetaLine from './MetaLine.astro';
 
 interface Props {
   pubDate: Date;
@@ -26,7 +30,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const updatedLabel = lang === 'he' ? 'עודכן' : 'updated';
 ---
 
-<p class="meta-line">
+<MetaLine>
   <time datetime={iso(pubDate)}>{iso(pubDate)}</time>
 
   {
@@ -38,4 +42,4 @@ const updatedLabel = lang === 'he' ? 'עודכן' : 'updated';
   }
 
   {tags.length > 0 && <ChipList tags={tags} />}
-</p>
+</MetaLine>

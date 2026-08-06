@@ -22,7 +22,13 @@
 // before, and the review date below moves with them.
 import Base from '../layouts/Base.astro';
 import { repo } from '../lib/links';
+// The prose rules the section bodies are built from. The masthead that used to
+// live in this stylesheet is ArticleHeader now, and it is passed no
+// `hasContents`: this page is not an article grid, so it must not be given the
+// placement that only makes sense inside one. The review date goes in its slot,
+// where it already sat — after the lede, inside the header block.
 import '../styles/article.css';
+import ArticleHeader from '../components/ArticleHeader.astro';
 // The section device and the label/value row, shared with /about/ and
 // /contact/ — one reference register across the three authored pages.
 import Section from '../components/Section.astro';
@@ -41,16 +47,14 @@ const reviewed = '2026-08';
   description="What runs this site and what each choice cost: static Astro, MDX content in the repository, a Hebrew locale subtree, and a hand-written pipeline."
   section="colophon"
 >
-  <header class="article-header">
-    <h1>colophon</h1>
-    <p class="lede">
-      What runs this site, and what each choice cost. Every claim below is paired with what
-      it gave up.
-    </p>
+  <ArticleHeader
+    title="colophon"
+    lede="What runs this site, and what each choice cost. Every claim below is paired with what it gave up."
+  >
     <p class="reviewed">
       reviewed <time datetime={reviewed}>{reviewed}</time>
     </p>
-  </header>
+  </ArticleHeader>
 
   <Section heading="the static core">
     <div class="article-body">

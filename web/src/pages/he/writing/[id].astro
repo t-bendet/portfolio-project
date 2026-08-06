@@ -9,8 +9,16 @@
 // (specs/content-model.md §4.2).
 import { getCollection, render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
+import ArticleGrid from '../../../components/ArticleGrid.astro';
+import ArticleHeader from '../../../components/ArticleHeader.astro';
 import ArticleMeta from '../../../components/ArticleMeta.astro';
 import Contents from '../../../components/Contents.astro';
+import EndMatter from '../../../components/EndMatter.astro';
+import EndMatterLink from '../../../components/EndMatterLink.astro';
+import Siblings from '../../../components/Siblings.astro';
+// The prose rules for the rendered MDX, and the credit blocks below, which
+// are direct children of the body and are spaced by its own child rule. Both
+// stay in the stylesheet: see the note above the closing credit.
 import '../../../styles/article.css';
 
 export async function getStaticPaths() {
@@ -46,21 +54,38 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
   section="תרגומים"
   sectionLang="he"
 >
-  <div class:list={['article-grid', { 'with-contents': hasContents }]}>
-    <header class="article-header">
-      <h1>{entry.data.title}</h1>
-      <p class="lede">{entry.data.description}</p>
+  <ArticleGrid hasContents={hasContents}>
+    <ArticleHeader
+      title={entry.data.title}
+      lede={entry.data.description}
+      hasContents={hasContents}
+    >
       <ArticleMeta
         pubDate={entry.data.pubDate}
         updatedDate={entry.data.updatedDate}
         tags={entry.data.tags}
         lang="he"
       />
-    </header>
+    </ArticleHeader>
 
     {hasContents && <Contents headings={sections} lang="he" />}
 
-    <article class="article-body">
+    {/* The body keeps its class, and so do the two credit blocks inside it.
+        `.article-body > * + *` puts 20px between every child, and the closing
+        credit overrides that with 56px — the two rules tie on specificity and
+        the second one wins because it is written second. Utilities have no
+        source order to rely on: they land in one layer where Tailwind's sort
+        decides, and either half of that pair moved out would flip the result
+        to the wrong margin on this route alone. So the whole region stays
+        CSS. Only the grid placement is a utility (ArticleGrid.astro), because
+        grid-column-start and grid-row-start are properties neither rule
+        touches. */}
+    <article
+      class:list={[
+        'article-body',
+        hasContents && 'min-[900px]:col-start-2 min-[900px]:row-start-2',
+      ]}
+    >
       {/*
         The opening credit block — required, never conditional, and it
         precedes the first element of the body. CI asserts the ordering, not
@@ -109,23 +134,21 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
       </p>
     </article>
 
-    <footer class="end-matter">
-      <a class="end-matter-link" href="/he/writing/">תרגומים</a>
+    <EndMatter hasContents={hasContents}>
+      <EndMatterLink href="/he/writing/">תרגומים</EndMatterLink>
 
       {
         siblings.length > 0 && (
-          <section class="siblings">
-            <h2 class="siblings-title siblings-title-he">תרגומים נוספים</h2>
-            <ul class="siblings-items">
-              {siblings.map((sibling) => (
-                <li>
-                  <a href={`/he/writing/${sibling.id}/`}>{sibling.data.title}</a>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <Siblings
+            heading="תרגומים נוספים"
+            lang="he"
+            items={siblings.map((sibling) => ({
+              href: `/he/writing/${sibling.id}/`,
+              title: sibling.data.title,
+            }))}
+          />
         )
       }
-    </footer>
-  </div>
+    </EndMatter>
+  </ArticleGrid>
 </Base>

@@ -20,7 +20,12 @@ import Base from '../layouts/Base.astro';
 // unpublished. Absent means absent — no placeholder, no reserved box, no
 // "available on request" (§2.2, §3). See the module for how to turn either on.
 import { portrait, cv } from '../lib/about';
+// The prose rules the bio and the register bodies are built from. The masthead
+// that used to live in this stylesheet is ArticleHeader now, and it is passed
+// no `hasContents`: this page is not an article grid, so it must not be given
+// the placement that only makes sense inside one.
 import '../styles/article.css';
+import ArticleHeader from '../components/ArticleHeader.astro';
 // The section device and the label/value row, shared with /colophon/ and
 // /contact/ — one reference register across the three authored pages.
 import Section from '../components/Section.astro';
@@ -60,14 +65,10 @@ const background: { label: string; value: string }[] = [
   description="Tal Bendet — full stack developer in Tel Aviv. Four years of design-system work at Amdocs, Hebrew translations of technical articles, and the infrastructure behind this site."
   section="about"
 >
-  <header class="article-header">
-    <h1>about</h1>
-
-    <p class="lede">
-      Design systems for four years, translation work on the side, and a site built the
-      hard way on purpose.
-    </p>
-  </header>
+  <ArticleHeader
+    title="about"
+    lede="Design systems for four years, translation work on the side, and a site built the hard way on purpose."
+  />
 
   <div class:list={['bio-slot', { 'with-portrait': portrait !== null }]}>
     {/* Zero reference density here, by §2.3: the person carries this page,
