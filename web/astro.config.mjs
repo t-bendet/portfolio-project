@@ -125,9 +125,6 @@ export default defineConfig({
       { weight: 400, style: 'normal', unicodeRange: LATIN, src: ['./src/assets/fonts/dm-mono-latin-400-normal.woff2'] },
       { weight: 500, style: 'normal', unicodeRange: LATIN, src: ['./src/assets/fonts/dm-mono-latin-500-normal.woff2'] },
     ]),
-    font('Heebo', '--font-heebo', [
-      { weight: '100 900', style: 'normal', unicodeRange: HEBREW, src: ['./src/assets/fonts/heebo-hebrew-wght-normal.woff2'] },
-    ]),
 
     // --- warm temperature (hidden) ---------------------------------------
     // Never preloaded, and never fetched until the theme is actually on: a
@@ -143,9 +140,6 @@ export default defineConfig({
       { weight: 400, style: 'normal', unicodeRange: LATIN, src: ['./src/assets/fonts/ibm-plex-mono-latin-400-normal.woff2'] },
       { weight: 500, style: 'normal', unicodeRange: LATIN, src: ['./src/assets/fonts/ibm-plex-mono-latin-500-normal.woff2'] },
       { weight: 600, style: 'normal', unicodeRange: LATIN, src: ['./src/assets/fonts/ibm-plex-mono-latin-600-normal.woff2'] },
-    ]),
-    font('Frank Ruhl Libre', '--font-frank-ruhl', [
-      { weight: '300 900', style: 'normal', unicodeRange: HEBREW, src: ['./src/assets/fonts/frank-ruhl-libre-hebrew-wght-normal.woff2'] },
     ]),
     font('IBM Plex Sans Hebrew', '--font-plex-hebrew', [
       { weight: 400, style: 'normal', unicodeRange: HEBREW, src: ['./src/assets/fonts/ibm-plex-sans-hebrew-hebrew-400-normal.woff2'] },

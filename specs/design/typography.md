@@ -103,6 +103,36 @@ with their Latin partners; `size-adjust`/`ascent-override` tuning in
 under both `dir` values. No blind percentage is specified here — that would
 be an assumed number, and this spec's rule is verified-or-absent.
 
+**Wired 2026-08-06, half verified.** Measured from the shipped woff2 with
+fontTools (OS/2 `sxHeight`/`unitsPerEm`; hhea ascent/descent), in
+`web/src/styles/fonts-hebrew.css`:
+
+| Pairing | x/em Latin → Hebrew | `size-adjust` | Standing |
+|---|---|---|---|
+| Heebo vs Syne | 0.5000 → 0.5283 | 94.3% (also serves DM Mono, 0.4960) | **QA pending** |
+| Frank Ruhl Libre vs Fraunces | 0.4820 → 0.4680 | 103% | **QA pending** |
+| IBM Plex Sans Hebrew vs IBM Plex Mono | 0.5160 → 0.5160 | none needed | measured |
+
+The `size-adjust` values are ratios, and a ratio is not an optical match —
+they are starting points to adjust *from*, which is what §7.4 asks for. Two
+known sources of drift: Fraunces has an `opsz` axis, so its x-height moves
+with size and the ratio is exact only at the default optical size; Syne is
+used at 400–800 while `sxHeight` describes the default instance.
+
+The **metric overrides are not pending** — they are arithmetic, not taste.
+Each companion is given its Latin partner's line box (Heebo → Syne's
+92.5%/27.5%; Frank Ruhl Libre → Fraunces' 97.8%/25.5%), because a companion
+that claims more vertical space reflows the paragraph when it loads. Heebo's
+raw line box is 1.4688 em against Syne's 1.2000 — 22% taller, and still 16%
+taller after `size-adjust` alone. That reflow is the CLS this pairing risks,
+against a 0.02 budget.
+
+One finding worth keeping: **IBM Plex Sans Hebrew and IBM Plex Mono are
+metrically identical** — x-height, cap-height, ascent and descent all match
+to the digit. §1's claim that they were "designed to harmonize" is now
+measured rather than asserted, and the correct encoding of it is no rule at
+all.
+
 ## 4. Scale — per archetype, tokenized
 
 The scale is the union of the two prototypes' actual values (prototype-exact

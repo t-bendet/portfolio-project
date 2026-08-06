@@ -507,12 +507,27 @@ initial value, so it would change every warm glyph.
   companion is never reached (`typography.md` §3). Every family sets
   `fallbacks: []`; the generic tail is written once, in the bridge.
 
-**Still owed:** `size-adjust`/`ascent-override` for the Hebrew companions
-(`typography.md` §3, §7.4). Deliberately not guessed — that spec is
-verified-or-absent and the numbers are gated on visual QA of mixed-script
-pages under both `dir` values. Astro's automatic metric fallback would not
-have discharged it: it tunes the generic fallback, not the Latin/Hebrew
-pairing.
+**Metric compensation is wired, and half of it is verified.** The numbers and
+their standing are in `typography.md` §3; the implementation is
+`web/src/styles/fonts-hebrew.css`. The metric overrides are arithmetic and
+settled; the two `size-adjust` values are measured starting points that still
+owe §7.4's QA pass, and they are marked `REVIEW(Tal)` in the file.
+
+It forced a structural change worth knowing about: **Astro's font API cannot
+express these descriptors.** Its `FamilyProperties` surface is display /
+stretch / featureSettings / variationSettings / unicodeRange — it computes
+`size-adjust` and the overrides internally, but only for the fallback faces
+it generates, which are switched off here. So Heebo and Frank Ruhl Libre are
+declared by hand in CSS and left `fonts[]` entirely; they keep their real
+family names because nothing hashes them any more, which is why the bridge
+names them as plain families while the other five stay variables. IBM Plex
+Sans Hebrew needs no adjustment, so it stayed in the API.
+
+Heebo's preload became an explicit `<link>` in `Base.astro` as a
+consequence, since `<Font>` no longer knows about it. The URL comes from a
+frontmatter import of the same asset the stylesheet resolves, so the two
+cannot drift, and it carries `crossorigin` — fonts are fetched in CORS mode
+even same-origin, and a preload without it warms nothing.
 
 **The RTL screenshot baseline was re-captured**, and this is the one case
 where that is correct rather than alarming: fonts change every glyph, so the

@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './tokens.css';
+@import './fonts-hebrew.css';
 @import './hero.css';
 
 /*
@@ -123,16 +124,23 @@
  * Hebrew companion second, generic last. Latin never reaches the companion
  * because each face carries a unicode-range; Hebrew never reaches the generic
  * because the companion claims it first.
+ *
+ * Two companions are named as plain families rather than through a variable:
+ * 'Heebo' and 'Frank Ruhl Libre' are declared by hand in fonts-hebrew.css so
+ * they can carry `size-adjust` and the metric overrides, which Astro's font
+ * API cannot express. They keep their real names precisely because they no
+ * longer go through Astro — nothing hashes them, so there is nothing to
+ * bridge. 'IBM Plex Sans Hebrew' still does, and still reads as a variable.
  */
 :root {
-  --font-display: var(--font-syne), var(--font-heebo), sans-serif;
-  --font-body: var(--font-syne), var(--font-heebo), sans-serif;
-  --font-mono: var(--font-dm-mono), var(--font-heebo), monospace;
+  --font-display: var(--font-syne), 'Heebo', sans-serif;
+  --font-body: var(--font-syne), 'Heebo', sans-serif;
+  --font-mono: var(--font-dm-mono), 'Heebo', monospace;
 }
 
 [data-theme='warm'] {
-  --font-display: var(--font-fraunces), var(--font-frank-ruhl), serif;
-  --font-body: var(--font-fraunces), var(--font-frank-ruhl), serif;
+  --font-display: var(--font-fraunces), 'Frank Ruhl Libre', serif;
+  --font-body: var(--font-fraunces), 'Frank Ruhl Libre', serif;
   --font-mono: var(--font-plex-mono), var(--font-plex-hebrew), monospace;
 }
 

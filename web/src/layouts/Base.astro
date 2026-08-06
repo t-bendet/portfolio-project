@@ -1,5 +1,6 @@
 ---
 import { Font } from 'astro:assets';
+import heeboUrl from '../assets/fonts/heebo-hebrew-wght-normal.woff2';
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -51,11 +52,28 @@ const dir = locale === 'he' ? 'rtl' : 'ltr';
     */}
     <Font cssVariable="--font-syne" preload />
     <Font cssVariable="--font-dm-mono" preload />
-    <Font cssVariable="--font-heebo" preload={dir === 'rtl'} />
     <Font cssVariable="--font-fraunces" />
     <Font cssVariable="--font-plex-mono" />
-    <Font cssVariable="--font-frank-ruhl" />
     <Font cssVariable="--font-plex-hebrew" />
+    {/*
+      Heebo's preload is written out rather than emitted by <Font>, because
+      Heebo is declared by hand in fonts-hebrew.css to carry `size-adjust`
+      and the metric overrides (Astro's font API cannot express those). The
+      URL comes from the frontmatter import, so it is the same hashed asset
+      the stylesheet resolves to — not a second copy, and not a path that can
+      drift from it.
+
+      `crossorigin` is not optional on a font preload even same-origin: fonts
+      are fetched in CORS mode, and a preload without it is a second,
+      unmatched request rather than a warmed cache entry.
+
+      Frank Ruhl Libre is hand-declared too and deliberately gets no preload
+      — it belongs to the warm theme, which is never on at first paint
+      (performance-budgets.md §4.2).
+    */}
+    {dir === 'rtl' && (
+      <link rel="preload" as="font" type="font/woff2" href={heeboUrl} crossorigin />
+    )}
     <script is:inline>
       // Persisted theme must apply before first paint (specs/design/tokens.md §2).
       if (localStorage.getItem('theme') === 'warm') {

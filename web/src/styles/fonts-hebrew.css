@@ -1,0 +1,120 @@
+/*
+ * ── the two adjusted Hebrew companions ───────────────────────────────────
+ *
+ * Heebo and Frank Ruhl Libre are declared by hand here rather than through
+ * `fonts[]` in astro.config.mjs, for one reason: Astro's font API cannot
+ * express `size-adjust` or the metric overrides on a real face. Its
+ * FamilyProperties surface is display / stretch / featureSettings /
+ * variationSettings / unicodeRange. It does compute these descriptors
+ * internally, but only for the fallback faces it generates — and those are
+ * switched off here (`fallbacks: []`, see astro.config.mjs for why).
+ *
+ * The third companion, IBM Plex Sans Hebrew, stays in the fonts API: it needs
+ * no adjustment at all. See below.
+ *
+ * The relative `url()`s are resolved and hashed by Vite because this file is
+ * imported through global.css, so these faces ship on the same terms as the
+ * ones Astro emits — content-hashed, immutable, and served from _astro/.
+ *
+ * ── why any of this ──────────────────────────────────────────────────────
+ *
+ * Every Hebrew page renders two scripts from two files on the same line: the
+ * `T://bendet` mark stays a Latin run inside a Hebrew eyebrow
+ * (typography.md §6), and code, numerals and paths stay LTR inside Hebrew
+ * prose (§7.2). Two faces at one font-size do not render at the same
+ * apparent size or claim the same vertical space, so the pairing has to be
+ * compensated. typography.md §3 owes this work; §7.4 makes it a required QA
+ * step.
+ *
+ * ── the numbers, and their standing ──────────────────────────────────────
+ *
+ * Measured from the shipped woff2 with fontTools — OS/2 sxHeight over
+ * unitsPerEm per face, hhea ascent/descent for the line box:
+ *
+ *   face                  x/em     asc      desc     line box
+ *   Syne                  0.5000   0.9250   0.2750   1.2000 em
+ *   DM Mono               0.4960   0.9920   0.3100   1.3020 em
+ *   Heebo                 0.5283   1.0479   0.4209   1.4688 em
+ *   Fraunces              0.4820   0.9780   0.2550   1.2330 em
+ *   Frank Ruhl Libre      0.4680   0.9570   0.3340   1.2910 em
+ *   IBM Plex Mono         0.5160   1.0250   0.2750   1.3000 em
+ *   IBM Plex Sans Hebrew  0.5160   1.0250   0.2750   1.3000 em
+ *
+ * `size-adjust` values below are x-height ratios and are **starting points
+ * pending the §7.4 QA pass**, not verified numbers — matching x-heights
+ * numerically is convention, not optics; stroke weight and counter size
+ * still decide whether a mixed line reads as one voice. Two specific reasons
+ * to expect drift: Fraunces carries an `opsz` axis, so its x-height changes
+ * with size and the ratio is exact only at the default optical size; and
+ * Syne is used at 400-800 while sxHeight describes the default instance.
+ *
+ * The metric overrides are firmer. They are arithmetic: they make each
+ * companion claim exactly the vertical space its Latin partner claims, which
+ * is what stops a Hebrew run from demanding a taller line box and reflowing
+ * the paragraph when the font loads. That reflow is the CLS this pairing
+ * risks, against a budget of 0.02 — effectively zero
+ * (performance-budgets.md §2).
+ *
+ * REVIEW(Tal): the two `size-adjust` values. Render a mixed-script page at
+ * both `dir` values and adjust until the scripts read as one voice; §7.4
+ * names the comparison to make for the warm pair. The overrides should not
+ * need to move.
+ */
+
+/*
+ * Heebo — one face, two Latin partners.
+ *
+ * Heebo is the companion in BOTH dark stacks: beside Syne in
+ * --font-display/--font-body, and beside DM Mono in --font-mono. A
+ * @font-face descriptor is per-face, so one `size-adjust` has to serve both.
+ * It can, because Syne (0.5000) and DM Mono (0.4960) are 0.8% apart:
+ * 94.3% splits them, landing within 0.4% of each. Declaring Heebo twice
+ * under two family names would buy that 0.4% and cost a second face; it is
+ * not worth it, and this is the note that says so rather than leaving the
+ * next reader to re-derive it.
+ *
+ * Overrides are Syne's line box, not DM Mono's — the mono slots are
+ * eyebrows, chrome and code, none of which set long-form Hebrew prose.
+ */
+@font-face {
+  font-family: 'Heebo';
+  src: url('../assets/fonts/heebo-hebrew-wght-normal.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+  size-adjust: 94.3%;
+  ascent-override: 92.5%;
+  descent-override: 27.5%;
+  line-gap-override: 0%;
+}
+
+/*
+ * Frank Ruhl Libre — warm body/display, beside Fraunces.
+ *
+ * The one companion that needs scaling UP: its letters are smaller relative
+ * to the em than Fraunces' x-height, not larger.
+ */
+@font-face {
+  font-family: 'Frank Ruhl Libre';
+  src: url('../assets/fonts/frank-ruhl-libre-hebrew-wght-normal.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0307-0308, U+0590-05FF, U+200C-2010, U+20AA, U+25CC, U+FB1D-FB4F;
+  size-adjust: 103%;
+  ascent-override: 97.8%;
+  descent-override: 25.5%;
+  line-gap-override: 0%;
+}
+
+/*
+ * IBM Plex Sans Hebrew is deliberately absent from this file.
+ *
+ * It and IBM Plex Mono are metrically identical — x-height 0.5160,
+ * cap-height 0.6980, ascent 1.0250, descent 0.2750, all to the digit. Every
+ * adjustment would be 100% / an identity. typography.md §1 called them "the
+ * same superfamily, designed to harmonize"; that is now measured rather than
+ * asserted, and the right encoding of it is no rule at all. It stays in
+ * astro.config.mjs's fonts[] with the other unadjusted families.
+ */
