@@ -1,0 +1,112 @@
+---
+// The project card (specs/pages/projects-index.md §2.1-2.2), rendered on / and
+// on /projects/. Lives inside CardGrid.astro, which owns the track geometry.
+//
+// This component is where §2.2's disclosure test stops being a convention.
+// The test — "no two cards with visually identical affordances produce
+// different navigation outcomes" — is a property of the card, so there has to
+// be exactly one card; src/styles/projects.css said so and enforced what a
+// stylesheet can enforce, which is the treatment. The markup, the rel, the
+// aria wiring and the destination lookup were duplicated in both templates
+// under a comment asking the next editor to keep them byte-identical. That
+// comment was the enforcement mechanism. Here the markup and the policy are
+// one file, so a second card that looks the same and behaves differently is
+// not a thing a page can write by accident.
+//
+// The card is not a link; only its title is. The prototype's card-wide hover
+// is dropped for that reason — it would advertise an affordance that is not
+// there.
+//
+// ── the hairline ───────────────────────────────────────────────────────────
+//
+// The prototype's card idiom (`.cards { gap: 1px; background: var(--border) }`
+// over filled cards) is deliberately not used: under auto-fill the border
+// background paints the *empty* tracks too, producing the layout-with-holes
+// §2.3 rejects. The hairline moves onto the card's own block-end edge instead.
+// `border-be border-be-border` is the logical pair — the block axis does not
+// flip under dir="rtl", but naming it logically keeps the whole device on one
+// vocabulary.
+//
+// ── title, description and host, and why they are not shared ───────────────
+//
+// These three repeat declarations that the home page's .row-* rules carry, and
+// that entry-list.css's .entry-title carries again. That repetition is the
+// house posture, stated at projects.css:46-49: each archetype device owns its
+// own title, description and meta treatment, and they are not to be
+// consolidated. Extraction does not change it. Sharing ONE card between two
+// pages is the single-definition-point property the specs ask for; sharing a
+// title treatment between three unrelated devices is coupling, and the specs
+// forbid it explicitly.
+//
+// ── the title's underline, which is three utilities and has to be ──────────
+//
+// `.card-title` set `text-decoration: none` and `.card-title:hover` set
+// `text-decoration: underline`. Both are SHORTHANDS, and the shorthand also
+// resets decoration colour to currentcolor and thickness to auto. The
+// `no-underline` and `underline` utilities set the line and nothing else, so
+// on their own the rule would keep global.css's 1px --border-strong decoration
+// instead of a currentcolor hairline at the browser's own thickness.
+// `decoration-current decoration-auto` restores what the shorthand reset; they
+// sit unprefixed because the resting shorthand reset them too, where the line
+// is none and they cannot be seen. This exact omission cost 61 pixels in this
+// migration's pilot, on one page, and it is the reason the pilot was run.
+//
+// `[&:hover]:` and never `hover:`: Tailwind v4 wraps `hover:` in
+// `@media (hover: hover)`, dropping the state on touch devices — where no
+// screenshot can catch it. The two hover utilities out-specify the resting
+// ones (`.a:hover` over `.a`), so the branch resolves on specificity and not
+// on the emit order, which is not ours to control.
+//
+// ── the destination ────────────────────────────────────────────────────────
+//
+// Where a card links, and whether it discloses a host, is `destination()` in
+// src/lib/projects — one implementation, because that function is the rule
+// (§2.2, and its own header comment). The card calls it rather than taking
+// href and host as props, so there is no call site left that could ask it
+// differently, or pass a hand-computed answer, or forget to ask.
+//
+// The host is bound with aria-describedby rather than merely set beside the
+// title, so it reaches someone navigating by links: §2.2's test is about what
+// a visitor can tell BEFORE the click, and a span outside the anchor tells
+// only sighted ones. `rel="noopener"` and the description are set from the
+// same condition on purpose — an outbound card has both, an inward card has
+// neither.
+import type { CollectionEntry } from 'astro:content';
+import StackChips from './StackChips.astro';
+import { destination } from '../lib/projects';
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+}
+
+const { entry } = Astro.props;
+const { href, host } = destination(entry);
+const hostId = `card-host-${entry.id}`;
+---
+
+<li class="pbs-5 pbe-5 border-be border-be-border">
+  <a
+    class="inline-block text-size-lede font-bold text-text-strong no-underline decoration-current decoration-auto [&:hover]:underline [&:hover]:underline-offset-[0.2em]"
+    href={href}
+    rel={host === null ? undefined : 'noopener'}
+    aria-describedby={host === null ? undefined : hostId}
+  >
+    {entry.data.title}
+  </a>
+
+  <p class="mbs-1.5 text-size-meta text-muted">{entry.data.description}</p>
+
+  {/* The outbound card names where it goes; the inward card has nothing extra
+      to disclose (§2.2). */}
+  {
+    host !== null && (
+      <span class="block mbs-2 font-mono text-size-eyebrow text-muted" id={hostId}>
+        {host}
+      </span>
+    )
+  }
+
+  {/* Chip placement is the caller's (StackChips.astro): mbs-3 is the 12px that
+      projects.css's `.card .stack-chips` rule used to reach in and set. */}
+  <StackChips stack={entry.data.stack} class="mbs-3" />
+</li>

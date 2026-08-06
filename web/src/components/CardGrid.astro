@@ -1,0 +1,49 @@
+---
+// The card grid (specs/pages/projects-index.md §2.3) — the overview
+// archetype's native pattern, rendered on / and on /projects/.
+//
+// It is a component and not a class so the two call sites cannot drift.
+// src/styles/projects.css opened with the reason and the reason is unchanged:
+// §2.2's disclosure test — "no two cards with visually identical affordances
+// produce different navigation outcomes" — is a property of the card, so there
+// has to be exactly one card. Holding the rules in one stylesheet only ever
+// got half of that; the DOM order and the class names still lived twice, kept
+// the same by a comment asking the next editor to keep them that way. One
+// component is the other half, and it is structural rather than advisory:
+// there is one <ul>, one <li>, one set of affordances, and no page can spell a
+// second.
+//
+// ── auto-fill, not auto-fit, and the difference is load-bearing ────────────
+//
+// auto-fill keeps the empty tracks, so two cards render at track width and
+// stay start-aligned; auto-fit collapses them and two cards stretch across the
+// measure — the exact failure §2.3 forbids ("two cards must not stretch to
+// fill a three-column row"). auto-fit is the more commonly typed of the two,
+// so a future edit to it will look like a no-op and will not be.
+//
+// That paragraph used to sit against the `grid-template-columns` declaration
+// it explains, at projects.css:18-23. There is no utility spelling for
+// repeat()/minmax(), so the whole track definition is now one arbitrary-value
+// token in the class attribute below — less legible than the declaration was,
+// and this comment is the compensation. Anyone editing that token is editing
+// the thing this paragraph is about.
+//
+// ── the rest of the grid ───────────────────────────────────────────────────
+//
+// `gap-x-8 gap-y-0` is the old `gap: 0 32px`: a column gutter and no row
+// gutter. Rows need none, because each card draws its own hairline at its
+// block-end edge (Card.astro).
+//
+// `justify-start` compiles to `justify-content: flex-start` rather than to the
+// `start` keyword the stylesheet wrote. The CSS Box Alignment spec defines
+// flex-start as behaving exactly as start outside a flex container, so in a
+// grid container the two are the same declaration under two names; and 4.3.3
+// has no arbitrary-value spelling for this property, so there is no third
+// option to prefer.
+---
+
+<ul
+  class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] justify-start gap-x-8 gap-y-0 list-none m-0 p-0"
+>
+  <slot />
+</ul>

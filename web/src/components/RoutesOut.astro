@@ -1,0 +1,20 @@
+---
+// The overview index idiom, device 7 of 8: the routes out, part one of two —
+// the row they sit in. See RouteOutLink.astro for the link itself and
+// IndexHeader.astro for the family rationale.
+//
+// What there is to read right now — computed at build time from what actually
+// exists. A list of what is, not of what is missing: every index builds this
+// row by asking its sibling collections whether they have anything, so a
+// destination is offered because it has content and never because the page
+// would look bare without it. /projects/ keeps /about/ unconditional, which is
+// what holds specs/navigation.md §7.2's no-dead-ends rule true while both
+// collections are empty — the state the site is in today.
+//
+// `gap: 8px 24px` is row then column, so it is `gap-y-2 gap-x-6`: the wide gap
+// is the one between links on a line, the narrow one is between wrapped rows.
+// Reading those two the wrong way round is a change nobody would call a bug
+// and nobody would call intended either.
+---
+
+<ul class="flex flex-wrap gap-x-6 gap-y-2 list-none m-0 p-0 mbs-8"><slot /></ul>

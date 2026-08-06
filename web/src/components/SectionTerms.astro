@@ -1,0 +1,46 @@
+---
+// The overview index idiom, device 6 of 8: the section's terms, in the callout
+// idiom the archetypes already own (specs/design/palette.md §7.3). Not an
+// apology, and not about emptiness. See IndexHeader.astro for the family
+// rationale.
+//
+// It renders in the empty state on all three indexes, and each one says
+// something different: /writing/ states what belongs and what does not,
+// /he/writing/ states the licence condition, /projects/ gets one line because
+// on that page the callout is a formality. Same device, three sets of terms —
+// a slot, not a prop.
+//
+// ── the two temperatures ──────────────────────────────────────────────────
+//
+// `[data-theme='warm'] .terms` was the only theme-conditional rule in the
+// stylesheet, and it is the first use of the `warm:` custom variant that
+// global.css declares as `([data-theme='warm'] &)`. It compiles to
+// `[data-theme='warm'] .warm\:bg-badge-2`, which is the original selector with
+// a different class name in it — same descendant shape, same two-class
+// specificity, so it beats the resting `bg-surface-inset` on specificity and
+// not on emit order. That distinction is the point: this pair is the one place
+// in the family where two fills target one element, and it resolves the way
+// the stylesheet did rather than the way Tailwind's sort happens to fall.
+//
+// The attribute is on <html>, set before first paint by the inline script in
+// Base.astro, so the variant is a plain ancestor match with nothing to
+// coordinate.
+//
+// ── the edges ─────────────────────────────────────────────────────────────
+//
+// `padding: 20px 24px` is 20px on the block axis and 24px on the inline one,
+// which is `pbs-5 pbe-5 ps-6 pe-6` and not the other way round.
+//
+// The 3px accent edge is `border-inline-start`, so under /he/writing/'s
+// dir="rtl" it draws on the right, where the reading starts. `border-l-` would
+// have put it on the left on both pages and nothing would have failed.
+//
+// `[&>*+*]:mbs-3` is the `.terms > * + *` rule: 12px between the paragraphs,
+// none above the first, and the callout does not care how many there are.
+---
+
+<div
+  class="mbs-10 pbs-5 pbe-5 ps-6 pe-6 bg-surface-inset warm:bg-badge-2 border-s-[3px] border-s-accent-2 rounded-(--radius-s) text-size-meta leading-body text-muted max-inline-[64ch] [&>*+*]:mbs-3"
+>
+  <slot />
+</div>

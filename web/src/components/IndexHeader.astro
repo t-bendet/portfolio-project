@@ -1,0 +1,50 @@
+---
+// The overview archetype's index idiom, device 1 of 8: the page header — the
+// section title with a rule under it, and whatever standing statements the
+// section owns beneath that. Rendered by /writing/, /he/writing/ and
+// /projects/ (which takes the header and the empty state from this family, and
+// its card grid from projects.css).
+//
+// ── why this family is components ────────────────────────────────────────
+//
+// entry-list.css opened by explaining that it was ONE stylesheet "so the
+// indexes cannot drift — a Hebrew index that looked second-class would break
+// specs/pages/translations-index.md §5". That is a correctness property, not a
+// filing convention, and utilities written inline at the call sites would have
+// spent it: the same token string restated at three call sites is three places
+// the indexes can drift apart from each other, with nothing to notice.
+//
+// So the stylesheet became a component set rather than a set of class
+// attributes. A component enforces the shared device at the markup level; the
+// stylesheet only enforced it by convention, and inline utilities would not
+// have enforced it at all (specs/notes-tailwind-verdict.md §4.1, point 7).
+// Eight files for fourteen rules looks like a lot until you count call sites:
+// there are eleven of them across the three indexes, and each one now names a
+// device instead of restating one.
+//
+// ── logical properties, throughout the family ─────────────────────────────
+//
+// `pbe`/`pbs` and `border-be` on the block axis, `ps`/`pe` and `border-s` on
+// the inline axis, never the physical `pl`/`pr`/`border-l`. Under dir="rtl"
+// the inline axis flips and the block axis does not, so every edge lands on
+// the reading start without a special case. That is what makes /he/writing/
+// the same page as /writing/ rather than a mirrored port of it, and it is the
+// one thing in this family that fails silently: the accent edge on the terms
+// callout would simply sit on the wrong side, on a page nobody reads in a
+// hurry.
+//
+// The h1's five type utilities are the display face at --size-h1: this is the
+// archetype's title, not a heading level that happens to come first.
+
+interface Props {
+  /** The section title. `lang`/`dir` come from the layout's locale, never from here. */
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<header class="pbe-8 border-be border-be-border">
+  <h1 class="font-display text-size-h1 font-bold leading-display tracking-display text-text-strong">{title}</h1>
+  <slot />
+</header>

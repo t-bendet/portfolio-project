@@ -20,7 +20,6 @@ import Contents from '../../components/Contents.astro';
 import ProjectDestinations from '../../components/ProjectDestinations.astro';
 import StackChips from '../../components/StackChips.astro';
 import '../../styles/article.css';
-import '../../styles/projects.css';
 
 export async function getStaticPaths() {
   const entries = await getCollection('projects', ({ data }) => !data.draft);

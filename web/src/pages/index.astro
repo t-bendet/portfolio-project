@@ -5,11 +5,12 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import HeroMark from '../components/HeroMark.astro';
-import StackChips from '../components/StackChips.astro';
 // The card is one device wherever it appears (specs/pages/projects-index.md
-// §2.2); the stylesheet and the destination rule are shared with /projects/.
-import { destination } from '../lib/projects';
-import '../styles/projects.css';
+// §2.2), and now one component: Card.astro carries the markup, the disclosure
+// wiring and the destination rule that / and /projects/ used to spell out
+// twice each.
+import Card from '../components/Card.astro';
+import CardGrid from '../components/CardGrid.astro';
 
 const writing = (await getCollection('writing', ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -63,34 +64,15 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
       projects.length > 0 && (
         <section class="block">
           <h2 class="block-title">selected projects</h2>
-          <ul class="cards">
-            {projects.map((project) => {
-              const { href, host } = destination(project);
-              // aria-describedby, so the host reaches a reader navigating by
-              // links — §2.2's test is what a visitor can tell before the
-              // click, and a span outside the anchor tells only sighted ones.
-              const hostId = `card-host-${project.id}`;
-              return (
-                <li class="card">
-                  <a
-                    class="card-title"
-                    href={href}
-                    rel={host === null ? undefined : 'noopener'}
-                    aria-describedby={host === null ? undefined : hostId}
-                  >
-                    {project.data.title}
-                  </a>
-                  <p class="card-desc">{project.data.description}</p>
-                  {host !== null && (
-                    <span class="card-host" id={hostId}>
-                      {host}
-                    </span>
-                  )}
-                  <StackChips stack={project.data.stack} class="mbs-3" />
-                </li>
-              );
-            })}
-          </ul>
+          {/* The card and its grid are shared with /projects/ — one component,
+              because §2.2's disclosure test is written across the site. Both
+              pages used to hold a copy of this markup, kept identical by
+              agreement. */}
+          <CardGrid>
+            {projects.map((project) => (
+              <Card entry={project} />
+            ))}
+          </CardGrid>
           <a class="block-link" href="/projects/">
             projects
           </a>
@@ -131,8 +113,9 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
   }
 
   /* The card grid, the stack chip and the destination host live in
-     src/styles/projects.css — one device across / and /projects/. What is
-     left here is the home page's own composition. */
+     src/components/CardGrid.astro, Card.astro and StackChips.astro — one
+     device across / and /projects/. What is left here is the home page's own
+     composition. */
   .rows {
     list-style: none;
     margin: 0;

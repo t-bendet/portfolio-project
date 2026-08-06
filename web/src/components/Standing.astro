@@ -1,0 +1,21 @@
+---
+// The overview index idiom, device 2 of 8: a standing statement.
+// See IndexHeader.astro for why this family is components at all, and for the
+// logical-property rule that binds every file in it.
+//
+// Permanent content, not empty-state copy: it renders identically whether
+// there are zero entries or fifty (specs/pages/writing-index.md §2). That is
+// the whole reason the empty state can be this page minus its list rather than
+// a page about its own emptiness.
+//
+// /he/writing/ carries three of these — what the section holds, that credit is
+// not optional, and the invitation — one after another. A device that appears
+// three times on one page and once on two others is exactly the thing that
+// should not be a repeated class attribute.
+//
+// 56ch, narrower than the 64ch the entry descriptions and the terms callout
+// take. This is the archetype's lede measure and it is deliberately the
+// shortest line on the page.
+---
+
+<p class="mbs-5 text-size-lede leading-tight text-text max-inline-[56ch]"><slot /></p>
