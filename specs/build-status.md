@@ -287,6 +287,29 @@ unusable — twice red on jobs that never ran a step, once absent entirely. The
 gate is worth having; that failure rate is the argument for `enforce_admins`
 staying off, and it is a fact about the gate's design rather than bad luck.
 
+**PR #33 was merged with `--admin` on 2026-08-07, under the same conditions.**
+GitHub Actions was in `major_outage` (Actions and Pages both, per
+githubstatus.com) and **no run was created at all** for the branch — `gh run
+list --branch theme-incantation` returned empty, so neither context so much as
+appeared. That is the fourth such incident in two days.
+
+Every step of both workflows was run locally first and is listed in the PR
+body: the four design gates, `astro check`, `api typecheck`, `prisma migrate
+deploy` and the api tests against `postgres:18.4-alpine`, both `docker build`s,
+Caddyfile validation against the pinned image, `scripts/sec.sh` end to end
+(both halves), and the e2e stage at 19/19 with the RTL baseline unchanged.
+
+Two things worth carrying forward from doing that by hand. Running the sec
+stage locally is what **found** the js-yaml advisory above — an outage-driven
+manual pass caught something the automated gate would have caught a day later,
+and the tree was red before this PR touched it. And reproducing obligation 2
+locally needs a non-default port: a host Postgres bound to `127.0.0.1:5432`
+wins the loopback race against Docker's wildcard bind, so `migrate deploy`
+authenticates against the laptop's own database and fails `P1010` while the
+container sits there healthy. That is a laptop-only trap — CI's service
+container has no such conflict — but it costs twenty minutes to diagnose the
+second time as well as the first.
+
 ## 3b. Styling — Tailwind utility migration: done, in one PR
 
 **Evaluated and executed 2026-08-06** on branch `tailwind-utility-migration`,
