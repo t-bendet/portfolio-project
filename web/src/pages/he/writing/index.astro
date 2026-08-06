@@ -8,6 +8,7 @@
 // NOT a translation of the English one (§4).
 import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
+import ChipList from '../../../components/ChipList.astro';
 import '../../../styles/entry-list.css';
 
 const entries = (await getCollection('translations', ({ data }) => !data.draft)).sort(
@@ -79,13 +80,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
                   legible as translation work (§2.1). A Latin run inside an
                   RTL row — isolated so it cannot misorder (§2.2). */}
               <bdi lang="en">{entry.data.original.author}</bdi>
-              {entry.data.tags.length > 0 && (
-                <ul class="chips">
-                  {entry.data.tags.map((tag) => (
-                    <li class="chip">{tag}</li>
-                  ))}
-                </ul>
-              )}
+              {entry.data.tags.length > 0 && <ChipList tags={entry.data.tags} />}
             </p>
           </li>
         ))}

@@ -23,7 +23,11 @@
 import Base from '../layouts/Base.astro';
 import { repo } from '../lib/links';
 import '../styles/article.css';
-import '../styles/reference.css';
+// The section device and the label/value row, shared with /about/ and
+// /contact/ — one reference register across the three authored pages.
+import Section from '../components/Section.astro';
+import RefRows from '../components/RefRows.astro';
+import RefRow from '../components/RefRow.astro';
 
 // A review date, not a build date (§2.2): a build timestamp would change on
 // every deploy without anyone checking anything, and would assert a freshness
@@ -48,8 +52,7 @@ const reviewed = '2026-08';
     </p>
   </header>
 
-  <section class="section">
-    <h2>the static core</h2>
+  <Section heading="the static core">
     <div class="article-body">
       <p>
         Astro 7 with static output and no adapter: every public page is HTML on disk before
@@ -67,10 +70,9 @@ const reviewed = '2026-08';
         written before it.
       </p>
     </div>
-  </section>
+  </Section>
 
-  <section class="section">
-    <h2>content and language</h2>
+  <Section heading="content and language">
     <div class="article-body">
       <p>
         Articles and translations are MDX files in the repository, versioned alongside the
@@ -91,10 +93,9 @@ const reviewed = '2026-08';
         easier to read than a half-kept promise.
       </p>
     </div>
-  </section>
+  </Section>
 
-  <section class="section">
-    <h2>the pipeline</h2>
+  <Section heading="the pipeline">
     <div class="article-body">
       <p>
         One workflow runs on every pull request: typecheck across both packages, the API's
@@ -115,10 +116,9 @@ const reviewed = '2026-08';
         an opaque permissions error.
       </p>
     </div>
-  </section>
+  </Section>
 
-  <section class="section">
-    <h2>the record</h2>
+  <Section heading="the record">
     <div class="article-body">
       <p>
         The site is built from a public repository, and the decisions behind it were argued
@@ -128,21 +128,33 @@ const reviewed = '2026-08';
         not depend on anyone reading them.
       </p>
     </div>
-    <ul class="ref-rows pointers">
-      <li class="ref-row">
-        <span class="ref-label">repository</span>
-        <span class="ref-value">
-          <a href={repo} rel="noopener">github.com/t-bendet/portfolio-project</a>
+    {/* The pointer anchors carry their own treatment — text-strong, no
+        underline, and a rule under them instead — because in the value slot a
+        default link would read as a third weight of text. `[&:hover]:` and
+        never `hover:`, which Tailwind wraps in `@media (hover: hover)` and so
+        would drop the state on touch. */}
+    <RefRows class="mbs-8">
+      <RefRow>
+        <span class="font-mono text-size-label tracking-label uppercase text-muted">
+          repository
         </span>
-      </li>
-      <li class="ref-row">
-        <span class="ref-label">decisions</span>
-        <span class="ref-value">
+        <span class="m-0 text-size-meta leading-body text-text">
+          <a
+            class="text-text-strong no-underline border-be border-be-border-strong [&:hover]:border-be-text-strong"
+            href={repo}
+            rel="noopener">github.com/t-bendet/portfolio-project</a>
+        </span>
+      </RefRow>
+      <RefRow>
+        <span class="font-mono text-size-label tracking-label uppercase text-muted">
+          decisions
+        </span>
+        <span class="m-0 text-size-meta leading-body text-text">
           <code>specs/</code> in the repository, and the commit history behind it
         </span>
-      </li>
-    </ul>
-  </section>
+      </RefRow>
+    </RefRows>
+  </Section>
 </Base>
 
 <style>
@@ -153,19 +165,5 @@ const reviewed = '2026-08';
     font-family: var(--font-mono);
     font-size: var(--size-eyebrow);
     color: var(--muted);
-  }
-
-  .pointers {
-    margin-block-start: 32px;
-  }
-
-  .pointers a {
-    color: var(--text-strong);
-    text-decoration: none;
-    border-block-end: 1px solid var(--border-strong);
-  }
-
-  .pointers a:hover {
-    border-block-end-color: var(--text-strong);
   }
 </style>

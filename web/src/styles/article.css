@@ -90,27 +90,6 @@
   color: var(--muted);
 }
 
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-/* Non-linking, and styled so they do not imply a destination — tag routes are
-   deferred (specs/routes/sitemap.md §4). */
-.chip {
-  font-family: var(--font-mono);
-  font-size: var(--size-label);
-  letter-spacing: var(--track-label);
-  color: var(--muted);
-  background-color: var(--chip-bg);
-  padding: 3px 8px;
-  border-radius: var(--radius-s);
-}
-
 /* ── contents ──────────────────────────────────────────────────────────── */
 
 /* Below the sidebar breakpoint this renders inline, above the body, in its

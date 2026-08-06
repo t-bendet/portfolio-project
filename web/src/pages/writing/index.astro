@@ -8,6 +8,7 @@
 // No pagination, no excerpts beyond `description`, no view counts (§5).
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import ChipList from '../../components/ChipList.astro';
 import '../../styles/entry-list.css';
 
 const entries = (await getCollection('writing', ({ data }) => !data.draft)).sort(
@@ -65,13 +66,7 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
                   </time>
                 </span>
               )}
-              {entry.data.tags.length > 0 && (
-                <ul class="chips">
-                  {entry.data.tags.map((tag) => (
-                    <li class="chip">{tag}</li>
-                  ))}
-                </ul>
-              )}
+              {entry.data.tags.length > 0 && <ChipList tags={entry.data.tags} />}
             </p>
           </li>
         ))}

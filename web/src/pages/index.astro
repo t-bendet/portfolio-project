@@ -5,6 +5,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import HeroMark from '../components/HeroMark.astro';
+import StackChips from '../components/StackChips.astro';
 // The card is one device wherever it appears (specs/pages/projects-index.md
 // §2.2); the stylesheet and the destination rule are shared with /projects/.
 import { destination } from '../lib/projects';
@@ -85,13 +86,7 @@ const isoDate = (d: Date) => d.toISOString().slice(0, 10);
                       {host}
                     </span>
                   )}
-                  {project.data.stack.length > 0 && (
-                    <ul class="stack-chips">
-                      {project.data.stack.map((item, index) => (
-                        <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
-                      ))}
-                    </ul>
-                  )}
+                  <StackChips stack={project.data.stack} class="mbs-3" />
                 </li>
               );
             })}

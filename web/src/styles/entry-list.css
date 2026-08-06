@@ -84,27 +84,6 @@
   color: var(--muted);
 }
 
-/* Tags are chips, not links: a chip that looks interactive and is not would
-   be worse than a chip that does not (specs/pages/writing-index.md §2). */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.chip {
-  font-family: var(--font-mono);
-  font-size: var(--size-label);
-  letter-spacing: var(--track-label);
-  color: var(--muted);
-  background-color: var(--chip-bg);
-  padding: 3px 8px;
-  border-radius: var(--radius-s);
-}
-
 /* ── the empty state ───────────────────────────────────────────────────── */
 
 /* The section's terms, in the callout idiom the archetypes already own

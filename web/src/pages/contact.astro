@@ -18,8 +18,11 @@ import Base from '../layouts/Base.astro';
 import { email, emailAddress, github, linkedin } from '../lib/links';
 // The label/value row, shared with /about/ and /colophon/. The minimal
 // archetype takes the register but not the deep-dive shell: no article.css,
-// no sidebar, no prose components — there is no prose to compose here.
-import '../styles/reference.css';
+// no sidebar, no prose components — there is no prose to compose here. The
+// section device is not taken either: this page has one list and no headings
+// to file it under, so Section.astro is absent rather than empty.
+import RefRows from '../components/RefRows.astro';
+import RefRow from '../components/RefRow.astro';
 
 // Shown as what they are, not as icons (§2, section 4). The label is the
 // account name a visitor would recognize; the link text is the destination.
@@ -48,18 +51,20 @@ const links = [
     if an English article helped you and belongs in Hebrew, send it.
   </p>
 
-  <ul class="ref-rows direct">
+  <RefRows class="mbs-10">
     {
       links.map((link) => (
-        <li class="ref-row">
-          <span class="ref-label">{link.label}</span>
+        <RefRow>
+          <span class="font-mono text-size-label tracking-label uppercase text-muted">
+            {link.label}
+          </span>
           <a class="direct-link" href={link.href} rel={link.external ? 'noopener' : undefined}>
             {link.text}
           </a>
-        </li>
+        </RefRow>
       ))
     }
-  </ul>
+  </RefRows>
 </Base>
 
 <style>
@@ -83,10 +88,6 @@ const links = [
     line-height: var(--leading-tight);
     color: var(--text);
     max-inline-size: 52ch;
-  }
-
-  .direct {
-    margin-block-start: 40px;
   }
 
   /* The row's value slot is a link here rather than prose — mono, because it

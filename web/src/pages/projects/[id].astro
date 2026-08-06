@@ -18,6 +18,7 @@ import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Contents from '../../components/Contents.astro';
 import ProjectDestinations from '../../components/ProjectDestinations.astro';
+import StackChips from '../../components/StackChips.astro';
 import '../../styles/article.css';
 import '../../styles/projects.css';
 
@@ -65,16 +66,9 @@ const hasContents = sections.length >= 3;
 
       {/* Chips sit directly in the header rather than inside a .meta-line: a
           <ul> start tag closes an open <p>, so a wrapped list would be hoisted
-          straight back out by the parser. */}
-      {
-        entry.data.stack.length > 0 && (
-          <ul class="stack-chips">
-            {entry.data.stack.map((item, index) => (
-              <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
-            ))}
-          </ul>
-        )
-      }
+          straight back out by the parser. mbs-6 puts them on the rhythm
+          .meta-line takes here — placement is the caller's (StackChips.astro). */}
+      <StackChips stack={entry.data.stack} class="mbs-6" />
 
       <ProjectDestinations repoUrl={entry.data.repoUrl} liveUrl={entry.data.liveUrl} />
     </header>

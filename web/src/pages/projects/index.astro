@@ -14,6 +14,7 @@
 // filtering by stack, status badges, view counts, GitHub stars.
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import StackChips from '../../components/StackChips.astro';
 import { destination } from '../../lib/projects';
 import '../../styles/entry-list.css';
 import '../../styles/projects.css';
@@ -74,13 +75,7 @@ const translations = await getCollection('translations', ({ data }) => !data.dra
                   {host}
                 </span>
               )}
-              {entry.data.stack.length > 0 && (
-                <ul class="stack-chips">
-                  {entry.data.stack.map((item, index) => (
-                    <li class={`stack-chip accent-${(index % 6) + 1}`}>{item}</li>
-                  ))}
-                </ul>
-              )}
+              <StackChips stack={entry.data.stack} class="mbs-3" />
             </li>
           );
         })}

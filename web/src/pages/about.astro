@@ -23,7 +23,9 @@ import { portrait, cv } from '../lib/about';
 import '../styles/article.css';
 // The section device and the label/value row, shared with /colophon/ and
 // /contact/ — one reference register across the three authored pages.
-import '../styles/reference.css';
+import Section from '../components/Section.astro';
+import RefRows from '../components/RefRows.astro';
+import RefRow from '../components/RefRow.astro';
 
 // Section 5, the reference register the prototypes already use
 // (build-tools-overview.html's config-row device). Facts from
@@ -106,9 +108,7 @@ const background: { label: string; value: string }[] = [
     }
   </div>
 
-  <section class="section">
-    <h2>the work</h2>
-
+  <Section heading="the work">
     {/* What /now would have carried, minus the currency promise
         (specs/routes/sitemap.md §4). The availability sentence is the one
         thing on this page that has to be edited when it stops being true —
@@ -127,27 +127,26 @@ const background: { label: string; value: string }[] = [
         this paragraph changes.
       </p>
     </div>
-  </section>
+  </Section>
 
-  <section class="section">
-    <h2>background</h2>
-
-    <dl class="ref-rows">
+  <Section heading="background">
+    <RefRows as="dl">
       {
         background.map((row) => (
-          <div class="ref-row">
-            <dt class="ref-label">{row.label}</dt>
-            <dd class="ref-value">{row.value}</dd>
-          </div>
+          <RefRow as="div">
+            <dt class="font-mono text-size-label tracking-label uppercase text-muted">
+              {row.label}
+            </dt>
+            <dd class="m-0 text-size-meta leading-body text-text">{row.value}</dd>
+          </RefRow>
         ))
       }
-    </dl>
-  </section>
+    </RefRows>
+  </Section>
 
   {
     cv !== null && (
-      <section class="section">
-        <h2>cv</h2>
+      <Section heading="cv">
         {/* Disclosed as a file: format and the fact that it downloads (§2). */}
         <p class="cv-line">
           <a class="cv-link" href={cv.href} download>
@@ -155,7 +154,7 @@ const background: { label: string; value: string }[] = [
           </a>
           <span class="cv-detail">PDF, {cv.size} — downloads</span>
         </p>
-      </section>
+      </Section>
     )
   }
 
