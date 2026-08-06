@@ -4,7 +4,21 @@
 // its two links point at /he/writing/ and / (Hebrew target first).
 // The eyebrow's `404` segment renders under the Hebrew stack: no
 // text-transform, letter-spacing normal (navigation.md §3.2).
+//
+// The row of links is RoutesOut + RouteOutLink. This page's scoped <style>
+// block was byte-identical to /404's, and both were byte-identical to what
+// those two components already emit — which is what licensed deleting them
+// both. The reasoning for the row's values lives in RoutesOut.astro and
+// RouteOutLink.astro. The edge, the padding after it and the row's gaps are
+// all bound on the inline axis, so they flip with dir="rtl" here and nothing
+// on this page has to restate them for RTL.
+//
+// /404 is the same composition in the other locale (not-found.md §5) and the
+// two must not drift, so the markup below is written to match it line for
+// line: same components, same order, same three utilities on the paragraph.
 import Base from '../../layouts/Base.astro';
+import RoutesOut from '../../components/RoutesOut.astro';
+import RouteOutLink from '../../components/RouteOutLink.astro';
 ---
 
 {/* REVIEW(Tal): drafted Hebrew, not native-checked. It is a statement, not a
@@ -15,47 +29,17 @@ import Base from '../../layouts/Base.astro';
   section="404"
   sectionLang="he"
 >
-  <p class="statement">אין עמוד בכתובת הזו.</p>
+  {/* `.statement` was three declarations — --size-lede, --text, and a 44ch
+      measure — and it is three utilities, not a component. Extracting a
+      component for three utilities would cost an import and a file to keep
+      the same string in one place, which is what writing it identically on
+      both pages already does. The identical string is on /404's paragraph;
+      if one of them changes the other changes with it. The 44ch measure is a
+      character count, so it holds under the Hebrew stack without adjustment. */}
+  <p class="text-size-lede text-text max-inline-[44ch]">אין עמוד בכתובת הזו.</p>
 
-  <ul class="routes">
-    <li><a href="/he/writing/">תרגומים</a></li>
-    <li><a href="/" lang="en">home</a></li>
-  </ul>
+  <RoutesOut>
+    <RouteOutLink href="/he/writing/">תרגומים</RouteOutLink>
+    <RouteOutLink href="/" lang="en">home</RouteOutLink>
+  </RoutesOut>
 </Base>
-
-<style>
-  .statement {
-    font-size: var(--size-lede);
-    color: var(--text);
-    max-inline-size: 44ch;
-  }
-
-  .routes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 24px;
-    margin-block-start: 32px;
-    list-style: none;
-    padding: 0;
-  }
-
-  .routes a {
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    color: var(--text);
-    text-decoration: none;
-    border-inline-start: 2px solid var(--border-strong);
-    padding-inline-start: 12px;
-    transition: color var(--motion-hover) ease;
-  }
-
-  .routes a:hover {
-    color: var(--text-strong);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .routes a {
-      transition: none;
-    }
-  }
-</style>

@@ -1,9 +1,21 @@
 ---
-// The overview archetype's index idiom, device 1 of 8: the page header — the
-// section title with a rule under it, and whatever standing statements the
-// section owns beneath that. Rendered by /writing/, /he/writing/ and
-// /projects/ (which takes the header and the empty state from this family, and
-// its card grid from projects.css).
+// The index idiom, device 1 of 8: the page header — the section title with a
+// rule under it, and whatever standing statements the section owns beneath
+// that. Rendered by /writing/, /he/writing/ and /projects/ (which takes the
+// header and the empty state from this family, and its card grid from
+// projects.css) — and by /contact/, which is the minimal archetype and not an
+// index at all.
+//
+// That last caller is a device being reused, not an archetype boundary being
+// crossed by accident. contact.astro wrote its header by hand, and the rule
+// it wrote was byte-identical to this one: the same 32px of padding under the
+// title, the same 1px --border rule, the same five type declarations and
+// colour on the h1, value for value. Two devices that merely resembled each
+// other would differ somewhere; these did not differ anywhere, which is
+// evidence both were transcribed from one prototype device rather than
+// authored twice. The header therefore travels alone — nothing else in this
+// family goes to /contact/, and the archetypes stay distinct. If the minimal
+// archetype's header ever has to differ, it stops calling this and says why.
 //
 // ── why this family is components ────────────────────────────────────────
 //

@@ -70,7 +70,34 @@ const background: { label: string; value: string }[] = [
     lede="Design systems for four years, translation work on the side, and a site built the hard way on purpose."
   />
 
-  <div class:list={['bio-slot', { 'with-portrait': portrait !== null }]}>
+  {/* The bio-beside-portrait slot (ADR 0018, specs/pages/about.md §2.2). The
+      composition is designed around two elements; when the drawing is absent
+      the grid is one column and there is nothing to see — no empty track, no
+      reserved box. That is why the second column lives on the conditional
+      branch rather than in the base string: the branch is not a modifier on a
+      two-column layout, it IS the two-column layout. ArticleGrid.astro splits
+      the same way, for the same reason.
+
+      Logical properties throughout, as everywhere.
+
+      `gap-8` is the 32px shorthand on both axes; `min-[900px]:gap-x-12` widens
+      the column gap alone to 48px and leaves the row gap at 32px, which is
+      exactly what the media query did. A shorthand landing after a longhand
+      would undo it, so the emitted order is load-bearing: 4.3.3 emits variant
+      rules after the unvariated ones (checked in its output for EntryRow's
+      hover — same layer, same question), and the widened gap is the variant.
+
+      `min-[900px]:items-start` emits `align-items: flex-start` where the rule
+      said `align-items: start`. On a grid container the CSS Box Alignment
+      spec defines flex-start to behave as start, so the keyword changes and
+      the layout cannot. */}
+  <div
+    class:list={[
+      'grid grid-cols-[minmax(0,1fr)] gap-8 mbs-12',
+      portrait !== null &&
+        'min-[900px]:grid-cols-[minmax(0,1fr)_320px] min-[900px]:gap-x-12 min-[900px]:items-start',
+    ]}
+  >
     {/* Zero reference density here, by §2.3: the person carries this page,
         so no mythology, no fandom, no protocol wordplay past the eyebrow.
         Every date is a closed span — nothing here needs editing to stay
@@ -102,9 +129,26 @@ const background: { label: string; value: string }[] = [
 
     {
       /* Unframed, unfiltered, no plate, no shadow, never mythologized
-         (§2.1). Deliberately the one un-systematized element on the site. */
+         (§2.1). Deliberately the one un-systematized element on the site,
+         which is what the three utilities below say: it lays out and it
+         scales, and nothing decorates it.
+
+         `block-auto` is `block-size: auto` and `max-inline-full` is
+         `max-inline-size: 100%` — 4.3.3's own logical size namespaces, the
+         pair that keeps a drawing inside its column without stretching it.
+         The physical `h-auto` exists and is not used: the rule this replaces
+         binds logically, like every other directional property in this repo.
+         Read `block-auto` as a size and not as a relative of `block` one
+         space to its left, which is `display: block`; the two namespaces
+         collide in the eye and nowhere else. */
       portrait !== null && (
-        <img class="portrait" src={portrait.src} alt={portrait.alt} width="320" height="320" />
+        <img
+          class="block max-inline-full block-auto"
+          src={portrait.src}
+          alt={portrait.alt}
+          width="320"
+          height="320"
+        />
       )
     }
   </div>
@@ -148,89 +192,49 @@ const background: { label: string; value: string }[] = [
   {
     cv !== null && (
       <Section heading="cv">
-        {/* Disclosed as a file: format and the fact that it downloads (§2). */}
-        <p class="cv-line">
-          <a class="cv-link" href={cv.href} download>
+        {/* Disclosed as a file: format and the fact that it downloads (§2).
+
+            `gap: 8px 16px` is row then column, so it is `gap-y-2 gap-x-4`:
+            16px between the link and its detail on one line, 8px between the
+            lines once the row wraps. Reading the two the wrong way round is a
+            change nobody would call a bug and nobody would call intended
+            either. */}
+        <p class="flex flex-wrap items-baseline gap-x-4 gap-y-2 mbs-5">
+          {/* The anchor's class string is RouteOutLink.astro's, character for
+              character — mono, meta size, a 2px --border-strong edge on the
+              inline start with 12px of padding after it, and a colour move to
+              --text-strong on hover. That component is not imported because it
+              renders its own list item and this anchor sits in a paragraph, so
+              the duplication is a decision taken here rather than an accident:
+              if the routes-out link changes, this changes with it.
+
+              `[&:hover]:` and never `hover:`, which v4 wraps in
+              `@media (hover: hover)` and would therefore drop on touch.
+              `transition-[color]` and never `transition-colors`, which
+              declares ten properties where this rule transitions one.
+              `motion-reduce:transition-none` is the prefers-reduced-motion
+              block that stood at the foot of this stylesheet; it existed for
+              this one rule and for nothing else on the page. */}
+          <a
+            class="font-mono text-size-meta text-text no-underline border-s-2 border-s-border-strong ps-3 transition-[color] duration-(--motion-hover) ease-[ease] motion-reduce:transition-none [&:hover]:text-text-strong"
+            href={cv.href}
+            download
+          >
             cv
           </a>
-          <span class="cv-detail">PDF, {cv.size} — downloads</span>
+          <span class="font-mono text-size-eyebrow text-muted">PDF, {cv.size} — downloads</span>
         </p>
       </Section>
     )
   }
 
-  {/* One line, and not an invitation (§2, section 7). */}
-  <p class="contact-pointer">
+  {/* One line, and not an invitation (§2, section 7). `mbs-18` is the 72px
+      that sets it apart from the register above — the separation is space
+      rather than a rule or a heading, because a heading would announce it as
+      a section and this is a footnote to the page. Body size, muted: quieter
+      than the prose it follows, and the anchor inside it keeps the site's
+      default link treatment. */}
+  <p class="mbs-18 text-size-body text-muted">
     Work, translation requests, and article suggestions: <a href="/contact/">contact</a>
   </p>
 </Base>
-
-<style>
-  /*
-   * The bio-beside-portrait slot (ADR 0018, specs/pages/about.md §2.2). The
-   * composition is designed around two elements; when the drawing is absent
-   * the grid is one column and there is nothing to see — no empty track, no
-   * reserved box. Logical properties throughout, as everywhere.
-   */
-  .bio-slot {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
-    margin-block-start: 48px;
-  }
-
-  @media (min-width: 900px) {
-    .bio-slot.with-portrait {
-      grid-template-columns: minmax(0, 1fr) 320px;
-      column-gap: 48px;
-      align-items: start;
-    }
-  }
-
-  /* Unframed: no border, no background plate, no filter, no shadow (§2.1). */
-  .portrait {
-    display: block;
-    max-inline-size: 100%;
-    block-size: auto;
-  }
-
-  .cv-line {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px 16px;
-    margin-block-start: 20px;
-  }
-
-  .cv-link {
-    font-family: var(--font-mono);
-    font-size: var(--size-meta);
-    color: var(--text);
-    text-decoration: none;
-    border-inline-start: 2px solid var(--border-strong);
-    padding-inline-start: 12px;
-    transition: color var(--motion-hover) ease;
-  }
-
-  .cv-link:hover {
-    color: var(--text-strong);
-  }
-
-  .cv-detail {
-    font-family: var(--font-mono);
-    font-size: var(--size-eyebrow);
-    color: var(--muted);
-  }
-
-  .contact-pointer {
-    margin-block-start: 72px;
-    font-size: var(--size-body);
-    color: var(--muted);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .cv-link {
-      transition: none;
-    }
-  }
-</style>

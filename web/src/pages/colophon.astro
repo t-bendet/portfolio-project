@@ -51,7 +51,9 @@ const reviewed = '2026-08';
     title="colophon"
     lede="What runs this site, and what each choice cost. Every claim below is paired with what it gave up."
   >
-    <p class="reviewed">
+    {/* Meta-register, next to the header it qualifies: it is a caveat on the
+        page's claims, not a byline. */}
+    <p class="mbs-6 font-mono text-size-eyebrow text-muted">
       reviewed <time datetime={reviewed}>{reviewed}</time>
     </p>
   </ArticleHeader>
@@ -160,14 +162,3 @@ const reviewed = '2026-08';
     </RefRows>
   </Section>
 </Base>
-
-<style>
-  /* Meta-register, next to the header it qualifies: it is a caveat on the
-     page's claims, not a byline. */
-  .reviewed {
-    margin-block-start: 24px;
-    font-family: var(--font-mono);
-    font-size: var(--size-eyebrow);
-    color: var(--muted);
-  }
-</style>
