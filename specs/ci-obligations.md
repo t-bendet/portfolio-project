@@ -29,14 +29,32 @@ retired with the workshop.
    `[hidden]` are the recorded non-violations). Include the mythology
    figure-name and "let's connect" greps from `brand.md`.
 8. No-raw-hex lint — tokens only (`design/tokens.md` §4.4).
-9. Workflow-lint for the monorepo `paths:` filters (silently-failing
-   filters are the failure mode being guarded). **Dormant since 2026-08-06:**
-   no workflow has a `paths:` filter any more — `ci.yml`'s was removed so
-   that `checks` could become a required status context without leaving
-   doc-only PRs blocked on a run that never starts (`build-status.md` §3).
-   This obligation revives the moment a filter does.
+
+*(9 is dormant — "Dormant" below. The gap is deliberate; the numbers are
+cited elsewhere as identifiers, so they are never reassigned.)*
+
 10. `perf` stage (Lighthouse against budgets) + `bundle` stage — source of
     truth: `performance-budgets.md`. Budgets are contracts; moving one is a
     deliberate, recorded decision, not a CI tweak.
 11. `sec` stage (dependency audit + secrets scan) — source of truth:
     `security-requirements.md` (SR-1…SR-24).
+
+## Dormant
+
+An obligation whose subject does not currently exist. It keeps its original
+number — the numbers are cited from workflow step names, script headers and
+test files, so they are identifiers rather than an ordering, and renumbering
+would silently invalidate every citation. Nine is absent from the list above
+because it cannot be violated today, not because it was withdrawn.
+
+9. Workflow-lint for the monorepo `paths:` filters (silently-failing filters
+   are the failure mode being guarded). **Dormant since 2026-08-06:** no
+   workflow has a `paths:` filter any more. `ci.yml`'s was removed so that
+   `checks` could become a required status context — a required context that
+   never reports blocks a PR permanently rather than skipping it, so a
+   paths-filtered workflow cannot back one (`build-status.md` §3).
+
+   **Reviving condition:** the first `paths:` filter to reappear, most likely
+   `deploy.yml`'s — a deploy should not be triggered by a README edit, and
+   that filter failing open or closed is precisely the failure this guards.
+   Whoever writes it owns this obligation with it.
