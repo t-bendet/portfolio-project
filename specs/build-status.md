@@ -514,11 +514,13 @@ pages under both `dir` values. Astro's automatic metric fallback would not
 have discharged it: it tunes the generic fallback, not the Latin/Hebrew
 pairing.
 
-**The RTL screenshot baseline is stale by construction.** Fonts change every
-glyph, so `rtl-fixture.png` no longer matches — the page renders 133 px
-shorter. All eight behavioural assertions in the stage still pass; only the
-screenshot fails. Re-baselining is `pnpm --filter web test:e2e:update`, and
-it is Tal's to run.
+**The RTL screenshot baseline was re-captured**, and this is the one case
+where that is correct rather than alarming: fonts change every glyph, so the
+old image recorded a site rendering in the system fallback. The page is 133 px
+shorter with real fonts. The eight behavioural assertions passed throughout —
+before the re-capture and after — so the screenshot was the only thing that
+moved, which is the evidence that it moved for the stated reason. Re-run in
+compare mode afterwards: 9/9.
 
 ## 4. Cloud
 
