@@ -1,16 +1,23 @@
-# Performance Budgets — Mission 6, design mode
+# Performance Budgets
 
-Mission 6 · 2026-07-22 · `performance-review` skill, **design mode** (stated:
-budgets with numbers against the blueprint; Phase 2 CI's `perf` and `bundle`
-stages read this file as their source of truth — `hooks-plan.md` §4.2).
+Written 2026-07-22. `ci-obligations.md` §10's `perf` and `bundle` stages read
+this file as their source of truth.
 
-Inputs: ADRs 0002, 0011, 0015–0017, 0019, 0021, 0022, 0024;
-`typography.md` (with coherence C3's correction: the warm theme is
-**4** families, not 3); `tokens.md` §2; `content-model.md` §6;
-the page briefs' state tables; M3 `requirements-and-weights.md` R1.
+Inputs: `typography.md` (with the correction that the warm theme is **4**
+families, not 3); `tokens.md` §2; `content-model.md` §6; the page briefs'
+state tables.
 
-**Standing rule (both modes): budgets are contracts, not aspirations. If a
-budget must move, that is an ADR.**
+**`ADR NNNN` citations below are historical.** The 36 ADRs were deleted on
+2026-07-23 with the rest of the workshop machinery; every decision they held
+now lives in an ordinary document under `specs/` (map: `README.md`). The
+citations are left as written rather than rewritten to guesses — they mark
+*that* a decision was made and recorded, and the reasoning survives in git
+history before that date. Do not add new ones.
+
+**Standing rule: budgets are contracts, not aspirations.** Moving one is a
+deliberate, recorded decision — an edit to this file, in a PR that says why,
+with the measurement that motivated it. It is not a CI tweak, and a stage
+must never be loosened to make a red run green.
 
 ---
 
@@ -66,6 +73,11 @@ where a family needs punctuation coverage); per-script `unicode-range` so
 a page downloads only the scripts it renders. Pipeline is mixed (4
 variable / 3 static families) — the loading strategy must not assume
 variable-only (ADR 0016).
+
+**Built 2026-08-06** — 13 committed woff2 files through Astro's local font
+provider; measurements and the two silent defects it surfaced are in
+`build-status.md` §3c. `latin-ext` was not needed by any family. The numbers
+below are caps, and the built pipeline is under all of them.
 
 ### 4.1 Critical path (default dark theme)
 
@@ -126,9 +138,11 @@ fonts per §4.1, JS per §3.
   linework, and SVG is also what makes the deferred `currentColor` ink
   decision in ADR 0018 available); budget **≤ 80 KB**. If raster: AVIF
   with WebP fallback, ≤ 100 KB at its rendered size ×2.
-- **Favicon** — 32 px crop against the dark bg (ADR 0018): `.ico` + PNG,
-  ≤ 15 KB combined; verify legibility before shipping (the ADR's own
-  check).
+- **Favicon** — 32 px crop against the dark bg (ADR 0018), ≤ 15 KB combined;
+  verify legibility before shipping. What ships is `.ico` + **SVG**, not the
+  `.ico` + PNG this line originally specified, at 1.4 KB combined. The SVG
+  scales and carries the mark's geometry rather than a raster of it; the
+  budget is unaffected either way.
 - **Article body images (MDX)** — required `alt`, required intrinsic
   dimensions (already law in the brief), `loading="lazy"` below the fold,
   modern format (AVIF/WebP) preferred; **≤ 200 KB per image**, **≤ 500 KB
@@ -163,18 +177,33 @@ RTT will dominate real-world LCP for far visitors. Two consequences:
    the decided architecture; adding one later is an ADR (it changes the
    TLS/deploy story). The budgets above do not assume one.
 
-## 8. CI enforcement (what code mode runs against this file)
+## 8. CI enforcement
 
-1. **`perf` stage** (PRs touching `web/**`): Lighthouse CI against the
-   built site — §2 scores and metrics, §3/§5 byte budgets via the budgets
-   JSON. **Build fails on breach** — that is the contract.
-2. **`bundle` stage** (PRs touching any manifest): bundle analysis diff;
-   any new client-JS dependency on a content route is called out.
+This is `ci-obligations.md` §10, and it is **not built yet**. What follows is
+the contract it must satisfy, not a description of something running.
+
+1. **`perf` stage**: Lighthouse against the built site — §2 scores and
+   metrics, §3/§5 byte budgets. **Build fails on breach** — that is the
+   contract.
+2. **`bundle` stage**: bundle analysis diff; any new client-JS dependency on
+   a content route is called out.
 3. **Idle-cost check**: the §3 idle assertions on `/` and one article.
 4. Pages measured: `/`, `/writing/[id]/` fixture, `/he/writing/[id]/`
-   fixture (RTL — budgets apply identically per ADR 0011), `/writing/`.
-5. Budget file changes require an ADR reference in the PR (the skill's
-   standing rule; hooks-plan §4.2 already names the honest gap that
-   nothing mechanical enforces the ADR — the `perf` stage should at
-   minimum fail if the budgets file changes without `ADR` appearing in
-   the PR description, which is cheap and catches the silent path).
+   fixture (RTL — budgets apply identically), `/writing/`.
+
+Three notes on building it, each learned rather than assumed:
+
+- **No `paths:` filter.** Earlier drafts scoped these stages to PRs touching
+  `web/**` or a manifest. Neither workflow is filtered any more, and neither
+  may become so while `checks` is a required status context — a required
+  context that never reports blocks a PR permanently (`build-status.md` §3).
+- **The ADR-reference rule is retired**, not merely unimplemented. It said a
+  budget change requires `ADR` in the PR description; ADRs no longer exist,
+  so a grep for the word would enforce a ritual with nothing behind it. The
+  standing rule at the top of this file is the replacement, and it is
+  enforced by review.
+- **Two of the four pages in item 4 render nowhere today** — the writing and
+  projects collections are empty, so `/writing/[id]/` emits zero pages. The
+  RTL stage's existing fixture mechanism (`build-status.md` §3) is the
+  precedent for how to give this stage something real to measure; inventing
+  content to test with is not.

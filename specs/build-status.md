@@ -454,6 +454,72 @@ every device to render. Both live in untracked `web/.fidelity/`; the content
 files are named `*-fixture.md`, which `.gitignore` and `.dockerignore` already
 match by name, so they cannot be committed and cannot reach an image.
 
+## 3c. Typography — the font pipeline
+
+**Until 2026-08-06 the site loaded no font at all.** `tokens.css` named
+Syne, Heebo and DM Mono; there was no `@font-face`, no woff2 on disk and no
+preload, so every page rendered in the generic system fallback. Nothing in
+this file recorded it, which is the gap worth remembering: a status page can
+be complete about routes and silent about the thing the brief leads with.
+
+Seven families are now self-hosted from **13 committed woff2 files** under
+`web/src/assets/fonts/`, read through Astro 7's `fontProviders.local()`.
+Provenance, per-file rationale and the re-extraction procedure are in that
+directory's `README.md`; the Fontsource packages the files came from are
+pinned devDependencies that nothing imports.
+
+Vendored rather than fetched at build time on purpose: `docker build` needs
+no network, and the shipped bytes are identical on a laptop, in CI and in a
+deploy. A build-time provider would have put a third-party fetch on the
+deploy path.
+
+Measured against `performance-budgets.md` — every figure below the cap:
+
+| | Measured | Cap |
+|---|---|---|
+| en critical path (Syne + DM Mono ×2) | 62.9 KB | ≤ 110 (§4.1) |
+| he critical path (+ Heebo) | 74.7 KB | ≤ 145 (§4.1) |
+| warm total, never on first load | 224.0 KB | ≤ 280 (§4.2) |
+| `/` page weight | 70.9 KB | ≤ 260 (§5) |
+| `/he/writing/` page weight | 83.0 KB | ≤ 340 (§5) |
+
+**Fraunces is the `standard` axis build, not `full`.** `full` adds SOFT and
+WONK, which the warm prototype never requests, and breaches §4.1 twice over
+(italic 146 KB against a 100 KB cap; warm total 343 KB against 280 KB). This
+is the remedy §4.2 pre-registered — restrict the instanced axes before asking
+to move a budget — and it means no budget moved. Dropping `opsz` as well
+would be smaller still and is *wrong*: `font-optical-sizing: auto` is the CSS
+initial value, so it would change every warm glyph.
+
+**Two things that would have shipped broken, both silent:**
+
+- Astro mints a content hash per family and emits `font-family:
+  "Syne-b5502b34dbd04c1a"`. `tokens.css`'s `'Syne'` matches none of it, so
+  the fonts would have downloaded, been preloaded, and not applied — a page
+  that looks merely plain, with nothing in the markup to suggest why. The
+  three font tokens are re-declared in `global.css` against Astro's
+  variables, after the `tokens.css` import so source order decides.
+  `tokens.css` stays byte-frozen, as gates 5–8 require.
+- Astro's default fallbacks would have broken the Hebrew companion
+  mechanism. `--font-syne` expands to `Syne-hash, "Syne-hash fallback:
+  Arial", sans-serif`, and that generated face carries **no unicode-range**
+  — ahead of Heebo it claims Hebrew codepoints, which Arial renders, so the
+  companion is never reached (`typography.md` §3). Every family sets
+  `fallbacks: []`; the generic tail is written once, in the bridge.
+
+**Still owed:** `size-adjust`/`ascent-override` for the Hebrew companions
+(`typography.md` §3, §7.4). Deliberately not guessed — that spec is
+verified-or-absent and the numbers are gated on visual QA of mixed-script
+pages under both `dir` values. Astro's automatic metric fallback would not
+have discharged it: it tunes the generic fallback, not the Latin/Hebrew
+pairing.
+
+**The RTL screenshot baseline is stale by construction.** Fonts change every
+glyph, so `rtl-fixture.png` no longer matches — the page renders 133 px
+shorter. All eight behavioural assertions in the stage still pass; only the
+screenshot fails. Re-baselining is `pnpm --filter web test:e2e:update`, and
+it is Tal's to run.
+
 ## 4. Cloud
 
 **Nothing is provisioned.** Both gates in `scaffold-plan.md` §6 are still
