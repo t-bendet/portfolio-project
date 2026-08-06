@@ -30,7 +30,11 @@ retired with the workshop.
    figure-name and "let's connect" greps from `brand.md`.
 8. No-raw-hex lint — tokens only (`design/tokens.md` §4.4).
 9. Workflow-lint for the monorepo `paths:` filters (silently-failing
-   filters are the failure mode being guarded).
+   filters are the failure mode being guarded). **Dormant since 2026-08-06:**
+   no workflow has a `paths:` filter any more — `ci.yml`'s was removed so
+   that `checks` could become a required status context without leaving
+   doc-only PRs blocked on a run that never starts (`build-status.md` §3).
+   This obligation revives the moment a filter does.
 10. `perf` stage (Lighthouse against budgets) + `bundle` stage — source of
     truth: `performance-budgets.md`. Budgets are contracts; moving one is a
     deliberate, recorded decision, not a CI tweak.

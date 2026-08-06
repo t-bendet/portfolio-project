@@ -162,10 +162,12 @@ this document adds no new gates, it tells the gates what to check).
   decision. *(Verify: the stage itself; this is its charter.)*
 - **SR-18. Branch protection ("require ci.yml green before merge") is
   raised at the Phase 2 open checkpoint** — until set, the deploy gate is
-  a habit (`worktree-and-branching.md` §5.4). This document seconds that
-  flag as a security requirement, not just workflow hygiene: push-to-main
-  is the shortest path from a compromised session to production. *(Verify:
-  Tal, console, Phase 2 open.)*
+  a habit. This document raises it as a security requirement rather than
+  workflow hygiene: push-to-main
+  is the shortest path from a compromised session to production.
+  **Discharged 2026-08-06:** `main` requires `checks` and `secrets`. A new
+  CI job is a new context and is *not* required until it is named in the
+  console — adding a gate does not enforce it. *(Verified: Tal, console.)*
 - **SR-19. The S3 backup bucket blocks all public access, uses default
   encryption, and its dumps are treated as sensitive** — they contain the
   sessions table and the admin hash even though they contain no visitor
