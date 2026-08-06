@@ -98,6 +98,44 @@
   --tracking-label: var(--track-label);
 }
 
+/*
+ * ── the font bridge ──────────────────────────────────────────────────────
+ *
+ * tokens.css names the stacks in human family names — 'Syne', 'Heebo' — but
+ * the faces Astro emits are called `Syne-223b4bf25195f36b`, a content hash it
+ * mints per family. Nothing would match, and the failure is silent: every
+ * page renders in the generic fallback and looks merely plain.
+ *
+ * These three rules re-declare the same three tokens against Astro's own
+ * variables. They must stay in this file for the same reason the Tailwind
+ * bridge above does — tokens.css is byte-frozen and textually parsed by the
+ * design gates — and they sit here, after `@import './tokens.css'`, so they
+ * win on source order at equal specificity. The selectors are copied from
+ * tokens.css deliberately: `:root` and `[data-theme='warm']` are where the
+ * originals live, and a different selector would change which one wins.
+ *
+ * The generic tail (`sans-serif`, `serif`, `monospace`) is written here and
+ * only here. Astro's per-family fallbacks are switched off in
+ * astro.config.mjs so nothing with Hebrew coverage can sit between a Latin
+ * family and its companion — see the note there.
+ *
+ * The companion order is typography.md §3's, unchanged: Latin family first,
+ * Hebrew companion second, generic last. Latin never reaches the companion
+ * because each face carries a unicode-range; Hebrew never reaches the generic
+ * because the companion claims it first.
+ */
+:root {
+  --font-display: var(--font-syne), var(--font-heebo), sans-serif;
+  --font-body: var(--font-syne), var(--font-heebo), sans-serif;
+  --font-mono: var(--font-dm-mono), var(--font-heebo), monospace;
+}
+
+[data-theme='warm'] {
+  --font-display: var(--font-fraunces), var(--font-frank-ruhl), serif;
+  --font-body: var(--font-fraunces), var(--font-frank-ruhl), serif;
+  --font-mono: var(--font-plex-mono), var(--font-plex-hebrew), monospace;
+}
+
 /* The theme swap as a variant, so `[data-theme='warm'] .terms` becomes
    `warm:bg-badge-2` on the element itself. The attribute still lives on
    <html>, set before first paint by the inline script in Base.astro. */
