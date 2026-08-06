@@ -1,4 +1,6 @@
 ---
+import { Font } from 'astro:assets';
+import heeboUrl from '../assets/fonts/heebo-hebrew-wght-normal.woff2';
 import '../styles/global.css';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -29,6 +31,49 @@ const dir = locale === 'he' ? 'rtl' : 'ltr';
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/*
+      Every family's @font-face lands in the head; only the ones this page's
+      default temperature actually renders are preloaded. performance-budgets
+      §4.1: "preloading a font the page never renders is a budget breach in
+      disguise" — so the four warm families are declared and never preloaded,
+      and Heebo is preloaded on Hebrew pages only.
+
+      Syne and DM Mono are preloaded on Hebrew pages too, and that is not an
+      oversight: the `T://bendet` mark is a Latin run inside the eyebrow on
+      every page in both directions (typography.md §6), so a Hebrew page
+      renders both scripts on its critical path.
+    */}
+    {/*
+      Plain boolean, not a subset filter: `subset` is a Google/Fontsource
+      concept and means nothing to the local provider, so a filter on it
+      matches zero files and silently preloads nothing. Each family below
+      resolves to exactly the files it needs anyway — Syne 1, DM Mono 2,
+      Heebo 1 — because the config declares only the weights in use.
+    */}
+    <Font cssVariable="--font-syne" preload />
+    <Font cssVariable="--font-dm-mono" preload />
+    <Font cssVariable="--font-fraunces" />
+    <Font cssVariable="--font-plex-mono" />
+    <Font cssVariable="--font-plex-hebrew" />
+    {/*
+      Heebo's preload is written out rather than emitted by <Font>, because
+      Heebo is declared by hand in fonts-hebrew.css to carry `size-adjust`
+      and the metric overrides (Astro's font API cannot express those). The
+      URL comes from the frontmatter import, so it is the same hashed asset
+      the stylesheet resolves to — not a second copy, and not a path that can
+      drift from it.
+
+      `crossorigin` is not optional on a font preload even same-origin: fonts
+      are fetched in CORS mode, and a preload without it is a second,
+      unmatched request rather than a warmed cache entry.
+
+      Frank Ruhl Libre is hand-declared too and deliberately gets no preload
+      — it belongs to the warm theme, which is never on at first paint
+      (performance-budgets.md §4.2).
+    */}
+    {dir === 'rtl' && (
+      <link rel="preload" as="font" type="font/woff2" href={heeboUrl} crossorigin />
+    )}
     <script is:inline>
       // Persisted theme must apply before first paint (specs/design/tokens.md §2).
       if (localStorage.getItem('theme') === 'warm') {

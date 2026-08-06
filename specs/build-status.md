@@ -454,6 +454,89 @@ every device to render. Both live in untracked `web/.fidelity/`; the content
 files are named `*-fixture.md`, which `.gitignore` and `.dockerignore` already
 match by name, so they cannot be committed and cannot reach an image.
 
+## 3c. Typography — the font pipeline
+
+**Until 2026-08-06 the site loaded no font at all.** `tokens.css` named
+Syne, Heebo and DM Mono; there was no `@font-face`, no woff2 on disk and no
+preload, so every page rendered in the generic system fallback. Nothing in
+this file recorded it, which is the gap worth remembering: a status page can
+be complete about routes and silent about the thing the brief leads with.
+
+Seven families are now self-hosted from **13 committed woff2 files** under
+`web/src/assets/fonts/`, read through Astro 7's `fontProviders.local()`.
+Provenance, per-file rationale and the re-extraction procedure are in that
+directory's `README.md`; the Fontsource packages the files came from are
+pinned devDependencies that nothing imports.
+
+Vendored rather than fetched at build time on purpose: `docker build` needs
+no network, and the shipped bytes are identical on a laptop, in CI and in a
+deploy. A build-time provider would have put a third-party fetch on the
+deploy path.
+
+Measured against `performance-budgets.md` — every figure below the cap:
+
+| | Measured | Cap |
+|---|---|---|
+| en critical path (Syne + DM Mono ×2) | 62.9 KB | ≤ 110 (§4.1) |
+| he critical path (+ Heebo) | 74.7 KB | ≤ 145 (§4.1) |
+| warm total, never on first load | 224.0 KB | ≤ 280 (§4.2) |
+| `/` page weight | 70.9 KB | ≤ 260 (§5) |
+| `/he/writing/` page weight | 83.0 KB | ≤ 340 (§5) |
+
+**Fraunces is the `standard` axis build, not `full`.** `full` adds SOFT and
+WONK, which the warm prototype never requests, and breaches §4.1 twice over
+(italic 146 KB against a 100 KB cap; warm total 343 KB against 280 KB). This
+is the remedy §4.2 pre-registered — restrict the instanced axes before asking
+to move a budget — and it means no budget moved. Dropping `opsz` as well
+would be smaller still and is *wrong*: `font-optical-sizing: auto` is the CSS
+initial value, so it would change every warm glyph.
+
+**Two things that would have shipped broken, both silent:**
+
+- Astro mints a content hash per family and emits `font-family:
+  "Syne-b5502b34dbd04c1a"`. `tokens.css`'s `'Syne'` matches none of it, so
+  the fonts would have downloaded, been preloaded, and not applied — a page
+  that looks merely plain, with nothing in the markup to suggest why. The
+  three font tokens are re-declared in `global.css` against Astro's
+  variables, after the `tokens.css` import so source order decides.
+  `tokens.css` stays byte-frozen, as gates 5–8 require.
+- Astro's default fallbacks would have broken the Hebrew companion
+  mechanism. `--font-syne` expands to `Syne-hash, "Syne-hash fallback:
+  Arial", sans-serif`, and that generated face carries **no unicode-range**
+  — ahead of Heebo it claims Hebrew codepoints, which Arial renders, so the
+  companion is never reached (`typography.md` §3). Every family sets
+  `fallbacks: []`; the generic tail is written once, in the bridge.
+
+**Metric compensation is wired, and half of it is verified.** The numbers and
+their standing are in `typography.md` §3; the implementation is
+`web/src/styles/fonts-hebrew.css`. The metric overrides are arithmetic and
+settled; the two `size-adjust` values are measured starting points that still
+owe §7.4's QA pass, and they are marked `REVIEW(Tal)` in the file.
+
+It forced a structural change worth knowing about: **Astro's font API cannot
+express these descriptors.** Its `FamilyProperties` surface is display /
+stretch / featureSettings / variationSettings / unicodeRange — it computes
+`size-adjust` and the overrides internally, but only for the fallback faces
+it generates, which are switched off here. So Heebo and Frank Ruhl Libre are
+declared by hand in CSS and left `fonts[]` entirely; they keep their real
+family names because nothing hashes them any more, which is why the bridge
+names them as plain families while the other five stay variables. IBM Plex
+Sans Hebrew needs no adjustment, so it stayed in the API.
+
+Heebo's preload became an explicit `<link>` in `Base.astro` as a
+consequence, since `<Font>` no longer knows about it. The URL comes from a
+frontmatter import of the same asset the stylesheet resolves, so the two
+cannot drift, and it carries `crossorigin` — fonts are fetched in CORS mode
+even same-origin, and a preload without it warms nothing.
+
+**The RTL screenshot baseline was re-captured**, and this is the one case
+where that is correct rather than alarming: fonts change every glyph, so the
+old image recorded a site rendering in the system fallback. The page is 133 px
+shorter with real fonts. The eight behavioural assertions passed throughout —
+before the re-capture and after — so the screenshot was the only thing that
+moved, which is the evidence that it moved for the stated reason. Re-run in
+compare mode afterwards: 9/9.
+
 ## 4. Cloud
 
 **Nothing is provisioned.** Both gates in `scaffold-plan.md` §6 are still

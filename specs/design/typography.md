@@ -103,6 +103,69 @@ with their Latin partners; `size-adjust`/`ascent-override` tuning in
 under both `dir` values. No blind percentage is specified here — that would
 be an assumed number, and this spec's rule is verified-or-absent.
 
+**Wired 2026-08-06**, in `web/src/styles/fonts-hebrew.css`.
+
+**Never anchor this to OS/2 `sxHeight`.** The first attempt did, shipped
+Hebrew visibly oversized in both themes, and Tal's QA caught it — which is
+what §7.4 exists for. All three Hebrew companions carry `latin` subsets too,
+and `sxHeight` is a font-wide field describing a font's *Latin* lowercase. It
+says nothing about the Hebrew glyphs, which are the only ones these faces
+ever render here.
+
+Measured instead from the glyph outlines — median yMax over 19 Hebrew
+letters, against the partner's actual `x` and `H` bounds:
+
+| Pairing | Hebrew letters | Latin x | match-x | Shipped | Standing |
+|---|---|---|---|---|---|
+| Heebo vs Syne | 0.5752 | 0.5000 | 86.93% | **86.9%** | **verified** 2026-08-06 |
+| Heebo vs DM Mono | 0.5752 | 0.4960 | 86.23% | (same face) | — |
+| Frank Ruhl Libre vs Fraunces | 0.5860 | 0.4820 | 82.25% | **82.2%** | rule applied, QA owed |
+| IBM Plex Sans Hebrew vs IBM Plex Mono | 0.6060 | 0.5160 | 85.15% | none | see below |
+
+Hebrew is unicameral: its letters sit ~15% above Latin x-height and well
+below cap-height. The plausible theory — that a unicameral script should
+therefore sit slightly *above* Latin x-height, since it carries the line
+alone — was tried at +4% and **rejected by eye at two successive values**;
+Hebrew still read large both times. The shipped values match x-height
+exactly. Recorded because the theory will occur to someone again, and it did
+not survive contact with these faces.
+
+Known drift remains: Fraunces' `opsz` axis moves its x-height with size, and
+Syne is used at 400–800 while these bounds are the default instance. The
+warm pair still owes its own look — 82.2% is the same rule applied, not an
+observation, and Fraunces' `opsz` axis makes it the likelier of the two to
+be wrong. The warm theme has no toggle; reaching it means setting
+`localStorage.theme = 'warm'` by hand.
+
+**§7.4 is discharged for the dark pair**, 2026-08-06: three passes at 94.3%,
+90.4% and 86.9%, Hebrew reading large at each of the first two. The value is
+verified rather than derived, which is what this spec asks for — and worth
+noting, the two rejected values were the ones with a theory behind them.
+
+**The Plex pair gets no rule, and the reason matters.** An earlier draft
+claimed the two faces were "metrically identical" — they are not; that was
+the same `sxHeight` error, and their Hebrew glyphs are 17% taller than Plex
+Mono's x-height, the largest gap of the three. The rule is still declined
+because IBM drew both faces for each other (§1), so whatever relationship
+they hold is their designers' decision rather than an accident to correct.
+That argument exists nowhere else here: Syne and Heebo come from unrelated
+foundries and were never meant to sit together, which is precisely why they
+need compensating.
+
+The **metric overrides are not pending** — they are arithmetic, not taste.
+Each companion is given its Latin partner's line box (Heebo → Syne's
+92.5%/27.5%; Frank Ruhl Libre → Fraunces' 97.8%/25.5%), because a companion
+that claims more vertical space reflows the paragraph when it loads. Heebo's
+raw line box is 1.4688 em against Syne's 1.2000 — 22% taller, and still 16%
+taller after `size-adjust` alone. That reflow is the CLS this pairing risks,
+against a 0.02 budget.
+
+One finding worth keeping: **IBM Plex Sans Hebrew and IBM Plex Mono are
+metrically identical** — x-height, cap-height, ascent and descent all match
+to the digit. §1's claim that they were "designed to harmonize" is now
+measured rather than asserted, and the correct encoding of it is no rule at
+all.
+
 ## 4. Scale — per archetype, tokenized
 
 The scale is the union of the two prototypes' actual values (prototype-exact
