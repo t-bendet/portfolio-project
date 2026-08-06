@@ -222,17 +222,48 @@ green is a habit, not an enforcement, until the `checks` context is re-added
 as required. There are now **two** contexts to require: `checks` and
 `secrets`. SR-18 is where that decision lives.
 
-## 3b. Styling — Tailwind utility migration (in progress)
+## 3b. Styling — Tailwind utility migration: evaluated, NOT done
 
-**Work started 2026-08-06** on branch `tailwind-utility-migration`. Tailwind
+**Evaluated 2026-08-06** on branch `tailwind-utility-migration`; the verdict
+was **no-go** and **no file under `web/` was changed**. The full reasoning,
+the pre-registered thresholds it was judged against, and the measurements are
+in `notes-tailwind-verdict.md`. The short version: the migration is
+mechanically achievable — the pilot hit a zero-pixel diff across 156
+comparisons with all four gates green — and there is no maintenance problem
+for it to solve. `git log -- web/src/styles` returns seven commits ever, every
+page brief is built, and the one consolidation it would enable is the one
+`projects.css:41-48` explicitly forbids.
+
+Three findings outlived the verdict and are worth acting on independently:
+
+1. **A latent cascade bug, today.** `global.css`'s element rules (`a`, `html`,
+   `body`, `main`) are unlayered, so they beat everything in
+   `@layer utilities` regardless of specificity. Any Tailwind utility anyone
+   adds to an anchor is generated, applied, and silently loses to
+   `a { text-decoration: underline }`. Moving those rules into `@layer base`
+   fixes it and changes nothing else — they already lost to every class rule
+   on specificity. Small, supervised, worth doing.
+2. **Tailwind's scanner reads prose.** Writing the word *invisible* in an
+   Astro comment made Tailwind emit `.invisible{visibility:hidden}` into
+   shipped CSS, which failed `banned-vocab.ts` — on `hidden`, a word that
+   appears nowhere in the source. The `.contents` incident below is the same
+   mechanism; it is live, and obligation 7 does catch the dangerous cases.
+3. **The design gates and the RTL stage held up under a real change.** All
+   four gates plus the checked-in screenshot baseline passed unmodified
+   through a bridge commit and a component migration, and the baseline caught
+   the one genuine fidelity defect (61 pixels on `/colophon/`, from a
+   longhand/shorthand reset difference).
+
+Everything below this paragraph describes the evaluation as it was run.
+
+Tailwind
 v4.3.3 has been wired since the scaffold (`@tailwindcss/vite` in
 `web/astro.config.mjs`, `@import 'tailwindcss'` at `web/src/styles/global.css:1`)
-but **no utility has ever been used in markup** — all styling is hand-written
-custom-class CSS. This section records the evaluation and, if it goes ahead,
-the migration.
+and **no utility is used in markup** — all styling is hand-written
+custom-class CSS. That remains true.
 
 The verdict protocol and its pre-registered thresholds are in
-`specs/notes-tailwind-verdict.md`. The constraint that governs everything else:
+`specs/notes-tailwind-verdict.md`. The constraint that governed everything:
 rendered output must not change by one pixel, verified by a full-site
 screenshot diff at `maxDiffPixels: 0` against a baseline captured from `main`.
 `web/src/styles/tokens.css` is byte-frozen — the four design gates textually
