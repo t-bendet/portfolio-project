@@ -103,21 +103,41 @@ with their Latin partners; `size-adjust`/`ascent-override` tuning in
 under both `dir` values. No blind percentage is specified here — that would
 be an assumed number, and this spec's rule is verified-or-absent.
 
-**Wired 2026-08-06, half verified.** Measured from the shipped woff2 with
-fontTools (OS/2 `sxHeight`/`unitsPerEm`; hhea ascent/descent), in
-`web/src/styles/fonts-hebrew.css`:
+**Wired 2026-08-06**, in `web/src/styles/fonts-hebrew.css`.
 
-| Pairing | x/em Latin → Hebrew | `size-adjust` | Standing |
-|---|---|---|---|
-| Heebo vs Syne | 0.5000 → 0.5283 | 94.3% (also serves DM Mono, 0.4960) | **QA pending** |
-| Frank Ruhl Libre vs Fraunces | 0.4820 → 0.4680 | 103% | **QA pending** |
-| IBM Plex Sans Hebrew vs IBM Plex Mono | 0.5160 → 0.5160 | none needed | measured |
+**Never anchor this to OS/2 `sxHeight`.** The first attempt did, shipped
+Hebrew visibly oversized in both themes, and Tal's QA caught it — which is
+what §7.4 exists for. All three Hebrew companions carry `latin` subsets too,
+and `sxHeight` is a font-wide field describing a font's *Latin* lowercase. It
+says nothing about the Hebrew glyphs, which are the only ones these faces
+ever render here.
 
-The `size-adjust` values are ratios, and a ratio is not an optical match —
-they are starting points to adjust *from*, which is what §7.4 asks for. Two
-known sources of drift: Fraunces has an `opsz` axis, so its x-height moves
-with size and the ratio is exact only at the default optical size; Syne is
-used at 400–800 while `sxHeight` describes the default instance.
+Measured instead from the glyph outlines — median yMax over 19 Hebrew
+letters, against the partner's actual `x` and `H` bounds:
+
+| Pairing | Hebrew letters | Latin x | match-x | Shipped | Standing |
+|---|---|---|---|---|---|
+| Heebo vs Syne | 0.5752 | 0.5000 | 86.93% | **90.4%** | QA pending |
+| Heebo vs DM Mono | 0.5752 | 0.4960 | 86.23% | (same face) | — |
+| Frank Ruhl Libre vs Fraunces | 0.5860 | 0.4820 | 82.25% | **85.5%** | QA pending |
+| IBM Plex Sans Hebrew vs IBM Plex Mono | 0.6060 | 0.5160 | 85.15% | none | see below |
+
+Hebrew is unicameral: its letters sit ~15% above Latin x-height and well
+below cap-height. Matching x-height exactly reads slightly small, because a
+unicameral script carries the line alone — the shipped values target
+x-height +4%. Still ratios, still not optical matches; §7.4's pass governs.
+Known drift: Fraunces' `opsz` axis moves its x-height with size, and Syne is
+used at 400–800 while these bounds are the default instance.
+
+**The Plex pair gets no rule, and the reason matters.** An earlier draft
+claimed the two faces were "metrically identical" — they are not; that was
+the same `sxHeight` error, and their Hebrew glyphs are 17% taller than Plex
+Mono's x-height, the largest gap of the three. The rule is still declined
+because IBM drew both faces for each other (§1), so whatever relationship
+they hold is their designers' decision rather than an accident to correct.
+That argument exists nowhere else here: Syne and Heebo come from unrelated
+foundries and were never meant to sit together, which is precisely why they
+need compensating.
 
 The **metric overrides are not pending** — they are arithmetic, not taste.
 Each companion is given its Latin partner's line box (Heebo → Syne's
