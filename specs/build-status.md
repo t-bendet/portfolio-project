@@ -1,7 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-06**, at `ab92f92` on `main` plus the
-branch that requires the two status contexts.
+Last checked against the repo: **2026-08-06**, at `ab480c9` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -106,7 +105,7 @@ below except the secrets scan, which is `.github/workflows/sec.yml`, job
 | 6 | Token parity between theme blocks | yes — `scripts/token-parity.ts` |
 | 7 | Banned-vocabulary grep over shipped CSS/JS/HTML | yes — `scripts/banned-vocab.ts`, over `web/dist` |
 | 8 | No-raw-hex lint | yes — `scripts/no-raw-hex.ts`, over `web/src` |
-| 9 | Workflow-lint for the `paths:` filters | **moot** — no filter is left to lint (below) |
+| 9 | Workflow-lint for the `paths:` filters | **dormant** — no filter is left to lint (below); `ci-obligations.md` holds it under "Dormant" |
 | 10 | `perf` (Lighthouse vs. budgets) + `bundle` stages | **no** |
 | 11 | `sec` stage (dependency audit + secrets scan) | yes — `scripts/sec.sh`, split across both workflows |
 
@@ -203,7 +202,10 @@ cancels superseded pushes.
 Two consequences worth carrying forward. The filter had been widened to
 `scripts/**` and `specs/**` because the contrast gate reads
 `specs/design/palette.md` — that widening is now moot along with the rest.
-And obligation 9 has nothing left to lint: it is dormant, not discharged.
+And obligation 9 has nothing left to lint: it is dormant, not discharged, and
+now lives in `ci-obligations.md`'s "Dormant" section under its original number
+— the obligation numbers are cited from workflow step names, script headers
+and test files, so they are identifiers, not an ordering.
 
 **The sec stage (11) is split across two workflows.** The split was made when
 `ci.yml` was paths-filtered and `sec.yml` was the only way to satisfy SR-17's

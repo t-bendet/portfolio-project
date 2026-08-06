@@ -10,7 +10,7 @@ edit them.
 | `brand.md` | Identity, voice, allowed/banned symbolic vocabulary |
 | `architecture.md` | Stack: Astro 7 static core + hand-built Node/TS API + Postgres; auth model; CI stages; budget |
 | `scaffold-plan.md` | Step-by-step workspace creation (`web/`, `api/`, `deploy/` at the repo root): layout, commands, containers, workflows, AWS (cloud part gated on Tal) |
-| `ci-obligations.md` | The 11 things `ci.yml` must do |
+| `ci-obligations.md` | The 11 things `ci.yml` must do — 10 live, 1 dormant |
 | `content-model.md` | Three content collections, Zod schemas, translation pairing, analytics key contract |
 | `routes/sitemap.md` | The 12 public routes + Hebrew locale subtree |
 | `navigation.md` | Header, nav, eyebrow, footer, Hebrew-seam rules |
