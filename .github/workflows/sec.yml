@@ -1,12 +1,12 @@
-# The secrets scan half of ci-obligations.md §11, in its own workflow for one
-# reason: SR-17 says CI runs it on **every** PR, and `ci.yml` is paths-filtered.
-# A PR that touches only README.md, LICENSE, or a file nobody has thought of
-# yet does not start `ci.yml` at all — and "the tree must never contain a
-# credential" is a claim about the whole tree, so the check that backs it
-# cannot have a path filter. Nothing here may gain one.
+# The secrets scan half of ci-obligations.md §11, in its own workflow. SR-17
+# says CI runs it on **every** PR, and "the tree must never contain a
+# credential" is a claim about the whole tree — so the check that backs it
+# cannot have a path filter. `ci.yml` has none either as of 2026-08-06, but
+# that is a property of its triggers today; keeping the scan here makes the
+# guarantee structural instead. Nothing here may gain a filter.
 #
 # The other half of §11, the dependency audit, stays in `ci.yml`: its input is
-# the lockfile, which the filters already cover.
+# the lockfile, and `ci.yml` already installs from it.
 #
 # gitleaks runs as a pinned docker image, not the action — repo settings allow
 # only github-owned actions. No node, no pnpm, no install: this job is a

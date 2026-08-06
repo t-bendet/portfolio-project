@@ -1,7 +1,7 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-06**, at `8385121` on `main` plus the
-branch that adds the sec stage.
+Last checked against the repo: **2026-08-06**, at `ab92f92` on `main` plus the
+branch that requires the two status contexts.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -106,12 +106,13 @@ below except the secrets scan, which is `.github/workflows/sec.yml`, job
 | 6 | Token parity between theme blocks | yes — `scripts/token-parity.ts` |
 | 7 | Banned-vocabulary grep over shipped CSS/JS/HTML | yes — `scripts/banned-vocab.ts`, over `web/dist` |
 | 8 | No-raw-hex lint | yes — `scripts/no-raw-hex.ts`, over `web/src` |
-| 9 | Workflow-lint for the `paths:` filters | **no** |
+| 9 | Workflow-lint for the `paths:` filters | **moot** — no filter is left to lint (below) |
 | 10 | `perf` (Lighthouse vs. budgets) + `bundle` stages | **no** |
 | 11 | `sec` stage (dependency audit + secrets scan) | yes — `scripts/sec.sh`, split across both workflows |
 
-Obligations 9 and 10 land with the features they check, not as a batch.
-`deploy.yml` and `backup.yml` do not exist yet — both are downstream of §4.
+Obligation 10 lands with the feature it checks, not as a batch. `deploy.yml`
+and `backup.yml` do not exist yet — both are downstream of §4, and if either
+arrives carrying a `paths:` filter, obligation 9 comes back with it.
 
 **The RTL stage (4) runs on a fixture, not on content**, because there is no
 translation to run it on and inventing one would be publishing a translation
@@ -182,17 +183,39 @@ future failure:
   that way keeps Tailwind preflight's hexes — not ours — out of the hex lint
   without an allowlist that would grow into a hiding place.
 
-The `paths:` filters gained `scripts/**` and `specs/**` in the same PR: the
-contrast gate reads `specs/design/palette.md`, so a spec-only edit must re-run
-CI. That is obligation 9's territory, and 9 is still unbuilt.
+**`ci.yml` no longer has `paths:` filters, and that is what made SR-18
+possible.** A required status context that never reports does not skip — it
+blocks, permanently. So requiring `checks` while `ci.yml` was paths-filtered
+would have made any PR touching only `README.md`, `LICENSE`, `CLAUDE.md`,
+`.gitignore` or `sec.yml` unmergeable, waiting on a run that GitHub was never
+going to start.
 
-**The sec stage (11) is split across two workflows, and the split is the
-requirement rather than a convenience.** SR-17 says the secrets scan runs on
-every PR; `ci.yml` is paths-filtered, so a PR touching only `README.md` never
-starts it. The scan therefore lives in `sec.yml`, which carries no filter and
-must never gain one — it is a checkout and a container, well under a minute.
-The dependency audit stays in `ci.yml`, where the lockfile is already covered.
-Both halves are `scripts/sec.sh`, runnable locally like the design gates.
+The filter was removed rather than worked around. The alternative considered
+was a `changes` guard job — no top-level filter, a first job diffing against
+the base ref, `checks` gated on its output, relying on a skipped job counting
+as success for branch protection. It preserves the runner minutes and costs a
+reimplementation of path matching in bash, which is the *exact* silently-failing
+failure mode obligation 9 exists to guard. Tal chose the filter's removal
+(2026-08-06): a doc-only PR now pays a full run — Postgres, both image builds,
+Playwright — and doc-only PRs are rare here. The `concurrency` group already
+cancels superseded pushes.
+
+Two consequences worth carrying forward. The filter had been widened to
+`scripts/**` and `specs/**` because the contrast gate reads
+`specs/design/palette.md` — that widening is now moot along with the rest.
+And obligation 9 has nothing left to lint: it is dormant, not discharged.
+
+**The sec stage (11) is split across two workflows.** The split was made when
+`ci.yml` was paths-filtered and `sec.yml` was the only way to satisfy SR-17's
+"every PR". That reason is gone, and the split stays anyway, for a different
+and better one: SR-17 is a claim about the whole tree on every PR, and keeping
+the scan in a workflow that has never had a filter makes it true structurally
+rather than as a consequence of what `ci.yml`'s triggers happen to be today.
+`sec.yml` must still never gain a filter — it is a checkout and a container,
+well under a minute. It is also its own status context, so it reports in
+seconds instead of behind fifteen minutes of `checks`. The dependency audit
+stays in `ci.yml`, where the lockfile is already covered. Both halves are
+`scripts/sec.sh`, runnable locally like the design gates.
 
 - **Secrets scan** — `gitleaks` as a pinned image (`v8.30.1`), not the action:
   only github-owned actions are allowed here. It scans the working tree, not
@@ -217,10 +240,19 @@ for.
 actions are blocked (`allowed_actions: selected`, `patterns_allowed: []`) and
 `sha_pinning_required` is on. Any workflow needing a non-GitHub action must
 have it allowlisted and SHA-pinned first, or it fails with an opaque
-permissions error. `main` currently requires **zero** status contexts — CI
-green is a habit, not an enforcement, until the `checks` context is re-added
-as required. There are now **two** contexts to require: `checks` and
-`secrets`. SR-18 is where that decision lives.
+permissions error.
+
+`main` requires **`checks` and `secrets`**, both since 2026-08-06 — CI green
+is an enforcement now, not a habit, which discharges SR-18. Two things it does
+not do. `enforce_admins` is off, so Tal can still merge past a red run: the
+gate is against an unattended session pushing to production, not against Tal's
+own judgement, and turning it on would mean no way to land a fix when CI is
+broken by something outside the repo. And `strict` is on — a PR must be up to
+date with `main` before it merges, which on a solo repo costs a rebase and
+buys the guarantee that the run that went green is the tree that landed.
+
+Adding a job to either workflow adds a context that is **not** automatically
+required; a new gate is advisory until it is named here and in the console.
 
 ## 3b. Styling — Tailwind utility migration: done, in one PR
 
