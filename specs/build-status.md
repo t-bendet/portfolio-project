@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-06**, at `ab480c9` on `main`.
+Last checked against the repo: **2026-08-06**, at `69208e6` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -256,6 +256,20 @@ buys the guarantee that the run that went green is the tree that landed.
 Adding a job to either workflow adds a context that is **not** automatically
 required; a new gate is advisory until it is named here and in the console.
 
+**PR #31 was merged with `--admin`, bypassing both contexts.** GitHub Actions
+was in a `major_outage`: two runs were created and cancelled after 15 minutes
+without ever being assigned a runner, and every later push created no run at
+all. Every `checks` step was run locally first — `astro check`, all four
+design gates, `api typecheck`, both `docker build`s, Caddyfile validation
+against the pinned image, and the RTL stage at 9/9 — and the evidence is in
+the PR body. It is still a bypass rather than a green run, and it is recorded
+because a gate whose exceptions go unlogged is a gate nobody can audit.
+
+Three separate times on 2026-08-06 an Actions incident made these contexts
+unusable — twice red on jobs that never ran a step, once absent entirely. The
+gate is worth having; that failure rate is the argument for `enforce_admins`
+staying off, and it is a fact about the gate's design rather than bad luck.
+
 ## 3b. Styling — Tailwind utility migration: done, in one PR
 
 **Evaluated and executed 2026-08-06** on branch `tailwind-utility-migration`,
@@ -507,11 +521,22 @@ initial value, so it would change every warm glyph.
   companion is never reached (`typography.md` §3). Every family sets
   `fallbacks: []`; the generic tail is written once, in the bridge.
 
-**Metric compensation is wired, and half of it is verified.** The numbers and
-their standing are in `typography.md` §3; the implementation is
-`web/src/styles/fonts-hebrew.css`. The metric overrides are arithmetic and
-settled; the two `size-adjust` values are measured starting points that still
-owe §7.4's QA pass, and they are marked `REVIEW(Tal)` in the file.
+**Metric compensation is wired; the dark pair is verified, the warm pair is
+not.** Numbers and standing are in `typography.md` §3; the implementation is
+`web/src/styles/fonts-hebrew.css`. Heebo's `size-adjust: 86.9%` is **Tal's
+eye, three passes** (94.3% → 90.4% → 86.9%, Hebrew reading large at each of
+the first two) — that is §7.4 discharged for the dark temperature. Frank Ruhl
+Libre's 82.2% is the same rule applied to measured numbers and carries a
+`REVIEW(Tal)`; it has never been looked at, because the warm theme cannot
+currently be reached (below). The metric overrides are arithmetic and were
+never in question.
+
+The instructive part is what the wrong numbers had in common: both rejected
+values were anchored to OS/2 `sxHeight`, which describes a font's **Latin**
+lowercase. All three Hebrew companions carry `latin` subsets, so the field
+exists, reads plausibly, and answers a question nobody asked — the Hebrew
+glyphs are the only ones these faces ever render here. The measurement that
+worked reads the glyph outlines directly.
 
 It forced a structural change worth knowing about: **Astro's font API cannot
 express these descriptors.** Its `FamilyProperties` surface is display /
@@ -522,6 +547,20 @@ declared by hand in CSS and left `fonts[]` entirely; they keep their real
 family names because nothing hashes them any more, which is why the bridge
 names them as plain families while the other five stay variables. IBM Plex
 Sans Hebrew needs no adjustment, so it stayed in the API.
+
+**The warm temperature has no way in, and that is now load-bearing.**
+`tokens.md` §2 gives the trigger as a global keydown buffer and `brand.md` §2
+specifies it exactly — the one hidden feature, the site's sole easter egg.
+Only the *persistence* half is built: `Base.astro` reads `localStorage.theme`
+before first paint and sets the attribute. Nothing writes it. So the warm
+palette, its four fonts and its whole type system are unreachable except from
+devtools.
+
+That was a curiosity while the theme was only colour. It is a blocker now:
+Frank Ruhl Libre's `size-adjust` cannot get the QA pass §7.4 requires until
+the theme can be entered the way a visitor would enter it. Recorded here
+because, like the fonts, it is a hole this file was silent about — the
+easter egg is fully specified and half-built, and nothing said so.
 
 Heebo's preload became an explicit `<link>` in `Base.astro` as a
 consequence, since `<Font>` no longer knows about it. The URL comes from a
