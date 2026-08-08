@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-07**, at `a1194f4` on `main`.
+Last checked against the repo: **2026-08-08**, at `2a52960` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -245,6 +245,17 @@ as capable of breaking the tree as of fixing it. Caret-bounded to `^4.3.1` and
 verified by the build rather than by the audit. The other two overrides carry
 the same latent risk and are left alone because they are working; the note is
 in `pnpm-workspace.yaml` for whoever writes the fourth.
+
+**The fourth landed 2026-08-08, and the note did its job.**
+GHSA-2v37-7h3g-55p8 (nanoid <3.3.17, a custom generator looping forever when
+size is zero) arrives through `vite > postcss` — production, high, five paths,
+reached from both `@astrojs/mdx > astro` and `@tailwindcss/vite`, so it is the
+first advisory to come down two routes at once. Same shape as the third
+otherwise: a green `main` went red under a docs-only PR that touched no
+dependency. Caret-bounded to `^3.3.17` on sight, and the numbers say that was
+not caution for its own sake — postcss asks for `^3.3.16`, the 3.x line ends at
+3.3.18, and nanoid's `latest` is 6.0.1, so the open form would have crossed
+four majors in one step. Verified by `astro build` and the api suite.
 
 It failed on the tree as it stood, unlike the design gates. `@prisma/client`
 is a **production** dependency of `api` and pulls the entire `prisma` CLI
