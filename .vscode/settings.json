@@ -1,0 +1,17 @@
+{
+  // This repo is hand-formatted, not tool-formatted: comment blocks are wrapped
+  // to 80 columns by hand, long strings are concatenated at chosen break points,
+  // and every file is single-quoted. Nothing in scripts/check.sh or
+  // .github/workflows/ runs a formatter, so there is no tool whose output is the
+  // convention — the code is.
+  //
+  // Format-on-save from a user-level setting therefore rewrites files wholesale:
+  // Prettier's defaults alone turn every ' into ", and it re-wraps expressions
+  // that were deliberately laid out. A three-line change to a gate script came
+  // back as twenty-five hunks. Turned off here, for this workspace only.
+  //
+  // If a formatter is ever adopted, it needs a config that matches the existing
+  // code (at minimum singleQuote) landed in the same PR that reformats the tree
+  // — not one file at a time, inside changes about something else.
+  "editor.formatOnSave": false
+}

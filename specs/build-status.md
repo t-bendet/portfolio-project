@@ -225,7 +225,7 @@ blocks are measured at gzip
 level 6, Caddy's `encode gzip` default, so the figure models the transfer
 rather than the best case.
 
-**Six follow-ups landed 2026-08-08, and none of them is a budget change.** §3's
+**Seven follow-ups landed 2026-08-08, and none of them is a budget change.** §3's
 route totals became `§3.1` with a Route type column of their own — they had been
 four rows appended to the per-script table with a blank first cell, which the
 gate told apart by matching the words "Route totals" in a cell, the one place
@@ -242,6 +242,16 @@ the value is the full max−min range: the label changed, and every spread recor
 in this file and in `performance-budgets.md` §2 stands as written. And the three
 harnesses' ports, networks and containers are allocated in one table in
 `ci-obligations.md` instead of in three files that each knew only their own.
+
+The seventh is obligation 5's, found by the same read. `contrast.ts` **skipped**
+a §5 row whose cell count it did not recognise, where `perf-budgets.ts` throws on
+the same input — and the 73-pair count above is a floor (`MIN_PAIRS`), so it
+catches a parser that lost rows wholesale but not one that lost a single row. It
+now throws. Nothing is currently skipped, so the count did not move; this is a
+guard against a future §5 edit, not a fix to a live miscount. The repo also
+gained `.vscode/settings.json` turning format-on-save off: this codebase is
+hand-formatted, nothing in CI formats, and a three-line change to that gate came
+back as twenty-five hunks of quote flipping the first time it was edited.
 
 Two things it is worth knowing the gate does *not* do. It does not add the
 inline script's bytes to a page's total — those bytes are inside the HTML it

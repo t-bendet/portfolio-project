@@ -143,7 +143,12 @@ function sectionRows(md: string, heading: string): string[][] {
     if (trimmed.startsWith('Informative')) break;
     if (!trimmed.startsWith('|')) continue;
     const cells = trimmed.slice(1, -1).split('|').map((c) => c.trim());
-    if (cells.length !== 4) continue;
+    // Throw rather than skip. A row this parser does not recognise is a pair it
+    // stops checking, and MIN_PAIRS is a floor rather than a count — it catches
+    // a parser that lost rows wholesale, not one that lost a single row of 73.
+    if (cells.length !== 4) {
+      throw new Error(`${PALETTE}: "${heading}" row has ${cells.length} cells, expected 4`);
+    }
     if (cells[0] === 'Foreground' || cells[0].startsWith('---')) continue;
     rows.push(cells);
   }
