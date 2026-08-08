@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-07**, at `a1194f4` on `main`.
+Last checked against the repo: **2026-08-08**, at `2a52960` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -113,6 +113,14 @@ Obligation 10 lands with the feature it checks, not as a batch. `deploy.yml`
 and `backup.yml` do not exist yet — both are downstream of §4, and if either
 arrives carrying a `paths:` filter, obligation 9 comes back with it.
 
+**A green `checks` run takes about 2m12s**, first measured 2026-08-07 on
+PR #35; `secrets` reports in 11s. That is a cold number — nothing in either
+workflow caches anything — and a small one mostly because the content
+collections are empty, so `astro build` is a fraction of a second of it. It
+will grow with content. `timeout-minutes: 15` is a runaway guard, not an
+estimate: a run sitting at exactly fifteen minutes is the timeout firing on a
+job that never got a runner (below), not work being done.
+
 **The RTL stage (4) runs on a fixture, not on content**, because there is no
 translation to run it on and inventing one would be publishing a translation
 of nothing. `web/tests/fixtures/translations/rtl-fixture.md` is copied into the
@@ -215,7 +223,7 @@ the scan in a workflow that has never had a filter makes it true structurally
 rather than as a consequence of what `ci.yml`'s triggers happen to be today.
 `sec.yml` must still never gain a filter — it is a checkout and a container,
 well under a minute. It is also its own status context, so it reports in
-seconds instead of behind fifteen minutes of `checks`. The dependency audit
+seconds rather than behind a full `checks` run. The dependency audit
 stays in `ci.yml`, where the lockfile is already covered. Both halves are
 `scripts/sec.sh`, runnable locally like the design gates.
 
