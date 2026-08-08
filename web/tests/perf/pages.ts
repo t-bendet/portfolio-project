@@ -3,12 +3,14 @@
 // performance-budgets.md §8 item 4 names them as route *types* — `/`,
 // `/writing/[id]/`, `/he/writing/[id]/`, `/writing/` — and two of those render
 // nowhere without the fixture corpus. These are the ids that corpus produces,
-// so this list and web/tests/fixtures/ move together: rename a fixture and the
-// stage fails on a 404 rather than quietly measuring three pages.
+// so this list and web/tests/fixtures/ move together.
 //
 // scripts/perf-budgets.ts keeps the route *patterns* instead, because it is
 // asking a different question — whether a budgeted route emitted anything at
-// all — and a pattern is what §5's Routes column gives it.
+// all — and a pattern is what §5's Routes column gives it. It also imports this
+// list and checks every path against the build, which is what makes a renamed
+// fixture a sentence naming the path rather than a 404 inside Lighthouse: that
+// gate runs before the browser stage starts a container.
 export const PAGES = [
   '/',
   '/writing/',

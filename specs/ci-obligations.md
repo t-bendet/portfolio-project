@@ -43,7 +43,7 @@ cited elsewhere as identifiers, so they are never reassigned.)*
     truth: `performance-budgets.md`. Budgets are contracts; moving one is a
     deliberate, recorded decision, not a CI tweak. Two halves, because they
     need different things: `scripts/perf-budgets.ts` measures `web/dist`
-    against §3/§4.1/§4.1a/§5 and diffs the client-JS carriers against
+    against §3/§3.1/§4.1/§4.1a/§5 and diffs the client-JS carriers against
     `web/tests/perf/client-js.json`, needing nothing but node; the browser side
     (Lighthouse for §2, and the idle-cost check) needs the built site served.
     `web/tests/run-perf.sh` is the harness — fixtures in, build, measure,
@@ -51,6 +51,29 @@ cited elsewhere as identifiers, so they are never reassigned.)*
     two of the four routes §8 names render nowhere without them.
 11. `sec` stage (dependency audit + secrets scan) — source of truth:
     `security-requirements.md` (SR-1…SR-24).
+
+## Local harnesses
+
+Three harnesses start a Caddy container and talk to it over a docker network,
+and each has to own a port, a network name and a container name that no other
+one uses — two harnesses on one network is a race the day someone runs both at
+once. **This table is the allocation.** A fourth takes the next free port and
+adds its row here; before this existed, the only place all three appeared
+together was a passing remark in one script's header, so picking a port meant
+reading three files or colliding.
+
+| Harness | Port | Network | Container | Obligation |
+|---|---|---|---|---|
+| `web/tests/run-e2e.sh` | 8080 | `portfolio-e2e` | `portfolio-e2e-web` | §4 |
+| `web/.fidelity/run.mjs` | 8081 | `portfolio-fidelity` | `portfolio-fidelity-web` | none — a design tool, listed because it holds a port |
+| `web/tests/run-perf.sh` | 8082 | `portfolio-perf` | `portfolio-perf-web` | §10 |
+
+The fidelity runner is **not** an obligation and its presence here must not be
+read as one; it is in the table because a port it holds is a port nothing else
+may take. It is also **not in the repo** — `web/.fidelity/` is gitignored, so a
+fresh clone has 8081 free and nothing to explain why the number is skipped.
+That is the strongest reason for this table to exist rather than for each script
+to know only its own port.
 
 ## Dormant
 
