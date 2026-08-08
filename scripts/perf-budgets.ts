@@ -381,7 +381,6 @@ interface Block {
   source: string;
   csp: string;
   rawBytes: number;
-  gzipBytes: number;
 }
 
 const INVENTORY_COMMENT =
@@ -389,7 +388,11 @@ const INVENTORY_COMMENT =
   'blocks and emitted .js assets — with the specs/performance-budgets.md §3 row its bytes are ' +
   'charged to. Regenerate with `node scripts/perf-budgets.ts --update` and READ THE DIFF: a new ' +
   'entry here is §8 item 2\'s "called out". `csp` is the base64 SHA-256 of the block\'s dist ' +
-  'bytes, which is exactly the token deploy/Caddyfile\'s SR-10 script-src will need.';
+  'bytes, which is exactly the token deploy/Caddyfile\'s SR-10 script-src will need. Sizes are ' +
+  'RAW bytes and gzip is deliberately not recorded: the gzipped size depends on the zlib the ' +
+  'run happens to link, so a recorded one differs between a laptop and a runner and would ask ' +
+  'to be updated forever, on both, in turn. The budget is still checked against a live gzip ' +
+  'measurement; it is only the stored number that has to be reproducible.';
 
 function readInventory(): Block[] {
   const parsed = JSON.parse(readFileSync(INVENTORY, 'utf8'));
@@ -542,7 +545,6 @@ function main(): void {
         source: was?.source ?? c.href ?? 'TODO — the file this block is authored in',
         csp: c.csp,
         rawBytes: c.rawBytes,
-        gzipBytes: c.gzipBytes,
       };
     });
     writeInventory(blocks);
@@ -598,8 +600,11 @@ function main(): void {
     }
     for (const b of blocks) {
       const now = measured.get(b.csp);
-      if (now && now.gzipBytes !== b.gzipBytes) {
-        console.log(`  ${row}: ${b.gzipBytes} → ${now.gzipBytes} B gz (record it with --update)`);
+      // Raw, not gzip — see INVENTORY_COMMENT. A carrier whose content changed
+      // has a different hash and is caught above, so reaching here with a
+      // different size means the recorded number was wrong rather than stale.
+      if (now && now.rawBytes !== b.rawBytes) {
+        console.log(`  ${row}: recorded ${b.rawBytes} B raw, measured ${now.rawBytes} B (--update)`);
       }
     }
   }
