@@ -2,8 +2,10 @@
 # Implemented so far: typecheck, api tests against Postgres with migrations,
 # web build, docker image builds (not pushed), the four static design gates
 # (contrast, token parity, banned vocabulary, no raw hex), the Playwright RTL
-# stage, and the dependency-audit half of the sec stage. The remaining
-# obligation (perf/bundle) lands with the feature it checks.
+# stage, the dependency-audit half of the sec stage, and the byte and bundle
+# half of the perf stage. What is left of §10 is its browser side — Lighthouse
+# against §2's scores and metrics, and the idle-cost check — which lands with
+# the network and the Caddy container it needs.
 #
 # No `paths:` filter, deliberately: `checks` is a required status context on
 # main, and a required context that never reports blocks a PR forever rather
@@ -125,6 +127,19 @@ jobs:
       # actions, so nothing here needs allowlisting.
       - name: RTL stage (ci-obligations §4)
         run: web/tests/run-e2e.sh
+
+      # Same fixture mechanism and the same reason for the position as the RTL
+      # stage above: it installs fixtures into the collections and rebuilds
+      # web/dist with them, so it must run after `Build web`, after `Banned
+      # vocabulary` and after both image builds — and nothing that greps or
+      # ships web/dist may follow it. It goes one step further and removes the
+      # build on the way out.
+      #
+      # A step in this job rather than a job of its own: a new job is a new
+      # status context, and a context that is not named in the branch
+      # protection is advisory no matter what it asserts.
+      - name: Perf and bundle stages (ci-obligations §10)
+        run: web/tests/run-perf.sh
 
       # The diff images are the whole diagnosis when a screenshot assertion
       # fails, and they do not exist anywhere else.

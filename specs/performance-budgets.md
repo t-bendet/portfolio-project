@@ -19,6 +19,18 @@ deliberate, recorded decision — an edit to this file, in a PR that says why,
 with the measurement that motivated it. It is not a CI tweak, and a stage
 must never be loosened to make a red run green.
 
+**Units, so that a gate can be written against these tables.** **KB is 1000
+bytes** throughout this file — the SI reading, which is also what Lighthouse
+and DevTools report, and the stricter of the two. HTML, CSS and extracted
+script blocks are measured **gzip level 6**: that is Caddy's `encode gzip`
+default, so the figure models the transfer a visitor actually pays rather than
+the best case a higher level could reach. **woff2 is counted raw** — it is
+already compressed and Caddy ships it as-is (§7). A page's total counts its
+HTML once: the inline theme block and the `@font-face` `<style>` blocks live
+inside that HTML, so §3 charges the extracted block and §5 charges the HTML
+that contains it, and adding both to one total would count the same bytes
+twice.
+
 ---
 
 ## 1. What the architecture already guarantees (budgets lean on it)
@@ -52,10 +64,15 @@ below are the real contract.
 | Hero typing sequence | `/` only | **≤ 3.0 KB** |
 | View-event beacon | `/`, 3 detail route types | **≤ 1.0 KB** |
 | Count/reactions enhancement | article + translation detail | **≤ 5.0 KB** |
-| **Route totals** | indexes, about, colophon, contact, 404s | **≤ 2 KB** (theme only) |
+| **Route totals** | `/writing/`, `/projects/`, `/about/`, `/colophon/`, `/contact/`, `/404`, `/he/writing/`, `/he/404/` | **≤ 2 KB** (theme only) |
 | | `/` | **≤ 6 KB** |
 | | `/writing/[id]/`, `/he/writing/[id]/` | **≤ 8 KB** |
 | | `/projects/[id]/` | **≤ 3 KB** (theme + beacon) |
+
+The Route totals rows name their routes rather than describing them so §8's
+gate can read this table instead of restating it. Naming the Hebrew index and
+`/he/404/` explicitly is what "indexes" and "404s" always meant; no budget
+moves.
 
 No framework runtime, no hydration payload, no polyfills (evergreen
 browsers; the site works with JS disabled by specification, which is the
@@ -86,11 +103,21 @@ below are caps, and the built pipeline is under all of them.
 | `en` pages | Syne (var, latin) + DM Mono (2 static weights, latin) | **≤ 110 KB** |
 | `he` pages | above + Heebo (var, hebrew subset) | **≤ 145 KB** |
 
-Per-file caps: Syne variable latin **≤ 55 KB**; each DM Mono weight
-**≤ 20 KB**; Heebo hebrew **≤ 35 KB**. `font-display: swap`;
-`<link rel="preload">` only for the families the current locale's default
-theme actually uses — preloading a font the page never renders is a budget
-breach in disguise.
+`font-display: swap`; `<link rel="preload">` only for the families the current
+locale's default theme actually uses — preloading a font the page never
+renders is a budget breach in disguise.
+
+#### 4.1a Per-file caps (critical path)
+
+| Family | Faces | Cap, per file |
+|---|---|---|
+| `Syne` | variable, latin | **≤ 55 KB** |
+| `DM Mono` | 400 and 500, latin | **≤ 20 KB** |
+| `Heebo` | variable, hebrew subset | **≤ 35 KB** |
+
+A table rather than the sentence this used to be, for §8's gate: a regex over
+prose is a parser that matches *wrongly*, which is worse than one that matches
+nothing. The three caps are unchanged.
 
 ### 4.2 The hidden warm theme — **4 families** (C3: not 3)
 
@@ -122,11 +149,22 @@ adding warm fonts to the critical path to make the toggle simpler.
 
 ## 5. Page weight totals (transfer, gzip, excluding article body images)
 
-| Route type | Budget |
-|---|---|
-| Indexes, about, colophon, contact, 404s (en) | **≤ 250 KB** |
-| `/` | **≤ 260 KB** |
-| Article / translation detail | **≤ 300 KB** (en) / **≤ 340 KB** (he) |
+| Route type | Routes | Budget |
+|---|---|---|
+| Indexes, about, colophon, contact, 404s | `/writing/`, `/projects/`, `/about/`, `/colophon/`, `/contact/`, `/404`, `/he/writing/`, `/he/404/` | **≤ 250 KB** |
+| Home | `/` | **≤ 260 KB** |
+| Article detail (en) | `/writing/[id]/` | **≤ 300 KB** |
+| Translation detail (he) | `/he/writing/[id]/` | **≤ 340 KB** |
+
+Three clarifications, no number moved. The Routes column exists so §8's gate
+reads this table rather than restating it. The first row's "(en)" qualifier is
+gone: the Hebrew *indexes* take the same 250 KB as the English ones — they
+measure 85–87 KB today against the 73–75 KB of their English counterparts, so
+this is a tightening relative to any font delta the qualifier implied. And the
+detail row is split in two so that one cell carries one budget. `/he/` is not
+listed: `astro.config.mjs`'s `redirects` emits it as a meta-refresh stub with
+no stylesheet, font or script, so no route type describes it and the gate
+exempts it by name.
 
 Component assumptions inside those totals: HTML ≤ 60 KB, the single
 stylesheet (both theme token blocks — tiny by construction) **≤ 30 KB**,
@@ -179,17 +217,50 @@ RTT will dominate real-world LCP for far visitors. Two consequences:
 
 ## 8. CI enforcement
 
-This is `ci-obligations.md` §10, and it is **not built yet**. What follows is
-the contract it must satisfy, not a description of something running.
+This is `ci-obligations.md` §10. The contract is four items; **item 2 and the
+byte half of item 1 are built**, and the browser side is not.
 
 1. **`perf` stage**: Lighthouse against the built site — §2 scores and
    metrics, §3/§5 byte budgets. **Build fails on breach** — that is the
-   contract.
+   contract. *Byte budgets built* (`scripts/perf-budgets.ts`); Lighthouse not.
 2. **`bundle` stage**: bundle analysis diff; any new client-JS dependency on
-   a content route is called out.
-3. **Idle-cost check**: the §3 idle assertions on `/` and one article.
+   a content route is called out. *Built* — `web/tests/perf/client-js.json` is
+   the inventory every client-JS carrier in `web/dist` must appear in, keyed by
+   the CSP-form SHA-256 of its dist bytes, so a new block is a reviewable diff
+   rather than a byte total that moved slightly. A carrier missing from it, an
+   entry missing from `dist`, or an entry naming a §3 row that does not exist
+   all fail.
+3. **Idle-cost check**: the §3 idle assertions on `/` and one article. *Not
+   built.*
 4. Pages measured: `/`, `/writing/[id]/` fixture, `/he/writing/[id]/`
-   fixture (RTL — budgets apply identically), `/writing/`.
+   fixture (RTL — budgets apply identically), `/writing/`. *Built* — and their
+   absence is a failure, not a pass: the gate resolves all four and reports
+   "no page emitted" against a build without the fixtures.
+
+**What is measured is a fixture corpus, not content.** `web/tests/fixtures/`
+holds one full article, two short siblings and one translation; the harness
+installs them, builds, measures and removes them. So the article numbers are
+the numbers for prose of *that* shape and length, and they will move when real
+articles land. That is the intended behaviour of a gate whose subject does not
+exist yet, and it is why the article rows in §5 have the widest headroom in
+this file.
+
+**Four gaps this stage does not cover**, recorded so a green run is not read as
+more than it is:
+
+- **§6's image budgets are unexercised.** No fixture carries a body image and
+  no portrait exists, so nothing measures the ≤ 200 KB / ≤ 500 KB rows or the
+  portrait's ≤ 80 KB. They land with the first image.
+- **§5 has no row for `/projects/[id]/`** — it never did; the route type is
+  absent from the table. The projects collection is empty, so nothing renders
+  there today, and the first case study will fail the gate's "no §5 row claims
+  this page" guard until a row is written. That is deliberate: a page type with
+  no page-weight budget is a gap, and the gate's job is to make it loud rather
+  than to guess a number.
+- **§7's caching table is not implemented and not gated.** `deploy/Caddyfile`
+  sets no `Cache-Control` at all today. Nothing here checks headers.
+- **§2 is entirely unmeasured** until the Lighthouse half lands. No CWV number
+  in this file is currently enforced by anything.
 
 Three notes on building it, each learned rather than assumed:
 
@@ -202,8 +273,13 @@ Three notes on building it, each learned rather than assumed:
   so a grep for the word would enforce a ritual with nothing behind it. The
   standing rule at the top of this file is the replacement, and it is
   enforced by review.
-- **Two of the four pages in item 4 render nowhere today** — the writing and
-  projects collections are empty, so `/writing/[id]/` emits zero pages. The
-  RTL stage's existing fixture mechanism (`build-status.md` §3) is the
-  precedent for how to give this stage something real to measure; inventing
-  content to test with is not.
+- **Two of the four pages in item 4 rendered nowhere** when this was written —
+  the writing and projects collections are empty, so `/writing/[id]/` emitted
+  zero pages. The RTL stage's existing fixture mechanism (`build-status.md` §3)
+  was the precedent for how to give this stage something real to measure;
+  inventing content to test with was not. That is what was done: three writing
+  fixtures, sized and shaped rather than written to be read. Three and not one
+  because `/`'s recent-writing column is built for three entries and the
+  article template's siblings block needs two others — measuring those in their
+  empty state would be measuring a shape the site will never ship in, which is
+  the same objection this note raises.

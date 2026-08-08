@@ -15,6 +15,7 @@
 #   api tests                     ci.yml                  (postgres service)
 #   image builds, caddy validate  ci.yml                  (docker)
 #   the RTL stage                 web/tests/run-e2e.sh
+#   §10 Lighthouse, idle cost     web/tests/run-perf.sh   (docker)
 #
 # Unlike sec.sh this cds to the root. The four gate scripts address their
 # inputs as bare relative paths ('web/dist', 'specs/design/palette.md'), so
@@ -58,6 +59,12 @@ if [ "$what" = all ]; then
   # ships. A missing dist that script reports; a stale one it cannot see.
   run 'build web' pnpm --filter web build
   run 'banned vocabulary (ci-obligations §7)' node scripts/banned-vocab.ts
+  # Last, and never before the vocabulary gate: this rebuilds web/dist with the
+  # fixtures installed, which is a dist that must not be grepped for what ships.
+  # It removes that build on the way out, so `check.sh all` now leaves no dist
+  # behind at all — a missing one the next run rebuilds, a fixture one it could
+  # not tell from the real thing.
+  run 'perf budgets (ci-obligations §10)' web/tests/run-perf.sh
 fi
 
 if [ -n "$failed" ]; then

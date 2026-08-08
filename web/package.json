@@ -11,7 +11,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "test:e2e": "tests/run-e2e.sh",
-    "test:e2e:update": "tests/run-e2e.sh --update-snapshots"
+    "test:e2e:update": "tests/run-e2e.sh --update-snapshots",
+    "test:perf": "tests/run-perf.sh"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
