@@ -76,8 +76,11 @@ none, which is why it is not a loosening.
 
 **Why CLS is measured but not yet enforced.** `/` does not meet it. Measured
 2026-08-08 over seven runs: a median of **0.0201** against the 0.02 above, with
-a spread of 0.0004 — so the true value straddles the budget rather than clearing
-it. Every other route measures 0.000. Lighthouse attributes the shift to
+a spread of 0.0004 - so the true value straddles the budget rather than clearing
+it. On CI the same page measured a median of **0.0197 with a spread of 0.0027**,
+which is the more important number: it is seven times the local spread, it is
+the only metric on this stage that is not steady across runs, and it lands on
+both sides of the budget. Every other route measures 0.000. Lighthouse attributes the shift to
 `h1.hero-mark > span.scheme > span.frame` and the header nav items: it is
 font-swap reflow, which follows from `astro.config.mjs` giving every family
 `fallbacks: []`.

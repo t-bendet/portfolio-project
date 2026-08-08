@@ -117,12 +117,11 @@ filter, obligation 9 comes back with it.
 
 **A green `checks` run took about 2m12s** — measured on PR #35 (2026-08-07)
 and again at 2m13s on PR #37 the next day, so it was a figure with two runs
-under it rather than one. `secrets` reports in 9–11s. **That figure predates
-the perf stage.** The byte half measured 1m58s on PR #38, i.e. inside the noise
-of the old number. The browser half is the real addition: locally it is about
-100 seconds — a Caddy container, twelve Lighthouse passes and three Playwright
-tests — so expect something near 4 minutes, and replace this sentence with the
-measured figure rather than this estimate once CI has published one. That is a cold number,
+under it rather than one. `secrets` reports in 9–11s. **With the perf stage a green `checks` run takes 3m39s** — measured on PR #39
+(2026-08-08). The byte half alone measured 1m58s on PR #38, inside the noise of
+the old figure; the browser half is the real addition, being a Caddy container,
+twelve Lighthouse passes and three Playwright tests. `secrets` still reports in
+7-11s. That is a cold number,
 because nothing in either workflow caches anything, and a small one mostly
 because the content collections are empty, so `astro build` is a fraction of a
 second of it. It will grow with content. `timeout-minutes: 15` is a runaway
@@ -243,15 +242,24 @@ default *is* mobile form factor, Slow-4G and simulated throttling — §2's "lab
 throttled mobile" exactly.
 
 Simulated throttling rather than devtools throttling, and the measurement
-justifies it: **across twelve runs the LCP spread was 4 ms.** Lantern runs the
-page once and computes metrics from the trace's dependency graph, so the number
-barely moves with runner contention, which is the failure mode that kills a gate
-on a required context. Median-of-3 is kept as insurance until CI publishes its
-own spread; on that evidence a single run may well be enough.
+justifies it: across twelve local runs the LCP spread was 4 ms, and **on the
+runner it was 2-3 ms across all four routes** - 1503-1504 ms there against
+1502 ms locally. Lantern runs the page once and computes metrics from the
+trace's dependency graph, so the number barely moves with runner contention,
+which is the failure mode that kills a gate on a required context. That is
+strong enough evidence to drop to a single run; median-of-3 is kept for now
+because the *other* metric on this stage is not nearly so steady (below), and
+`PERF_RUNS` makes the change a one-liner when someone wants the ninety
+seconds.
 
 **§2's CLS row is measured, printed, and not enforced, and `/` is why.** Seven
-runs give a median of 0.0201 against the 0.02 budget with a spread of 0.0004 —
-straddling it rather than clearing it, while every other route measures 0.000.
+local runs give a median of 0.0201 against the 0.02 budget with a spread of
+0.0004 - straddling it rather than clearing it, while every other route measures
+0.000. **On the runner the median was 0.0197 and the spread 0.0027**, seven times
+the local one and the only metric on this stage that is not steady, so it swings
+either side of the budget on the machine that would have to enforce it. Had this
+row been gated on the strength of a laptop measurement it would have been a
+coin-flip on `main`.
 Lighthouse attributes it to the hero mark's spans and the header nav items: it
 is font-swap reflow. The budget was not moved and the `fallbacks: []`
 correctness invariant was not traded away for it — Astro's default fallback face
