@@ -26,6 +26,12 @@ cleanup() {
   docker rm -f "$WEB_CONTAINER" >/dev/null 2>&1 || true
   docker network rm "$NETWORK" >/dev/null 2>&1 || true
   node "$ROOT/web/tests/install-fixtures.ts" clean
+  # The fixture goes, and so does the build that contains it: web/dist is a
+  # fixture build by the time this runs, and scripts/banned-vocab.ts greps
+  # web/dist. Leaving it behind is output that does not ship being read as
+  # output that does. (web/tests/run-perf.sh does the same, for the same
+  # reason.)
+  rm -rf "$ROOT/web/dist"
 }
 trap cleanup EXIT
 

@@ -1,0 +1,13 @@
+{
+  "$comment": "ci-obligations.md §10, the bundle stage. Every client-JS carrier in web/dist — inline blocks and emitted .js assets — with the specs/performance-budgets.md §3 row its bytes are charged to. Regenerate with `node scripts/perf-budgets.ts --update` and READ THE DIFF: a new entry here is §8 item 2's \"called out\". `csp` is the base64 SHA-256 of the block's dist bytes, which is exactly the token deploy/Caddyfile's SR-10 script-src will need. Sizes are RAW bytes and gzip is deliberately not recorded: the gzipped size depends on the zlib the run happens to link, so a recorded one differs between a laptop and a runner and would ask to be updated forever, on both, in turn. The budget is still checked against a live gzip measurement; it is only the stored number that has to be reproducible.",
+  "blocks": [
+    {
+      "row": "Theme mechanism (inline head: attribute-set + keydown buffer + persistence)",
+      "kind": "inline",
+      "routes": "all",
+      "source": "web/src/layouts/Base.astro",
+      "csp": "sha256-VR9pVvshHbWXa2lFn+iQpV72n2iY/SPzFRKFlgMDvag=",
+      "rawBytes": 4603
+    }
+  ]
+}

@@ -41,7 +41,14 @@ cited elsewhere as identifiers, so they are never reassigned.)*
 
 10. `perf` stage (Lighthouse against budgets) + `bundle` stage — source of
     truth: `performance-budgets.md`. Budgets are contracts; moving one is a
-    deliberate, recorded decision, not a CI tweak.
+    deliberate, recorded decision, not a CI tweak. Two halves, because they
+    need different things: `scripts/perf-budgets.ts` measures `web/dist`
+    against §3/§4.1/§4.1a/§5 and diffs the client-JS carriers against
+    `web/tests/perf/client-js.json`, needing nothing but node; the browser side
+    (Lighthouse for §2, and the idle-cost check) needs the built site served.
+    `web/tests/run-perf.sh` is the harness — fixtures in, build, measure,
+    fixtures and build back out — for the same reason `run-e2e.sh` is §4's:
+    two of the four routes §8 names render nowhere without them.
 11. `sec` stage (dependency audit + secrets scan) — source of truth:
     `security-requirements.md` (SR-1…SR-24).
 

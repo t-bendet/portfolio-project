@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-08**, at `20723eb` on `main`.
+Last checked against the repo: **2026-08-08**, at `7c6dab0` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -106,16 +106,22 @@ below except the secrets scan, which is `.github/workflows/sec.yml`, job
 | 7 | Banned-vocabulary grep over shipped CSS/JS/HTML | yes — `scripts/banned-vocab.ts`, over `web/dist` |
 | 8 | No-raw-hex lint | yes — `scripts/no-raw-hex.ts`, over `web/src` |
 | 9 | Workflow-lint for the `paths:` filters | **dormant** — no filter is left to lint (below); `ci-obligations.md` holds it under "Dormant" |
-| 10 | `perf` (Lighthouse vs. budgets) + `bundle` stages | **no** |
+| 10 | `perf` (Lighthouse vs. budgets) + `bundle` stages | **partial** — the byte budgets and the whole bundle stage are built (`scripts/perf-budgets.ts`, `web/tests/run-perf.sh`); Lighthouse and the idle-cost check are not |
 | 11 | `sec` stage (dependency audit + secrets scan) | yes — `scripts/sec.sh`, split across both workflows |
 
-Obligation 10 lands with the feature it checks, not as a batch. `deploy.yml`
-and `backup.yml` do not exist yet — both are downstream of §4, and if either
-arrives carrying a `paths:` filter, obligation 9 comes back with it.
+Obligation 10's remaining half lands with the browser it needs, not as a batch,
+and the §3 rows for features that do not exist (hero typing, view beacon,
+reactions) get no gate until they do — the gate asserts they measure zero and
+prints them as unbuilt on every run. `deploy.yml` and `backup.yml` do not exist
+yet — both are downstream of §4, and if either arrives carrying a `paths:`
+filter, obligation 9 comes back with it.
 
-**A green `checks` run takes about 2m12s** — measured on PR #35 (2026-08-07)
-and again at 2m13s on PR #37 the next day, so it is a figure with two runs
-under it rather than one. `secrets` reports in 9–11s. That is a cold number,
+**A green `checks` run took about 2m12s** — measured on PR #35 (2026-08-07)
+and again at 2m13s on PR #37 the next day, so it was a figure with two runs
+under it rather than one. `secrets` reports in 9–11s. **That figure predates
+the perf stage** and is owed a re-measurement from this stage's own first green
+run; locally the new step costs about five seconds, being a second fixture
+install, a second `astro build` and a script that reads files. That is a cold number,
 because nothing in either workflow caches anything, and a small one mostly
 because the content collections are empty, so `astro build` is a fraction of a
 second of it. It will grow with content. `timeout-minutes: 15` is a runaway
@@ -190,6 +196,43 @@ future failure:
   `web/src` with `tokens.css` as its single allowlisted file. Splitting them
   that way keeps Tailwind preflight's hexes — not ours — out of the hex lint
   without an allowlist that would grow into a hiding place.
+
+**The perf and bundle stages (10) run on the fixture corpus, in their own
+harness.** `web/tests/run-perf.sh` installs the fixtures, rebuilds `web/dist`
+with them, runs `scripts/perf-budgets.ts` against that build, then removes both
+the fixtures and the build. It is a second harness rather than a flag on
+`run-e2e.sh` because the obligation numbers are identifiers cited from step
+names, and a budget breach reporting as an RTL failure is the silent gap the
+list exists to prevent.
+
+Three writing fixtures were added for it — `/writing/[id]/` is one of the four
+routes `performance-budgets.md` §8 names and the collection is empty. Three
+because `/`'s recent column is built for three entries and the article
+template's siblings block needs two others; one fixture would have measured a
+shape the site will never ship in. They cannot move the RTL baseline:
+`he/writing/[id].astro` reads `translations` only.
+
+The gate parses its budgets out of `performance-budgets.md` §3/§4.1/§4.1a/§5
+rather than restating them, the way `contrast.ts` parses `palette.md` §5 — which
+is why that PR gave those tables a machine-readable Routes column and promoted
+§4.1's per-file caps out of a sentence into §4.1a. No number moved. The spec
+also gained the units it had never stated and the gate could not be written
+without: KB is 1000 bytes, and HTML/CSS/script blocks are measured at gzip
+level 6, Caddy's `encode gzip` default, so the figure models the transfer
+rather than the best case.
+
+Two things it is worth knowing the gate does *not* do. It does not add the
+inline script's bytes to a page's total — those bytes are inside the HTML it
+already counted, and §3 charges the extracted block separately. And it does not
+treat "zero .js assets" as a rule: a future hero-typing script written without
+`is:inline` becomes a real asset that §3 legitimately budgets, so the count is
+reported as a fact and the *inventory* is what fails.
+
+**`web/dist` is now removed by both harnesses on the way out.** It is a fixture
+build by the time either finishes, and `banned-vocab.ts` greps `web/dist` — a
+fixture build left behind is output that does not ship being read as output
+that does. `run-e2e.sh` had that hazard since it was written and never tripped
+it; it was fixed alongside the stage that would have doubled the chances.
 
 **`ci.yml` no longer has `paths:` filters, and that is what made SR-18
 possible.** A required status context that never reports does not skip — it
