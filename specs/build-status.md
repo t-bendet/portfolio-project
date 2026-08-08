@@ -1,6 +1,6 @@
 # Build status — what exists, what does not
 
-Last checked against the repo: **2026-08-08**, at `7c6dab0` on `main`.
+Last checked against the repo: **2026-08-08**, at `91e2ee5` on `main`.
 
 Every other file in `specs/` records a decision and changes only when the
 decision changes. This one records mutable state, which is why it is separate:
@@ -215,14 +215,33 @@ template's siblings block needs two others; one fixture would have measured a
 shape the site will never ship in. They cannot move the RTL baseline:
 `he/writing/[id].astro` reads `translations` only.
 
-The gate parses its budgets out of `performance-budgets.md` §3/§4.1/§4.1a/§5
-rather than restating them, the way `contrast.ts` parses `palette.md` §5 — which
-is why that PR gave those tables a machine-readable Routes column and promoted
-§4.1's per-file caps out of a sentence into §4.1a. No number moved. The spec
-also gained the units it had never stated and the gate could not be written
-without: KB is 1000 bytes, and HTML/CSS/script blocks are measured at gzip
+The gate parses its budgets out of `performance-budgets.md`
+§3/§3.1/§4.1/§4.1a/§5 rather than restating them, the way `contrast.ts` parses
+`palette.md` §5 — which is why that PR gave those tables a machine-readable
+Routes column and promoted §4.1's per-file caps out of a sentence into §4.1a.
+No number moved. The spec also gained the units it had never stated and the
+gate could not be written without: KB is 1000 bytes, and HTML/CSS/script
+blocks are measured at gzip
 level 6, Caddy's `encode gzip` default, so the figure models the transfer
 rather than the best case.
+
+**Six follow-ups landed 2026-08-08, and none of them is a budget change.** §3's
+route totals became `§3.1` with a Route type column of their own — they had been
+four rows appended to the per-script table with a blank first cell, which the
+gate told apart by matching the words "Route totals" in a cell, the one place
+that parser failed open rather than closed. Every route and every number carried
+over verbatim, and `§3.1` and `§5` are now read by one function because they are
+one shape. `perf-budgets.ts` also imports `pages.ts` now and checks each concrete
+path against the build, so a renamed fixture fails there naming the path, before
+the browser half starts a container — it used to surface as a 404 inside
+Lighthouse. Its "no §5 row claims this page" error now says that a route type
+rendering for the first time is §8's recorded gap firing as designed, which is
+exactly what `/projects/[id]/` will do on the first case study. `lighthouse.ts`
+printed its run-to-run spread after a `±`, which reads as a half-interval when
+the value is the full max−min range: the label changed, and every spread recorded
+in this file and in `performance-budgets.md` §2 stands as written. And the three
+harnesses' ports, networks and containers are allocated in one table in
+`ci-obligations.md` instead of in three files that each knew only their own.
 
 Two things it is worth knowing the gate does *not* do. It does not add the
 inline script's bytes to a page's total — those bytes are inside the HTML it

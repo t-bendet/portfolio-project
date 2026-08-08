@@ -186,7 +186,7 @@ async function main(): Promise<void> {
           // there carries the reason. Loud on stdout so it cannot be forgotten.
           else console.log(`  over budget, not enforced: ${breach}`);
         }
-        cells.push(`${fmt(value, t.unit)} ±${fmt(spread, t.unit)}`);
+        cells.push(`${fmt(value, t.unit)} (spread ${fmt(spread, t.unit)})`);
       }
       rows.push(cells);
     }
@@ -211,7 +211,10 @@ async function main(): Promise<void> {
   if (notGated.length > 0) {
     console.log(`Measured but not enforced (§2's Enforced column): ${notGated.join(', ')}.`);
   }
-  console.log('The ± is the spread across runs, not a tolerance: a widening one is a gate about to flake.');
+  console.log(
+    'Spread is the full max−min range across runs, not a tolerance and not a half-interval: ' +
+      'a widening one is a gate about to flake.',
+  );
 
   if (errors.length > 0) {
     console.error('\nlighthouse budgets failed:');

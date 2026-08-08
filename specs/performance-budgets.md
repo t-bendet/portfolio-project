@@ -109,15 +109,6 @@ changes** — which is the whole reason the number was left alone.
 | Hero typing sequence | `/` only | **≤ 3.0 KB** |
 | View-event beacon | `/`, 3 detail route types | **≤ 1.0 KB** |
 | Count/reactions enhancement | article + translation detail | **≤ 5.0 KB** |
-| **Route totals** | `/writing/`, `/projects/`, `/about/`, `/colophon/`, `/contact/`, `/404`, `/he/writing/`, `/he/404/` | **≤ 2 KB** (theme only) |
-| | `/` | **≤ 6 KB** |
-| | `/writing/[id]/`, `/he/writing/[id]/` | **≤ 8 KB** |
-| | `/projects/[id]/` | **≤ 3 KB** (theme + beacon) |
-
-The Route totals rows name their routes rather than describing them so §8's
-gate can read this table instead of restating it. Naming the Hebrew index and
-`/he/404/` explicitly is what "indexes" and "404s" always meant; no budget
-moves.
 
 No framework runtime, no hydration payload, no polyfills (evergreen
 browsers; the site works with JS disabled by specification, which is the
@@ -127,6 +118,27 @@ is a budget breach before it is a code review comment.
 **Idle cost (code-mode check, chartered here):** zero timers, zero
 polling, zero long tasks at idle on every route; the keydown buffer and
 theme transition must be unmeasurable when not in use.
+
+### 3.1 Route totals
+
+| Route type | Routes | Budget |
+|---|---|---|
+| Indexes, about, colophon, contact, 404s | `/writing/`, `/projects/`, `/about/`, `/colophon/`, `/contact/`, `/404`, `/he/writing/`, `/he/404/` | **≤ 2 KB** (theme only) |
+| Home | `/` | **≤ 6 KB** |
+| Article + translation detail | `/writing/[id]/`, `/he/writing/[id]/` | **≤ 8 KB** |
+| Project detail | `/projects/[id]/` | **≤ 3 KB** (theme + beacon) |
+
+The rows name their routes rather than describing them so §8's gate can read
+this table instead of restating it. Naming the Hebrew index and `/he/404/`
+explicitly is what "indexes" and "404s" always meant; no budget moves.
+
+**Its own subsection since 2026-08-08, and no number moved by the split.** These
+four rows used to sit under the per-script table above with a blank first cell,
+which meant §8's gate told the two shapes apart by matching the words "Route
+totals" in a cell — the one sentinel in that parser that a reword would have
+broken silently rather than loudly. A table per shape removes it, the same
+treatment §5's Routes column and §4.1a's per-file caps already got. The Route
+type labels are §5's own, so the two tables read as a matched pair.
 
 ## 4. Font budgets (the dominant payload — and the C3 correction applied)
 

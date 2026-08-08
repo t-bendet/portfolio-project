@@ -6,9 +6,9 @@
 #   web/tests/run-perf.sh --bytes-only  the byte and bundle gate alone, no docker
 #
 # What it does: install the fixtures into the collections, rebuild web/dist with
-# them, measure that dist against §3/§4.1/§4.1a/§5, serve it through the real
-# deploy/Caddyfile and run Lighthouse (§2) and the idle-cost check (§3) against
-# it, then take the fixtures back out and remove the build.
+# them, measure that dist against §3/§3.1/§4.1/§4.1a/§5, serve it through the
+# real deploy/Caddyfile and run Lighthouse (§2) and the idle-cost check (§3)
+# against it, then take the fixtures back out and remove the build.
 #
 # Why the fixtures: §8 item 4 names /writing/[id]/ and /he/writing/[id]/ among
 # the routes to measure, and both collections are empty in the shipping tree.
@@ -23,8 +23,10 @@
 # `run-e2e.sh --update-snapshots` from re-running this.
 #
 # Its own network, port and container rather than sharing run-e2e.sh's: two
-# harnesses on one docker network is a race the day someone runs both at once,
-# and web/.fidelity/run.mjs already holds 8081.
+# harnesses on one docker network is a race the day someone runs both at once.
+# The allocation lives in specs/ci-obligations.md's "Local harnesses" table —
+# this comment used to name the one neighbouring port it happened to know about,
+# which is not the same as there being a list.
 #
 # Both images are the ones the RTL stage has already pulled, and `lighthouse` is
 # a devDependency of web/ — so the browser side of §10 adds no action to

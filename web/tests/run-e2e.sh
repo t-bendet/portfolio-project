@@ -14,6 +14,10 @@
 # web/package.json's @playwright/test exactly — the browser build and the
 # client are one artifact, and a mismatch shows up as a baseline that differs
 # by a few pixels rather than as an error.
+#
+# The port, network and container names below are allocated in
+# specs/ci-obligations.md's "Local harnesses" table, which is where a new
+# harness goes to find a free port rather than reading this file and two others.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -21,6 +25,7 @@ PLAYWRIGHT_IMAGE='mcr.microsoft.com/playwright:v1.62.1-noble'
 CADDY_IMAGE='caddy:2.11.4'
 NETWORK='portfolio-e2e'
 WEB_CONTAINER='portfolio-e2e-web'
+PORT=8080
 
 cleanup() {
   docker rm -f "$WEB_CONTAINER" >/dev/null 2>&1 || true
@@ -51,18 +56,18 @@ docker run -d --rm \
   --name "$WEB_CONTAINER" \
   --network "$NETWORK" \
   --network-alias web \
-  --publish 127.0.0.1:8080:80 \
+  --publish "127.0.0.1:$PORT:80" \
   --volume "$ROOT/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
   --volume "$ROOT/web/dist:/srv:ro" \
   "$CADDY_IMAGE" >/dev/null
 
 ready=''
 for _ in $(seq 1 30); do
-  if curl -fsS -o /dev/null http://127.0.0.1:8080/ 2>/dev/null; then ready=1; break; fi
+  if curl -fsS -o /dev/null "http://127.0.0.1:$PORT/" 2>/dev/null; then ready=1; break; fi
   sleep 1
 done
 if [ -z "$ready" ]; then
-  echo "caddy did not come up on 127.0.0.1:8080" >&2
+  echo "caddy did not come up on 127.0.0.1:$PORT" >&2
   docker logs "$WEB_CONTAINER" >&2 || true
   exit 1
 fi

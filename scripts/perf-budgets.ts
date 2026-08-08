@@ -10,10 +10,11 @@
 // "no page emitted" guard rather than passing on absence, which is the whole
 // difference between a gate and a decoration.
 //
-// BUDGETS: parsed out of specs/performance-budgets.md §3/§4.1/§4.1a/§5 rather
-// than restated here — the same reason scripts/contrast.ts parses palette.md
-// §5. The PR that added this file gave those tables a machine-readable Routes
-// column and promoted §4.1's per-file caps out of a sentence; no number moved.
+// BUDGETS: parsed out of specs/performance-budgets.md §3/§3.1/§4.1/§4.1a/§5
+// rather than restated here — the same reason scripts/contrast.ts parses
+// palette.md §5. The PR that added this file gave those tables a machine-readable
+// Routes column and promoted §4.1's per-file caps out of a sentence; a later one
+// split §3's route totals into §3.1. No number moved in either.
 // A regex over prose is a parser that matches wrongly, which is worse than one
 // that matches nothing.
 //
@@ -41,6 +42,12 @@ import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { gzipSync } from 'node:zlib';
+
+// The concrete paths the browser half visits, to cross-check against what the
+// build actually emitted — see the REQUIRED_ROUTES guard below. A plain relative
+// path, not a workspace import: this file already addresses web/dist and
+// web/tests/perf/client-js.json the same way.
+import { PAGES } from '../web/tests/perf/pages.ts';
 
 const SPEC = 'specs/performance-budgets.md';
 const DIST = 'web/dist';
@@ -164,34 +171,36 @@ interface Budgets {
   fontPerFile: Map<string, number>;
 }
 
-function readBudgets(md: string): Budgets {
-  const scriptRows = new Map<string, number>();
-  const routeTotals: RouteBudget[] = [];
-  let inTotals = false;
-  for (const [script, where, budget] of specTable(md, '## 3. JavaScript budgets', 3)) {
-    if (script.includes('Route totals')) inTotals = true;
-    if (!inTotals) {
-      scriptRows.set(script, budgetBytes(budget, `§3 "${script}"`));
-      continue;
-    }
+// §3.1 and §5 are the same shape — a route type, the routes it claims, a budget
+// — so they are read the same way. §3.1 became its own table on 2026-08-08; when
+// it was four rows appended to §3's per-script table with a blank first cell,
+// this function told the two apart by matching the words "Route totals" in a
+// cell, which was the one sentinel here that a spec reword would have broken
+// silently instead of loudly.
+function routeBudgets(md: string, heading: string, section: string): RouteBudget[] {
+  return specTable(md, heading, 3).map(([type, where, budget]) => {
     const raw = routePatterns(where);
-    if (raw.length === 0) throw new Error(`${SPEC}: §3 route total "${where}" names no route`);
-    routeTotals.push({
-      label: where,
+    if (raw.length === 0) throw new Error(`${SPEC}: ${section} row "${type}" names no route`);
+    return {
+      label: type,
       raw,
       patterns: raw.map(routeMatcher),
-      bytes: budgetBytes(budget, `§3 route total "${where}"`),
-    });
+      bytes: budgetBytes(budget, `${section} "${type}"`),
+    };
+  });
+}
+
+function readBudgets(md: string): Budgets {
+  const scriptRows = new Map<string, number>();
+  for (const [script, , budget] of specTable(md, '## 3. JavaScript budgets', 3)) {
+    scriptRows.set(script, budgetBytes(budget, `§3 "${script}"`));
   }
+  const routeTotals = routeBudgets(md, '### 3.1 Route totals', '§3.1');
   if (scriptRows.size === 0 || routeTotals.length === 0) {
     throw new Error(`${SPEC}: §3 parsed ${scriptRows.size} script rows, ${routeTotals.length} totals`);
   }
 
-  const pageWeights = specTable(md, '## 5. Page weight totals', 3).map(([type, where, budget]) => {
-    const raw = routePatterns(where);
-    if (raw.length === 0) throw new Error(`${SPEC}: §5 row "${type}" names no route`);
-    return { label: type, raw, patterns: raw.map(routeMatcher), bytes: budgetBytes(budget, `§5 "${type}"`) };
-  });
+  const pageWeights = routeBudgets(md, '## 5. Page weight totals', '§5');
 
   const fontCritical = new Map<string, number>();
   for (const [locale, , budget] of specTable(md, '### 4.1 Critical path', 3)) {
@@ -439,7 +448,9 @@ function main(): void {
     if (matched.length === 0) {
       errors.push(
         `${page.route} — no §5 row claims this page; give it a Routes entry in §5 ` +
-          `or add it to EXEMPT_ROUTES with a reason`,
+          `or add it to EXEMPT_ROUTES with a reason. A route type rendering for the ` +
+          `first time is §8's recorded gap firing as designed, not a broken gate: ` +
+          `write the budget, do not guess one here or loosen this`,
       );
     } else if (matched.length > 1) {
       errors.push(
@@ -522,6 +533,23 @@ function main(): void {
   }
   if (pages.length < MIN_PAGES) {
     errors.push(`only ${pages.length} pages under ${DIST} (expected ${MIN_PAGES}+)`);
+  }
+
+  // REQUIRED_ROUTES above asks whether a budgeted route *type* emitted anything;
+  // pages.ts names the concrete paths the browser half will visit, fixture ids
+  // and all. Both are needed, which is why they stay separate — but nothing
+  // checked the second against the build, so renaming a fixture surfaced as a
+  // 404 inside Lighthouse rather than as a sentence. This runs before
+  // run-perf.sh starts a container, so it costs nothing to find out here.
+  const emitted = new Set(pages.map((p) => p.route));
+  for (const path of PAGES) {
+    if (!emitted.has(path)) {
+      errors.push(
+        `${path} — web/tests/perf/pages.ts names this route for the browser stage, but ` +
+          `${DIST} emitted no such page (a renamed or removed web/tests/fixtures/ entry ` +
+          `is the usual cause; the two move together)`,
+      );
+    }
   }
 
   // --- the bundle stage: dist against the inventory ---
@@ -617,7 +645,7 @@ function main(): void {
 
   const assets = files.filter((f) => f.endsWith('.js')).length;
   console.log(
-    `\n${pages.length} pages measured against §3/§4.1/§4.1a/§5 (gzip-${GZIP_LEVEL}, KB=${KB}); ` +
+    `\n${pages.length} pages measured against §3/§3.1/§4.1/§4.1a/§5 (gzip-${GZIP_LEVEL}, KB=${KB}); ` +
       `${EXEMPT_ROUTES.size} route exempt.`,
   );
   console.log(
