@@ -21,17 +21,26 @@ packages:
 #   the CVE-2026-59870 fix was not backported), reached through
 #   @astrojs/internal-helpers. Eleven paths, all under mdx.
 #
+# `vite` sits under both of `web`'s bundler entry points, so `postcss` arrives
+# by two routes rather than one:
+#   GHSA-2v37-7h3g-55p8: nanoid <3.3.17 (a custom generator loops forever when
+#   size is zero), reached through postcss. Five paths, from
+#   @astrojs/mdx > astro > vite and from @tailwindcss/vite > vite.
+#
 # js-yaml is caret-bounded, and the other two are not, for a reason worth
 # keeping: an open `>=` override crosses majors. `>=4.3.1` resolved to js-yaml
 # 5.2.3, which dropped the default export that @astrojs/internal-helpers
 # imports, and `astro build` died at module instantiation. The audit passed
 # while the build was broken — the gate reads versions, not semantics. Bound a
 # new override to the range that carries the fix, and let the build be what
-# proves it.
+# proves it. nanoid is the fourth and it settles the argument: postcss asks for
+# ^3.3.16, the 3.x line ends at 3.3.18, and nanoid's `latest` is 6.0.1 — an
+# open `>=3.3.17` would have crossed four majors in one step.
 overrides:
   find-my-way: '>=9.7.0'
   fast-uri: '>=3.1.5'
   js-yaml: '^4.3.1'
+  nanoid: '^3.3.17'
 
 # pnpm blocks dependency build scripts by default; these need theirs
 # (native builds / Prisma engine downloads). sharp comes from astro's image
