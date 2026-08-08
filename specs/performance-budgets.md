@@ -45,16 +45,58 @@ was *bought* for R1, and the budget's job is to keep it paid for.
 
 ## 2. Core Web Vitals targets (p75, mid-tier mobile, lab-measured in CI)
 
-| Metric | All page types | Notes |
-|---|---|---|
-| LCP | **≤ 2.0 s** (lab, throttled mobile) | LCP element: `h1`/hero text — a font-dependent text node everywhere; no image is ever the LCP candidate (the portrait is mid-page on `/about/` only) |
-| CLS | **≤ 0.02** | Effectively zero: INV-2 append-only injection, image dimensions required, hero reveal is opacity-only. Anything above 0.02 means a rule was broken, not a budget missed |
-| INP | **≤ 150 ms** | Nothing here should ever approach it; the only listeners are the keydown buffer, hover states, and reaction clicks |
-| TTFB (guardrail, not CI-gated) | ≤ 800 ms field, primary audience | See §7 — single-region EC2, no CDN by architecture |
+A row that names a Lighthouse audit id in backticks is measured by §8's stage;
+the **Enforced** column says whether a breach fails the build. Three states, and
+the difference between the second and third matters: a *guardrail* is a target
+nothing here can see, while *not yet* is a number this stage measures and prints
+on every run without failing on it. §8's stage parses this table, so both the
+ids and that column are load-bearing.
+
+| Metric | All page types | Enforced | Notes |
+|---|---|---|---|
+| LCP (`largest-contentful-paint`) | **≤ 2.0 s** (lab, throttled mobile) | yes | LCP element: `h1`/hero text — a font-dependent text node everywhere; no image is ever the LCP candidate (the portrait is mid-page on `/about/` only) |
+| TBT (`total-blocking-time`) | **≤ 150 ms** | yes | The lab proxy for INP, below — the metric Lighthouse actually scores for interaction cost |
+| CLS (`cumulative-layout-shift`) | **≤ 0.02** | not yet — see below | Effectively zero: INV-2 append-only injection, image dimensions required, hero reveal is opacity-only. Anything above 0.02 means a rule was broken, not a budget missed |
+| INP | ≤ 150 ms field | guardrail | Nothing here should ever approach it; the only listeners are the keydown buffer, hover states, and reaction clicks |
+| TTFB | ≤ 800 ms field, primary audience | guardrail | See §7 — single-region EC2, no CDN by architecture |
 
 Lighthouse CI performance score gate: **≥ 95** on `/`, one article, one
 translation (RTL), one index. Score is the coarse gate; the byte budgets
 below are the real contract.
+
+**Why INP is a guardrail and TBT is the gate.** INP is a *field* metric: it
+needs real interactions over a real session, and Lighthouse does not produce
+one — there is no lab INP to assert, and asserting something else while calling
+it INP would be a gate reporting a number nobody measured. So INP keeps its
+≤ 150 ms as the field target and moves to the classification TTFB already
+carries, and TBT joins the table as the lab stand-in. 150 ms is deliberately
+*tighter* than Lighthouse's own 200 ms "good" threshold for TBT: it mirrors the
+INP number rather than inventing a looser one. This adds a gate where there was
+none, which is why it is not a loosening.
+
+**Why CLS is measured but not yet enforced.** `/` does not meet it. Measured
+2026-08-08 over seven runs: a median of **0.0201** against the 0.02 above, with
+a spread of 0.0004 — so the true value straddles the budget rather than clearing
+it. Every other route measures 0.000. Lighthouse attributes the shift to
+`h1.hero-mark > span.scheme > span.frame` and the header nav items: it is
+font-swap reflow, which follows from `astro.config.mjs` giving every family
+`fallbacks: []`.
+
+**The budget is not moved, and the invariant is not traded away for it.** 0.02
+stays exactly where it was; what is postponed is enforcement, and this row says
+so rather than a stage quietly omitting it. The obvious fix — letting Astro
+append its default metric-adjusted fallback — is *forbidden*: that face carries
+Hebrew glyphs and no `unicode-range`, so composing it ahead of the Hebrew
+companion means a Hebrew codepoint never reaches Heebo, which is the silent
+failure `typography.md` §3's companion mechanism exists to prevent
+(`astro.config.mjs` states this as a correctness invariant).
+
+The fix that remains open is a hand-written metric-adjusted `@font-face` for
+Syne and DM Mono with an explicit latin `unicode-range` — the technique
+`fonts-hebrew.css` already uses for Heebo and Frank Ruhl Libre, scoped so it
+cannot swallow Hebrew. That is a typography decision, not a CI one. **When it
+lands, this row's Enforced column flips to `yes` and nothing else about it
+changes** — which is the whole reason the number was left alone.
 
 ## 3. JavaScript budgets (per route, minified+gzip, first-party only — third-party budget is 0, hard, permanent)
 
@@ -259,8 +301,9 @@ more than it is:
   than to guess a number.
 - **§7's caching table is not implemented and not gated.** `deploy/Caddyfile`
   sets no `Cache-Control` at all today. Nothing here checks headers.
-- **§2 is entirely unmeasured** until the Lighthouse half lands. No CWV number
-  in this file is currently enforced by anything.
+- **§2's CLS row is measured and printed but not enforced**, because `/` does
+  not currently meet it — the row above says why, and what flips it back on.
+  LCP, TBT and the Lighthouse score gate are enforced.
 
 Three notes on building it, each learned rather than assumed:
 
